@@ -238,6 +238,93 @@ class DebtInTheStepsTests(unittest.TestCase):
         self.assertIsNone(desk.debt["prior"]["value"])
 
 
+ACCESSION = "0000000001-26-000004"
+FOLDER = "https://www.sec.gov/Archives/edgar/data/1/000000000126000004"
+SLIDES = "<html><body><p>Third quarter results</p><p>Revenue grew.</p></body></html>"
+A_RELEASE = "<html><body><p>Example Corp reports results</p><p>CONSOLIDATED STATEMENTS OF OPERATIONS</p><table><tr><td>Total revenue</td><td>95,723</td><td>86,156</td></tr></table></body></html>"
+
+
+def index_page(exhibits: list[tuple[str, str]]) -> str:
+    """A made-up EDGAR index page: the 8-K itself, then one row for each (type, file name), then the full text file."""
+    def row(seq: int, kind: str, name: str, link: str) -> str:
+        return f'<tr><td>{seq}</td><td>{kind}</td><td><a href="{link}">{name}</a></td><td>{kind}</td><td>50000</td></tr>'
+
+    path = "/Archives/edgar/data/1/000000000126000004"
+    rows = [row(1, "8-K", "main8k.htm", f"/ix?doc={path}/main8k.htm")]
+    rows += [row(n, kind, name, f"{path}/{name}") for n, (kind, name) in enumerate(exhibits, 2)]
+    rows.append(f'<tr><td>&nbsp;</td><td>Complete submission text file</td><td><a href="{path}/{ACCESSION}.txt">{ACCESSION}.txt</a></td><td>&nbsp;</td><td>900000</td></tr>')
+    return '<table summary="Document Format Files"><tr><th>Seq</th><th>Description</th><th>Document</th><th>Type</th><th>Size</th></tr>' + "".join(rows) + "</table>"
+
+
+class ExhibitTests(unittest.TestCase):
+    """Which exhibit of the 8-K is the earnings release. Found on a real filing on 2026-11-11: a release labelled
+    EX-99 stopped the run. Made-up pages."""
+
+    def find(self, exhibits: list[tuple[str, str]], pages: dict[str, str]) -> tuple[str, dict[str, str], list[str]]:
+        desk = Desk("Test Agent test@example.com", Path(tempfile.mkdtemp()))
+        desk.cik = "0000000001"
+        asked: list[str] = []
+        pages = {f"{ACCESSION}-index.html": index_page(exhibits), **pages}
+
+        def get_text(url: str) -> str:
+            asked.append(url.rsplit("/", 1)[-1])
+            self.assertTrue(url.startswith(FOLDER + "/"), url)
+            return pages[asked[-1]]
+
+        desk.get_text = get_text
+        row = {"accessionNumber": ACCESSION, "primaryDocument": "main8k.htm"}
+        with contextlib.redirect_stdout(io.StringIO()):
+            name = desk.find_exhibit(row)
+        return name, row, asked
+
+    def test_a_release_labelled_ex_99_is_found(self) -> None:
+        name, row, _ = self.find([("EX-99", "release99.htm")], {})
+        self.assertEqual((name, row["exhibit_label"]), ("release99.htm", "99"))
+
+    def test_ex_99_1_is_the_release_when_it_holds_the_income_statement(self) -> None:
+        name, row, asked = self.find([("EX-99.1", "ex991.htm"), ("EX-99.2", "ex992.htm")], {"ex991.htm": A_RELEASE, "ex992.htm": SLIDES})
+        self.assertEqual((name, row["exhibit_label"]), ("ex991.htm", "99.1"))
+        self.assertNotIn("ex992.htm", asked)  # the desk reads no exhibit after it finds the release
+
+    def test_the_first_exhibit_with_an_income_statement_is_the_release(self) -> None:
+        name, row, _ = self.find([("EX-99.1", "slides.htm"), ("EX-99.2", "release.htm")], {"slides.htm": SLIDES, "release.htm": A_RELEASE})
+        self.assertEqual((name, row["exhibit_label"]), ("release.htm", "99.2"))
+
+    def test_the_first_exhibit_when_none_holds_an_income_statement(self) -> None:
+        name, row, _ = self.find([("EX-99.1", "a.htm"), ("EX-99.2", "b.htm")], {"a.htm": SLIDES, "b.htm": SLIDES})
+        self.assertEqual((name, row["exhibit_label"]), ("a.htm", "99.1"))
+
+    def test_a_file_that_is_not_text_is_not_the_release(self) -> None:
+        name, row, _ = self.find([("EX-99.1", "slides.pdf"), ("EX-99.2", "release.htm")], {})
+        self.assertEqual((name, row["exhibit_label"]), ("release.htm", "99.2"))
+
+    def test_other_exhibits_are_not_exhibit_99(self) -> None:
+        name, _, _ = self.find([("EX-10.1", "contract.htm"), ("EX-99.1", "release.htm"), ("EX-990", "odd.htm")], {})
+        self.assertEqual(name, "release.htm")
+
+    def test_an_8k_with_no_exhibit_99_stops_with_the_reason(self) -> None:
+        desk = Desk("Test Agent test@example.com", Path(tempfile.mkdtemp()))
+        desk.cik = "0000000001"
+        desk.get_text = lambda url: index_page([("EX-10.1", "contract.htm")]) if url.endswith("-index.html") else "<html><body>Item 2.02</body></html>"
+        desk.get_json = lambda url: {"directory": {"item": [{"name": "main8k.htm", "type": "text.gif"}, {"name": "contract.htm", "type": "text.gif"}]}}
+        with self.assertRaisesRegex(RuntimeError, "Exhibit 99"):
+            desk.find_exhibit({"accessionNumber": ACCESSION, "primaryDocument": "main8k.htm"})
+
+    def test_each_page_is_asked_for_one_time(self) -> None:
+        class Http:
+            def __init__(self) -> None:
+                self.asked: list[str] = []
+
+            def get(self, url: str, timeout: int) -> Any:
+                self.asked.append(url)
+                return type("Answer", (), {"text": "a page", "raise_for_status": lambda self: None})()
+
+        desk = Desk("Test Agent test@example.com", Path(tempfile.mkdtemp()))
+        desk.http = Http()
+        self.assertEqual((desk.get_text("https://example.test/a"), desk.get_text("https://example.test/a")), ("a page", "a page"))
+        self.assertEqual(len(desk.http.asked), 1)
+
+
 class ManagerRuleTests(unittest.TestCase):
     def test_a_quote_must_appear_word_for_word(self) -> None:
         source = app.normalize("Net sales for the quarter increased 11.2 percent, to $93.9 billion.\nThe Company operates 939 warehouses.")

@@ -38,7 +38,13 @@ def at(text: str) -> datetime:
 class FirstLine(unittest.TestCase):
     def test_the_first_line_names_the_release(self) -> None:
         named = live.release_named(FIRST_LINE)
-        self.assertEqual(named, {"accession": "0000000001-26-000020", "cik": "0000000001", "exhibit": "ex991release.htm", "accepted": "2026-11-12 16:07:06"})
+        self.assertEqual(named, {"accession": "0000000001-26-000020", "cik": "0000000001", "exhibit_label": "99.1",
+                                 "exhibit": "ex991release.htm", "accepted": "2026-11-12 16:07:06"})
+
+    def test_a_release_that_is_exhibit_99_or_99_2(self) -> None:
+        for label in ("99", "99.2"):
+            named = live.release_named(FIRST_LINE.replace("Exhibit 99.1 ex991release.htm", f"Exhibit {label} release.htm"))
+            self.assertEqual((named["exhibit_label"], named["exhibit"]), (label, "release.htm"))
 
     def test_the_8k_is_not_the_10k(self) -> None:
         # The 10-K and the 10-Q come first on the line; the release is the 8-K.
@@ -152,7 +158,7 @@ class Table(unittest.TestCase):
     def row(self, week: str, inside: str, accepted: str, hours_after: float) -> dict:
         when = at(accepted)
         return {"ticker": "EXM", "folder": "EXM_x", "problem": "", "inside": inside, "week": week, "accession": "0000000001-26-000020",
-                "cik": "0000000001", "exhibit": "ex991release.htm", "accepted_at": when, "deadline": when + live.WINDOW,
+                "cik": "0000000001", "exhibit_label": "99.1", "exhibit": "ex991release.htm", "accepted_at": when, "deadline": when + live.WINDOW,
                 "commit": "a" * 40, "committed_at": when + timedelta(hours=hours_after), "accepted_from": "EDGAR index page"}
 
     def test_the_table_counts_each_week_once(self) -> None:

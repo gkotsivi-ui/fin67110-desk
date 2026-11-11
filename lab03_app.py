@@ -432,7 +432,7 @@ class StrategyManager:
                 "10-K": f"accession {d.selected['10-K']['accessionNumber']}, fiscal year ended {d.selected['10-K']['reportDate']}",
                 "10-K Item 1 Business": self.business,
                 "10-K Item 7 MD&A": self.mdna,
-                "Earnings release": f"8-K accession {d.selected['8-K']['accessionNumber']}, Exhibit 99.1",
+                "Earnings release": f"8-K accession {d.selected['8-K']['accessionNumber']}, Exhibit {self.exhibit_label()}",
                 "Earnings release text": self.release,
                 FIRST_PARAGRAPH: self.first_paragraph,
             },
@@ -585,7 +585,7 @@ class StrategyManager:
         facts = [self.fact_entry(name, item) for name, item in d.fact_rows.items() if item and item.get("current")]
         q = d.quarter
         quarter: dict[str, Any] = {
-            "release": f"8-K accession {d.selected['8-K']['accessionNumber']}, Item 2.02, Exhibit 99.1, accepted {self.accepted('8-K')}",
+            "release": f"8-K accession {d.selected['8-K']['accessionNumber']}, Item 2.02, Exhibit {self.exhibit_label()}, accepted {self.accepted('8-K')}",
             "units": "the release states its own units (usually $ millions, except per share); copy its numbers as written",
             "header_lines": q.get("revenue_headers", []),
             "revenue_line": q.get("revenue_line"),
@@ -799,6 +799,10 @@ class StrategyManager:
         lines += [f"| {n} | {cell(claim)} | {cell(value)} | {cell(source)} |" for n, claim, value, source in rows]
         return "\n".join(lines)
 
+    def exhibit_label(self) -> str:
+        """The number of the exhibit that holds the release: 99.1 for most filers, 99 or 99.2 for some."""
+        return self.desk.selected["8-K"].get("exhibit_label", "99.1")
+
     def accepted(self, form: str) -> str:
         row = self.desk.selected[form]
         return f"{row['accepted_index']} ET" if row.get("accepted_index") else f"{row['acceptanceDateTime']} UTC"
@@ -808,7 +812,7 @@ class StrategyManager:
         line1 = (
             f"Filings read: 10-K {s['10-K']['accessionNumber']} (fiscal year ended {s['10-K']['reportDate']}, accepted {self.accepted('10-K')}); "
             f"10-Q {s['10-Q']['accessionNumber']} (quarter ended {s['10-Q']['reportDate']}, accepted {self.accepted('10-Q')}); "
-            f"8-K {s['8-K']['accessionNumber']} (Item 2.02 earnings release, Exhibit 99.1 {s['8-K'].get('exhibit99_1', '')}, accepted {self.accepted('8-K')}); "
+            f"8-K {s['8-K']['accessionNumber']} (Item 2.02 earnings release, Exhibit {self.exhibit_label()} {s['8-K'].get('exhibit99_1', '')}, accepted {self.accepted('8-K')}); "
             f"XBRL company facts, CIK {d.cik}"
         )
         t = self.run_time

@@ -157,7 +157,7 @@ class Team:
         desk.step7(state.get("peers", []))
         manager = StrategyManager(desk, self.model, price, note, self.settings["run_time"], self.settings["tools"])
         more = more_ratios(desk)
-        keys = ("accessionNumber", "filingDate", "reportDate", "accepted_index", "exhibit99_1", "saved_text")
+        keys = ("accessionNumber", "filingDate", "reportDate", "accepted_index", "exhibit99_1", "exhibit_label", "saved_text")
         self.save(state, "steps", {"ticker": desk.ticker, "peers": state.get("peers", []), "price": state.get("price"), "filed": state.get("filed")}, {
             "company": desk.company,
             "cik": desk.cik,

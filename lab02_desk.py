@@ -181,6 +181,38 @@ def join_cells(cells: list[str]) -> str:
     return " | ".join(out)
 
 
+# The heading of an income statement, in a release or in a filing.
+STATEMENT = re.compile(r"statements? of (income|operations|earnings)|income statements?", re.I)
+# An earnings release is an Exhibit 99 of its 8-K: EX-99.1 for most filers, EX-99 or another number for some.
+EXHIBIT_99 = re.compile(r"\bEX-99(?:\.(\d+))?(?![\d.])", re.I)
+
+
+def as_text(raw: str) -> str:
+    """A filing document as plain text. A document that is already plain text keeps its lines."""
+    return html_to_text(raw) if "<html" in raw[:1000].lower() or "<document" in raw[:1000].lower() else raw
+
+
+def has_income_statement(text: str) -> bool:
+    """True when a short line of the text is the heading of an income statement."""
+    return any(len(line) < 90 and STATEMENT.search(line) for line in text.splitlines())
+
+
+def exhibits_99(index_html: str, primary: str) -> list[tuple[str, str]]:
+    """The Exhibit 99 documents on a filing's EDGAR index page, in the page's order, each as its number and its
+    file name: ("99.1", "release.htm"). Only files that hold text: .htm, .html and .txt."""
+    found = []
+    for table_row in re.findall(r"<tr\b[^>]*>.*?</tr>", index_html, re.I | re.S):
+        kind = EXHIBIT_99.search(html_to_text(table_row))
+        if not kind:
+            continue
+        for href in re.findall(r"href=[\"']([^\"']+)[\"']", table_row, re.I):
+            name = Path(href.split("?", 1)[0]).name
+            if name and name != primary and name.lower().endswith((".htm", ".html", ".txt")):
+                found.append(("99" + (f".{kind.group(1)}" if kind.group(1) else ""), name))
+                break
+    return found
+
+
 def is_annual(fact: dict[str, Any]) -> bool:
     """True for a balance-sheet instant or a duration of one fiscal year (52 or 53 weeks)."""
     if not fact.get("start"):
@@ -246,6 +278,7 @@ class Desk:
         self.http = requests.Session()
         self.http.headers.update({"User-Agent": user_agent, "Accept-Encoding": "gzip, deflate"})
         self.outdir = outdir
+        self.pages: dict[str, str] = {}  # each page this run fetched, by its address
         self.company: str = ""
         self.ticker: str = ""
         self.cik: str = ""
@@ -266,9 +299,12 @@ class Desk:
         return response.json()
 
     def get_text(self, url: str) -> str:
-        response = self.http.get(url, timeout=45)
-        response.raise_for_status()
-        return response.text
+        """A page from SEC EDGAR. Each address is fetched one time in a run, and later reads use that copy."""
+        if url not in self.pages:
+            response = self.http.get(url, timeout=45)
+            response.raise_for_status()
+            self.pages[url] = response.text
+        return self.pages[url]
 
     @staticmethod
     def accession_path(accession: str) -> str:
@@ -349,7 +385,7 @@ class Desk:
             pass
 
     def step3(self) -> None:
-        print("\n[3/7] Download filings and extract Exhibit 99.1")
+        print("\n[3/7] Download filings and extract the earnings release (Exhibit 99)")
         self.outdir.mkdir(parents=True, exist_ok=True)
         self.selected["8-K"]["exhibit99_1"] = self.find_exhibit(self.selected["8-K"])
         for form in ("10-K", "10-Q", "8-K"):
@@ -357,30 +393,26 @@ class Desk:
             name = row["primaryDocument"]
             if form == "8-K":
                 name = row["exhibit99_1"]
-            raw = self.get_text(self.filing_url(row, name))
-            text = html_to_text(raw) if "<html" in raw[:1000].lower() or "<document" in raw[:1000].lower() else raw
+            text = as_text(self.get_text(self.filing_url(row, name)))
             path = self.outdir / f"{form.replace('-', '')}_{row['filingDate']}_{Path(name).stem}.txt"
             path.write_text(text, encoding="utf-8")
             row["saved_text"] = str(path)
             print(f"{form}: {name} -> {path}")
 
     def find_exhibit(self, row: dict[str, str]) -> str:
+        """The file name of the earnings release among the 8-K's exhibits. row["exhibit_label"] gets its number:
+        99.1 for most filers, 99 or 99.2 for some."""
         base = f"{SEC}/Archives/edgar/data/{int(self.cik)}/{self.accession_path(row['accessionNumber'])}"
         # The filing index labels each document's exhibit type, so read it first.
         # Many issuers use descriptive names (for example, earningsrelease.htm).
         try:
-            index_url = f"{base}/{row['accessionNumber']}-index.html"
-            index_html = self.get_text(index_url)
-            for table_row in re.findall(r"<tr\b[^>]*>.*?</tr>", index_html, re.I | re.S):
-                if not re.search(r"EX[- ]?99\.1\b", html_to_text(table_row), re.I):
-                    continue
-                links = re.findall(r"href=[\"']([^\"']+)[\"']", table_row, re.I)
-                for href in links:
-                    filename = Path(href.split("?", 1)[0]).name
-                    if filename and filename != row["primaryDocument"]:
-                        return filename
+            candidates = exhibits_99(self.get_text(f"{base}/{row['accessionNumber']}-index.html"), row["primaryDocument"])
         except requests.RequestException:
-            pass
+            candidates = []
+        if candidates:
+            row["exhibit_label"], name = self.release_among(base, candidates)
+            return name
+        row["exhibit_label"] = "99.1"
         # Without an index page, guess from the file names in the filing directory.
         try:
             listing = self.get_json(f"{base}/index.json")
@@ -397,7 +429,22 @@ class Desk:
         for href, label in links:
             if re.search(r"Exhibit\s+99\.1|EX-99\.1", html_to_text(label), re.I):
                 return Path(href).name
-        raise RuntimeError("Could not locate the 8-K's Exhibit 99.1 in the SEC filing directory.")
+        raise RuntimeError("Could not locate an Exhibit 99 with the earnings release in the 8-K's SEC filing directory.")
+
+    def release_among(self, base: str, candidates: list[tuple[str, str]]) -> tuple[str, str]:
+        """Which Exhibit 99 is the earnings release: the first that holds an income statement.
+        The first exhibit when there is only one, or when none holds an income statement."""
+        if len(candidates) > 1:
+            for label, name in candidates[:4]:
+                try:
+                    text = as_text(self.get_text(f"{base}/{name}"))
+                except requests.RequestException:
+                    continue
+                if has_income_statement(text):
+                    if (label, name) != candidates[0]:
+                        print(f"The earnings release is Exhibit {label} ({name}): Exhibit {candidates[0][0]} holds no income statement.")
+                    return label, name
+        return candidates[0]
 
     def step4(self) -> None:
         print("\n[4/7] Read latest fiscal-year XBRL facts")
@@ -597,7 +644,7 @@ class Desk:
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
         # Search the income statement first: a reconciliation table above it can repeat the same labels
         # with adjusted figures in its second column.
-        start = next((i for i, line in enumerate(lines) if len(line) < 90 and re.search(r"statements? of (income|operations|earnings)|income statements?", line, re.I)), 0)
+        start = next((i for i, line in enumerate(lines) if len(line) < 90 and STATEMENT.search(line)), 0)
         order = list(range(start, len(lines))) + list(range(start))
         # A total row first; a release without one states revenue or sales on a row of its own.
         patterns = [r"\s*total\s*(net\s*)?(revenues?|sales)\b", r"\s*(net\s*)?(revenues?|sales)\b"]
