@@ -51,6 +51,10 @@ Size: S is half a day or less, M is one to two days, L is three days or more.
 - **An OpenAI key does not work.** Add it as a plain web request, as the Gemini path is. Size M.
 - **Accuracy must not depend on the model.** Run one company on each provider's cheapest model. The
   claims table must be the same on all of them, and the hook must pass. Size S, after F6 and F7.
+- **A long folder path stops the install on Windows.** One package needs a path of 138 characters
+  inside the repository folder, and Windows allows 260 in all. The README now says to keep the path
+  short. Calling Anthropic by a plain web request, as the desk calls Gemini, would remove that
+  package. Do it with the OpenAI key.
 - **Only the direct packages are pinned.** Add a constraints file from a clean install, tested on a Mac. Size S.
 - **Nobody outside has followed the README.** Each teammate does it on their own computer this week, with
   the README alone, and writes down every place they had to guess. One Windows and one Mac at least.

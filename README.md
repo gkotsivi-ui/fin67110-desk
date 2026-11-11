@@ -44,6 +44,9 @@ Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them
    cd fin67110-desk
    ```
 
+   On Windows, keep the folder's full path short: under about 100 characters. One of the packages
+   has very long file names, and Windows refuses a path longer than 260 characters.
+
 2. Make a virtual environment and install the packages. The environment keeps this desk's exact package
    versions apart from the ones your own work uses.
 
@@ -171,6 +174,7 @@ Run `check_env.py` first. It checks Python, the packages, `.env`, SEC EDGAR and 
 |---|---|
 | `There is no .env file` | Do step 3 of the setup, and run the commands from the repository folder. If Windows saved the file as `.env.txt`, rename it to `.env`. |
 | `API_KEY ... is an OpenAI key` | The roles run on Anthropic or Google. Use a key that starts with `sk-ant-` or `AIza`. |
+| `Could not install packages due to an OSError`, with a hint about Windows Long Path support | The folder's path is too long for Windows. Move the folder to a short path, for example `C:\fin67110-desk`, and do step 2 of the setup again. |
 | `ModuleNotFoundError` | The command did not use the virtual environment. Start the command with `.venv\Scripts\python` (Windows) or `.venv/bin/python` (Mac). |
 | `python` is not found, or the Microsoft Store opens | On Windows, type `py`. On a Mac, type `python3`. |
 | `SEC request failed: 403` | `SEC_USER_AGENT` needs your own name and email. |

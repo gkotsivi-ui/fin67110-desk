@@ -101,6 +101,19 @@ November 9. Then we ran the full agent team on one of them. Entries 1 to 4 came 
   clean virtual environment.
 - **What we will not delegate again.** (the team writes this)
 
+### 8. The first clone from GitHub did not install
+
+- **What happened.** After the first push, the coding agent cloned the repository into a deeply nested
+  folder and followed the README. The install stopped with `Could not install packages due to an OSError`
+  and a hint about Windows Long Path support. Six test files then failed to load.
+- **Cause.** One pinned package has a file whose path is 138 characters inside the repository folder.
+  Windows allows 260 characters for a whole path. The clone folder's own path was 126 characters.
+- **How we caught it.** We followed the README from a clone of the public repository, not from the
+  folder the files were written in. In a folder with a 109-character path the same steps worked, and
+  all 87 tests passed.
+- **What we changed.** The README tells a Windows reader to keep the path short, and names the error.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code. I verified the sources myself; the judgments are mine.
