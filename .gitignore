@@ -1,0 +1,41 @@
+# Secrets. .env holds your keys, your name and your email. It is never committed.
+.env
+.env.*
+!.env.example
+
+# Licensed data. Raw pulls and exports from LSEG, WRDS and Capital IQ stay out of this
+# repository. Keep them in a folder outside this one. These lines are a second guard,
+# so a data file saved here by mistake is not committed. To commit a data file that is
+# not licensed, name it with: git add -f <file>
+/data/
+/exports/
+/closes/
+/lseg/
+/wrds/
+*.csv
+*.xlsx
+*.xls
+*.parquet
+*.feather
+*.sas7bdat
+*.dta
+*.pkl
+*.pickle
+
+# Practice runs stay on your computer. Live runs are committed in runs/live/.
+/output/
+/runs/practice/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Editors, coding agents and operating systems
+.claude/settings.local.json
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

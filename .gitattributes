@@ -1,0 +1,4 @@
+# The same line endings on every computer, so a file saved on Windows still runs on a Mac.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.command text eol=lf

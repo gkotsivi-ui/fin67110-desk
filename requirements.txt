@@ -1,0 +1,8 @@
+# Exact versions: the ones the desk ran on end to end on 2026-11-11 (Windows, Python 3.13).
+# A different version on another computer is a difference nobody tested.
+requests==2.34.2
+anthropic==2.3.0
+langgraph==1.2.19
+markdown==3.11.3
+# The time-zone database for Python's zoneinfo. Windows has none of its own.
+tzdata==2026.6
