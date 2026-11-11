@@ -87,11 +87,11 @@ class FakeModel:
         return self.replies[role](packet)
 
 
-def saved_run(report: list[str]) -> Path:
+def saved_run(report: list[str], ten_k: str = TEN_K_LINES, facts: dict[str, Any] = FACTS) -> Path:
     folder = Path(tempfile.mkdtemp())
-    (folder / "10K_test.txt").write_text(TEN_K_LINES, encoding="utf-8")
+    (folder / "10K_test.txt").write_text(ten_k, encoding="utf-8")
     (folder / "8K_test.txt").write_text(RELEASE_LINES, encoding="utf-8")
-    (folder / "facts.json").write_text(json.dumps(FACTS), encoding="utf-8")
+    (folder / "facts.json").write_text(json.dumps(facts), encoding="utf-8")
     (folder / "report.md").write_text("\n".join(report) + "\n", encoding="utf-8")
     return folder
 
@@ -159,6 +159,95 @@ class VerifierTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             verifier.verify_run(folder, model)
         self.assertEqual(len(list(folder.glob("verified_report*.md"))), 2)
+
+
+def marks_of(report: list[str], read: list[dict[str, Any]], line_check: Any = None, **saved: Any) -> list[dict[str, Any]]:
+    """The Verifier's records for a made-up report, with a stand-in for each of its two model calls."""
+    says_yes = lambda p: {"checks": [{"id": i["id"], "states_it": True} for i in p["context"]["items"]]}  # noqa: E731
+    model = FakeModel({"Verifier (reader)": lambda p: {"numbers": read}, "Verifier (line check)": line_check or says_yes})
+    with contextlib.redirect_stdout(io.StringIO()):
+        return verifier.verify_run(saved_run(REPORT[:4] + report, **saved), model)["records"]
+
+
+def ratio(line: int, number: str, arithmetic: str, scale: str = "percent") -> dict[str, Any]:
+    return {"line": line, "number": number, "scale": scale, "source": {"type": "ratio", "arithmetic": arithmetic}}
+
+
+class FalseFlagTests(unittest.TestCase):
+    """Three kinds of correct number that the Verifier marked wrong or unsupported on a real run on 2026-11-11.
+    A verifier that flags correct numbers costs as much as one that misses wrong ones. Made-up numbers."""
+
+    FALL = "960.0 / 1,000.0 - 1"  # -4.00%
+    MARGINS = dict(FACTS, facts=dict(FACTS["facts"], operating_income={
+        "tag": "OperatingIncomeLoss", "label": "Operating income", "unit": "USD",
+        "current": {"start": "2025-09-01", "end": "2026-08-30", "val": 11685e6}, "prior": {"start": "2024-09-02", "end": "2025-08-31", "val": 10383e6}}))
+    CHANGE = "operating_income / revenue - operating_income_prior / revenue_prior"  # 3.8545% - 3.7724% = 0.0821 points
+
+    def test_a_decline_written_as_a_positive_number(self) -> None:
+        report = ["- As a result, free cash flow fell 4.00% and stayed below net income.",
+                  "- Free cash flow was 4.00% lower.",
+                  "- A decline of 4.00% in free cash flow.",
+                  "- Free cash flow changed by -4.00%."]
+        records = marks_of(report, [ratio(n, "-4.00%" if n == 8 else "4.00%", self.FALL) for n in (5, 6, 7, 8)])
+        self.assertEqual([r["mark"] for r in records], ["correct"] * 4)
+        self.assertIn("decline", records[0]["code"])
+
+    def test_a_rise_that_was_a_fall_is_still_wrong(self) -> None:
+        # The words directly beside the number must say that it is a decline. A level is not a decline:
+        # "narrowed to 4.00%" gives a level, and a level of -4.00% written as 4.00% is an error.
+        report = ["- Free cash flow grew 4.00%.",
+                  "- Revenue grew 4.00% while costs fell.",
+                  "- Costs fell, and free cash flow grew 4.00%.",
+                  "- The margin narrowed to 4.00%."]
+        records = marks_of(report, [ratio(n, "4.00%", self.FALL) for n in (5, 6, 7, 8)])
+        self.assertEqual([(r["mark"], r["correction"]) for r in records], [("wrong", "-4.00%")] * 4)
+
+    def test_the_words_beside_a_number_that_say_it_is_a_decline(self) -> None:
+        for line in ("fell 4.00%", "fell by about 4.00%", "a decrease of 4.00%", "down 4.00%", "was 4.00% lower", "a 4.00% decline", "fell $4.00 million"):
+            self.assertTrue(verifier.says_decline(line, "4.00"), line)
+        for line in ("grew 4.00%", "narrowed to 4.00%", "down from 4.00%", "fell 14.00%", "costs fell and it rose 4.00%"):
+            self.assertFalse(verifier.says_decline(line, "4.00"), line)
+
+    def test_arithmetic_that_names_saved_facts_is_redone_from_the_facts_file(self) -> None:
+        report = [f"| Operating margin | +0.08 margin points (0.0008 = {self.CHANGE}) |",
+                  "- Revenue rose by $27,919.0 million (revenue - revenue_prior).",
+                  "- Revenue grew 10.14% (revenue / revenue_prior - 1, in $ millions).",
+                  "- The operating margin widened by 0.08 points."]
+        read = [ratio(5, "+0.08", self.CHANGE, "ratio"), ratio(5, "0.0008", self.CHANGE, "ratio"),
+                ratio(6, "$27,919.0", "revenue - revenue_prior", "millions"),
+                ratio(7, "10.14%", "revenue / revenue_prior - 1, in $ millions"),
+                {"line": 8, "number": "0.08", "scale": "ratio", "source": {"type": "none"}}]
+        records = marks_of(report, read, facts=self.MARGINS)
+        self.assertEqual([r["mark"] for r in records], ["correct"] * 5)
+        self.assertIn("from the saved facts", records[0]["code"])
+        self.assertIn("restates line 5", records[4]["code"])
+
+    def test_a_wrong_result_of_named_arithmetic_is_corrected_from_the_facts_file(self) -> None:
+        records = marks_of(["- Revenue rose by $28,919.0 million (revenue - revenue_prior)."],
+                           [ratio(5, "$28,919.0", "revenue - revenue_prior", "millions")])
+        self.assertEqual((records[0]["mark"], records[0]["correction"]), ("wrong", "27,919.0"))
+
+    def test_a_name_that_is_not_a_saved_fact_is_not_redone(self) -> None:
+        records = marks_of(["- EPS grew 15.0% (quarter_eps / quarter_eps_prior - 1)."], [ratio(5, "15.0%", "quarter_eps / quarter_eps_prior - 1")])
+        self.assertEqual(records[0]["mark"], "unsupported")
+        self.assertIsNone(verifier.recompute_named("__import__('os').getcwd()", {"revenue": 1.0}))
+
+    def test_less_than_stays_with_its_figure_for_the_line_check(self) -> None:
+        ten_k = TEN_K_LINES + "Large customers were approximately 6% of total revenue compared with less than 2% a year earlier.\n"
+        report =['Insight: Large customers were about 6% of revenue, up from less than 2%. (10-K: "Large customers were approximately 6% of total revenue compared with less than 2% a year earlier.")']
+        source = {"type": "line", "document": "10-K", "line": "Large customers were approximately 6% of total revenue compared with less than 2% a year earlier."}
+        asked: list[str] = []
+
+        def strict(packet: dict[str, Any]) -> dict[str, Any]:
+            """A model that says a line states "2%" only when the question keeps the words "less than"."""
+            asked.extend(i["number"] for i in packet["context"]["items"])
+            return {"checks": [{"id": i["id"], "states_it": i["number"] in ("about 6%", "less than 2%")} for i in packet["context"]["items"]]}
+
+        records = marks_of(report, [{"line": 5, "number": "6%", "scale": "percent", "source": source},
+                                    {"line": 5, "number": "2%", "scale": "percent", "source": source}], strict, ten_k=ten_k)
+        self.assertEqual(asked, ["about 6%", "less than 2%"])
+        self.assertEqual([r["mark"] for r in records], ["correct", "correct"])
+        self.assertEqual(verifier.qualified("2%", "It rose 2% to less than 20%."), "2%")
 
 
 def offline_desk() -> Any:
