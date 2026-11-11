@@ -256,6 +256,15 @@ def cell(text: Any) -> str:
     return str(text).replace("|", "\\|").replace("\n", " ")
 
 
+def ratio_for_context(ratio: dict[str, Any]) -> dict[str, str]:
+    """A ratio as the Financial Analyst receives it. A ratio the desk could not establish carries the reason,
+    so that the analyst does not state one."""
+    if ratio["value"] is None:
+        return {"name": ratio["name"], "value": "not stated", "why": ratio.get("why") or "an input is missing",
+                "rule": "The desk could not establish this ratio. Do not state it and do not compute it."}
+    return {"name": ratio["name"], "value": ratio["shown"], "arithmetic": f"{ratio['arithmetic']} ($ millions, except per share)"}
+
+
 class Model:
     """One model behind the analyst roles and the Verifier: Anthropic's API for an Anthropic key, Google's Gemini API
     for a Google AI Studio key. Every exchange is kept for roles.json."""
@@ -608,7 +617,7 @@ class StrategyManager:
             "ticker": d.ticker,
             "fiscal_year_end": d.selected["10-K"]["reportDate"],
             "facts": facts,
-            "ratios_computed_in_code": [{"name": r["name"], "value": r["shown"], "arithmetic": f"{r['arithmetic']} ($ millions, except per share)"} for r in d.ratios],
+            "ratios_computed_in_code": [ratio_for_context(r) for r in d.ratios],
             "latest_quarter": quarter,
             FIRST_PARAGRAPH: self.first_paragraph,
             "peers": peers,
@@ -766,7 +775,7 @@ class StrategyManager:
         def ratio(name: str) -> tuple[str, str]:
             r = ratios.get(name)
             if not r or r["value"] is None:
-                return "not computed", "an input is missing"
+                return "not computed", (r or {}).get("why") or "an input is missing"
             # P/E divides a price by a per-share figure; the other ratios use $ millions.
             return r["shown"], r["arithmetic"] if name == "P/E" else f"{r['arithmetic']} ($ millions)"
 

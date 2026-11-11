@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import lab03_app as app  # noqa: E402
-from lab02_desk import Desk, html_to_text, is_annual, numbers_in  # noqa: E402
+from lab02_desk import DEBT_PAIRS, DEBT_TOTAL, Desk, debt_at, html_to_text, is_annual, numbers_in  # noqa: E402
 
 
 def fact(start: str | None, end: str, val: float, unit: str = "USD") -> dict[str, Any]:
@@ -99,6 +99,143 @@ class TagRuleTests(unittest.TestCase):
         }
         chosen = self.desk.choose_fact(facts, ["Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax"], "revenue")
         self.assertEqual((chosen["tag"], chosen["current"]["val"]), ("Revenues", 713))
+
+
+(NONCURRENT, CURRENT), (LEASE_NONCURRENT, LEASE_CURRENT) = DEBT_PAIRS
+YEAR_END, LAST_YEAR_END = "2026-08-30", "2025-08-31"
+
+
+class DebtRuleTests(unittest.TestCase):
+    """Claim 7 needs long-term debt with its current portion. A fact that is missing is never read as zero.
+    Made-up numbers."""
+
+    def test_the_two_parts_are_added(self) -> None:
+        debt = debt_at({NONCURRENT: 5000e6, CURRENT: 100e6})
+        self.assertEqual((debt["value"], debt["terms"], debt["tags"]), (5100e6, "(5,000.0 + 100.0)", (NONCURRENT, CURRENT)))
+
+    def test_a_current_portion_of_zero_is_a_fact(self) -> None:
+        self.assertEqual(debt_at({NONCURRENT: 6000e6, CURRENT: 0.0})["value"], 6000e6)
+
+    def test_no_debt_fact_is_not_zero_debt(self) -> None:
+        debt = debt_at({})
+        self.assertIsNone(debt["value"])
+        self.assertIn("no long-term debt fact", debt["why"])
+
+    def test_one_part_alone_is_not_the_total(self) -> None:
+        for values in ({NONCURRENT: 5000e6}, {CURRENT: 100e6}):
+            debt = debt_at(values)
+            self.assertIsNone(debt["value"], values)
+            self.assertIn("does not establish", debt["why"])
+
+    def test_a_total_equal_to_the_noncurrent_part_shows_there_is_no_current_portion(self) -> None:
+        debt = debt_at({NONCURRENT: 5000e6, DEBT_TOTAL: 5000e6})
+        self.assertEqual((debt["value"], debt["terms"], debt["tags"]), (5000e6, "5,000.0", (NONCURRENT,)))
+        self.assertIn("no current portion", debt["note"])
+
+    def test_a_total_on_another_measure_does_not_give_the_current_portion(self) -> None:
+        # The difference can be short-term debt or issuance costs, so it is not read as the current portion.
+        self.assertIsNone(debt_at({NONCURRENT: 5000e6, DEBT_TOTAL: 5800e6})["value"])
+
+    def test_the_total_tag_alone_is_not_taken(self) -> None:
+        self.assertIsNone(debt_at({DEBT_TOTAL: 5100e6})["value"])
+        self.assertIsNone(debt_at({CURRENT: 100e6, DEBT_TOTAL: 5100e6})["value"])
+
+    def test_the_two_parts_win_over_a_total_that_differs(self) -> None:
+        self.assertEqual(debt_at({NONCURRENT: 4600e6, CURRENT: 200e6, DEBT_TOTAL: 4900e6})["value"], 4800e6)
+
+    def test_the_parts_of_two_definitions_are_not_added(self) -> None:
+        self.assertIsNone(debt_at({NONCURRENT: 5000e6, LEASE_CURRENT: 120e6})["value"])
+
+    def test_the_pair_with_lease_obligations_says_so(self) -> None:
+        debt = debt_at({LEASE_NONCURRENT: 6000e6, LEASE_CURRENT: 300e6, CURRENT: 300e6})
+        self.assertEqual((debt["value"], debt["tags"]), (6300e6, (LEASE_NONCURRENT, LEASE_CURRENT)))
+        self.assertIn("lease", debt["note"])
+
+    def test_a_note_holds_no_digit_so_the_verifier_can_redo_the_division(self) -> None:
+        for values in ({NONCURRENT: 5000e6, DEBT_TOTAL: 5000e6}, {LEASE_NONCURRENT: 6000e6, LEASE_CURRENT: 300e6}):
+            note = debt_at(values)["note"]
+            self.assertTrue(note.startswith("(") and note.endswith(")") and not re.search(r"\d", note), note)
+
+
+def company_facts(debt: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
+    """Made-up company facts for two fiscal years: revenue, equity, and the debt facts the test gives."""
+    def concept(values: list[dict[str, Any]], unit: str = "USD") -> dict[str, Any]:
+        return {"label": "a label", "units": {unit: values}}
+
+    facts = {
+        "Revenues": concept([fact("2024-09-02", LAST_YEAR_END, 90000e6), fact("2025-09-01", YEAR_END, 100000e6)]),
+        "StockholdersEquity": concept([fact(None, LAST_YEAR_END, 18000e6), fact(None, YEAR_END, 20000e6)]),
+    }
+    facts.update({tag: concept(values) for tag, values in debt.items()})
+    return {"facts": {"us-gaap": facts}}
+
+
+def desk_after_steps_4_and_5(debt: dict[str, list[dict[str, Any]]]) -> tuple[Desk, str]:
+    """A desk that read the made-up company facts, and everything steps 4 and 5 printed."""
+    desk = Desk("Test Agent test@example.com", Path(tempfile.mkdtemp()))
+    desk.company, desk.ticker, desk.cik = "Example Corp", "EXM", "0000000001"
+    desk.selected = {"10-K": {"accessionNumber": "0000000001-26-000001", "reportDate": YEAR_END}}
+    desk.get_json = lambda url: company_facts(debt)
+    printed = io.StringIO()
+    with contextlib.redirect_stdout(printed):
+        desk.step4()
+        desk.step5(None)
+    return desk, printed.getvalue()
+
+
+def not_found(printed: str) -> str:
+    """The line of step 4 that lists the facts it did not find; the made-up company has no income or cash flow facts."""
+    return next((line for line in printed.splitlines() if "Not found for that fiscal year" in line), "")
+
+
+class DebtInTheStepsTests(unittest.TestCase):
+    def debt_to_equity(self, desk: Desk) -> dict[str, Any]:
+        return next(r for r in desk.ratios if r["name"] == "Debt to equity")
+
+    def test_a_tag_last_used_years_ago_is_not_this_years_debt(self) -> None:
+        # Found on a real filing on 2026-11-11: the desk printed 0.000 for a company with debt.
+        desk, printed = desk_after_steps_4_and_5({DEBT_TOTAL: [fact(None, "2020-08-30", 900e6)]})
+        ratio = self.debt_to_equity(desk)
+        self.assertIsNone(ratio["value"])
+        self.assertEqual(ratio["shown"], "unavailable")
+        self.assertIn("no long-term debt fact", ratio["why"])
+        self.assertNotIn("0.000", printed)
+        self.assertIn("Debt to equity: unavailable (no long-term debt fact", printed)
+
+    def test_debt_to_equity_from_the_two_parts(self) -> None:
+        desk, printed = desk_after_steps_4_and_5({
+            NONCURRENT: [fact(None, LAST_YEAR_END, 4000e6), fact(None, YEAR_END, 5000e6)],
+            CURRENT: [fact(None, LAST_YEAR_END, 50e6), fact(None, YEAR_END, 100e6)],
+        })
+        ratio = self.debt_to_equity(desk)
+        self.assertAlmostEqual(ratio["value"], 5100 / 20000)
+        self.assertEqual((ratio["shown"], ratio["arithmetic"]), ("0.255", "(5,000.0 + 100.0) / 20,000.0"))
+        self.assertEqual((desk.fact_rows["long_term_debt"]["tag"], desk.fact_rows["current_debt"]["tag"]), (NONCURRENT, CURRENT))
+        self.assertAlmostEqual(desk.debt["prior"]["value"], 4050e6)
+        self.assertNotIn("debt", not_found(printed))
+
+    def test_no_current_portion_when_the_total_says_so(self) -> None:
+        desk, printed = desk_after_steps_4_and_5({NONCURRENT: [fact(None, YEAR_END, 5000e6)], DEBT_TOTAL: [fact(None, YEAR_END, 5000e6)]})
+        ratio = self.debt_to_equity(desk)
+        self.assertEqual(ratio["shown"], "0.250")
+        self.assertTrue(ratio["arithmetic"].startswith("5,000.0 / 20,000.0 (no current portion"))
+        self.assertIsNone(desk.fact_rows["current_debt"])
+        self.assertNotIn("debt", not_found(printed))  # no current portion is a finding, not a missing fact
+
+    def test_the_noncurrent_part_alone_gives_no_ratio_and_stays_a_fact(self) -> None:
+        desk, printed = desk_after_steps_4_and_5({NONCURRENT: [fact(None, YEAR_END, 5000e6)]})
+        self.assertIsNone(self.debt_to_equity(desk)["value"])
+        self.assertEqual(desk.fact_rows["long_term_debt"]["current"]["val"], 5000e6)
+        self.assertIn("current_debt", not_found(printed))
+        self.assertNotIn("long_term_debt", not_found(printed))
+
+    def test_each_year_is_judged_on_its_own_facts(self) -> None:
+        desk, _ = desk_after_steps_4_and_5({
+            NONCURRENT: [fact(None, LAST_YEAR_END, 4000e6), fact(None, YEAR_END, 5000e6)],
+            CURRENT: [fact(None, YEAR_END, 100e6)],
+        })
+        self.assertEqual(self.debt_to_equity(desk)["shown"], "0.255")
+        self.assertIsNone(desk.debt["prior"]["value"])
 
 
 class ManagerRuleTests(unittest.TestCase):

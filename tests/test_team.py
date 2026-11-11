@@ -23,7 +23,18 @@ sys.path.insert(0, str(ROOT / "tests"))
 import team  # noqa: E402
 import verifier  # noqa: E402
 from lab03_app import StrategyManager  # noqa: E402
-from test_desk import GOOD_ANALYSIS, advisor, example_desk, research  # noqa: E402
+from test_desk import (  # noqa: E402
+    CURRENT,
+    GOOD_ANALYSIS,
+    LAST_YEAR_END,
+    NONCURRENT,
+    YEAR_END,
+    advisor,
+    desk_after_steps_4_and_5,
+    example_desk,
+    fact,
+    research,
+)
 
 TEN_K_LINES = ("Net income increased 14% to $9,226, $20.76 per diluted share, compared to $8,099.\n"
                "Total revenue | 303,154 | 275,235 | 254,453\nDiluted | $20.76 | $18.21 | $16.56\n")
@@ -212,6 +223,25 @@ class GraphTests(unittest.TestCase):
         self.assertEqual(printed, ["The steps", "Research Analyst", "Financial Analyst", "Investment Advisor", "Strategy Manager",
                                    "Financial Analyst", "Strategy Manager", "Verifier"])
         self.assertEqual(model.roles.count("Financial Analyst"), 2)
+
+
+class PriorYearDebtTests(unittest.TestCase):
+    """The extra ratios the desk computes for the Financial Analyst, on made-up facts."""
+
+    def prior_year(self, debt: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
+        desk, _ = desk_after_steps_4_and_5(debt)
+        return [r for r in team.more_ratios(desk) if r["name"] == "Debt to equity, prior year"]
+
+    def test_the_prior_year_ratio_uses_the_prior_years_two_parts(self) -> None:
+        ratios = self.prior_year({
+            NONCURRENT: [fact(None, LAST_YEAR_END, 4000e6), fact(None, YEAR_END, 5000e6)],
+            CURRENT: [fact(None, LAST_YEAR_END, 50e6), fact(None, YEAR_END, 100e6)],
+        })
+        self.assertEqual([(r["shown"], r["arithmetic"]) for r in ratios], [("0.225", "(4,000.0 + 50.0) / 18,000.0")])
+
+    def test_no_prior_year_ratio_when_a_part_is_missing(self) -> None:
+        self.assertEqual(self.prior_year({NONCURRENT: [fact(None, LAST_YEAR_END, 4000e6), fact(None, YEAR_END, 5000e6)],
+                                          CURRENT: [fact(None, YEAR_END, 100e6)]}), [])
 
 
 class SkipTests(unittest.TestCase):

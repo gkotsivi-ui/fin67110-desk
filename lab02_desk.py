@@ -193,6 +193,43 @@ def millions(value: float | None) -> str:
     return f"{value / 1e6:,.1f}" if value is not None else "n/a"
 
 
+# The facts step 4 reads, in the order it prints them.
+FACT_ORDER = ["revenue", "operating_income", "net_income", "diluted_eps", "equity", "long_term_debt", "current_debt", "cash_from_operations", "capex"]
+# Claim 7 divides long-term debt, with its current portion, by equity. A balance sheet holds that debt in two
+# parts. Each pair is one definition: the noncurrent part, then the current part.
+DEBT_PAIRS = (
+    ("LongTermDebtNoncurrent", "LongTermDebtCurrent"),
+    ("LongTermDebtAndCapitalLeaseObligations", "LongTermDebtAndCapitalLeaseObligationsCurrent"),
+)
+# The tag for the whole amount. Filers also use it for other measures (docs/decision-log.md, entry 9), so the desk
+# never takes it as the amount; it only shows that there is no current portion.
+DEBT_TOTAL = "LongTermDebt"
+DEBT_TAGS = [tag for pair in DEBT_PAIRS for tag in pair] + [DEBT_TOTAL]
+
+
+def debt_at(values: dict[str, float]) -> dict[str, Any]:
+    """Long-term debt with its current portion, from the debt facts a 10-K reports at one balance-sheet date.
+
+    values maps an XBRL tag to its amount. The answer holds the amount ("value"), the numbers that make it
+    ("terms"), a note on the definition, and the tags it used. When the facts do not establish the amount,
+    "value" is None and "why" says so. A fact that is missing is never read as zero.
+    """
+    for noncurrent, current in DEBT_PAIRS:
+        if noncurrent in values and current in values:
+            note = "" if (noncurrent, current) == DEBT_PAIRS[0] else "(long-term debt with lease obligations, as the filing tags it)"
+            return {"value": values[noncurrent] + values[current], "terms": f"({millions(values[noncurrent])} + {millions(values[current])})",
+                    "note": note, "tags": (noncurrent, current), "why": ""}
+    noncurrent, current = DEBT_PAIRS[0]
+    if noncurrent in values and current not in values and values.get(DEBT_TOTAL) == values[noncurrent]:
+        note = f"(no current portion: the tag {DEBT_TOTAL}, which includes it, holds the same amount)"
+        return {"value": values[noncurrent], "terms": millions(values[noncurrent]), "note": note, "tags": (noncurrent,), "why": ""}
+    # The reason names tags and no amounts: every amount in a report must have a source a reader can check.
+    found = [tag for tag in DEBT_TAGS if tag in values]
+    why = (f"the 10-K gives {' and '.join(found)}, which does not establish long-term debt with its current portion"
+           if found else "no long-term debt fact at the fiscal year end under the tags the desk reads")
+    return {"value": None, "terms": "", "note": "", "tags": (), "why": why}
+
+
 def numbers_in(line: str) -> list[float]:
     """The numeric cells of a table row after its label, without percentages; "(1.2)" is negative."""
     values = []
@@ -218,6 +255,7 @@ class Desk:
         self.selected: dict[str, dict[str, str]] = {}
         self.skipped_8k: list[dict[str, str]] = []
         self.fact_rows: dict[str, dict[str, dict[str, Any]]] = {}
+        self.debt: dict[str, dict[str, Any]] = {}  # long-term debt with its current portion, for "current" and "prior"
         self.ratios: list[dict[str, Any]] = []
         self.quarter: dict[str, Any] = {}
         self.peers: list[dict[str, Any]] = []
@@ -374,8 +412,6 @@ class Desk:
             "net_income": ["NetIncomeLoss", "ProfitLoss"],
             "diluted_eps": ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted"],
             "equity": ["StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"],
-            "long_term_debt": ["LongTermDebtNoncurrent", "LongTermDebtAndCapitalLeaseObligations", "LongTermDebt"],
-            "current_debt": ["LongTermDebtCurrent", "LongTermDebtAndCapitalLeaseObligationsCurrent"],
             "cash_from_operations": ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"],
             "capex": ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"],
         }
@@ -387,17 +423,19 @@ class Desk:
         current_end = rev["current"]["end"]
         prior_end = rev["prior"]["end"] if rev.get("prior") else None
         for label, item in chosen.items():
-            if item and label not in {"equity", "long_term_debt", "current_debt"}:
+            if item and label != "equity":
                 item["current"] = self.match_period(item["all"], current_end, duration=True)
                 item["prior"] = self.match_period(item["all"], prior_end, duration=True) if prior_end else None
         # Balance sheet concepts are instant facts at each fiscal year end.
-        for label in ("equity", "long_term_debt", "current_debt"):
-            item = chosen[label]
-            if item:
-                item["current"] = self.match_period(item["all"], current_end, duration=False)
-                item["prior"] = self.match_period(item["all"], prior_end, duration=False) if prior_end else None
+        if chosen["equity"]:
+            self.at_year_ends(chosen["equity"], current_end, prior_end)
+        chosen.update(self.read_debt(facts, current_end, prior_end))
+        chosen = {name: chosen.get(name) for name in FACT_ORDER}
         self.fact_rows = chosen
         self.print_facts(chosen)
+        debt = self.debt["current"]
+        print("  Long-term debt with its current portion: "
+              + (f"{debt['terms']} {debt['note']}".strip() + " ($ millions)" if debt["value"] is not None else f"not established ({debt['why']})"))
         self.check_year_end(chosen)
         out = {
             "company": self.company,
@@ -410,7 +448,31 @@ class Desk:
         (self.outdir / "facts.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
         print(f"Saved XBRL facts: {self.outdir / 'facts.json'}")
 
-    def choose_fact(self, facts: dict[str, Any], tags: list[str], label: str) -> dict[str, Any] | None:
+    def at_year_ends(self, item: dict[str, Any], current_end: str, prior_end: str | None) -> None:
+        """Set a balance-sheet fact's values at the two fiscal year ends."""
+        item["current"] = self.match_period(item["all"], current_end, duration=False)
+        item["prior"] = self.match_period(item["all"], prior_end, duration=False) if prior_end else None
+
+    def read_debt(self, facts: dict[str, Any], current_end: str, prior_end: str | None) -> dict[str, dict[str, Any] | None]:
+        """Read the debt facts at each fiscal year end and set self.debt for both years.
+        Returns the two fact rows that the desk prints: the parts it used, or the parts it found."""
+        found: dict[str, dict[str, Any]] = {}
+        for tag in DEBT_TAGS:
+            item = self.choose_fact(facts, [tag], tag, quiet=True)
+            if item:
+                self.at_year_ends(item, current_end, prior_end)
+                found[tag] = item
+        self.debt = {which: debt_at({tag: float(item[which]["val"]) for tag, item in found.items() if item.get(which)})
+                     for which in ("current", "prior")}
+        used = self.debt["current"]["tags"]
+        if used:
+            return {"long_term_debt": found[used[0]], "current_debt": found[used[1]] if len(used) > 1 else None}
+        this_year = [tag for tag in DEBT_TAGS if tag in found and found[tag].get("current")]
+        noncurrent = next((tag for tag in this_year if tag in {pair[0] for pair in DEBT_PAIRS}), None)
+        current = next((tag for tag in this_year if tag in {pair[1] for pair in DEBT_PAIRS}), None)
+        return {"long_term_debt": found.get(noncurrent), "current_debt": found.get(current)}
+
+    def choose_fact(self, facts: dict[str, Any], tags: list[str], label: str, quiet: bool = False) -> dict[str, Any] | None:
         candidates = []
         for tag in tags:
             concept = facts.get(tag)
@@ -422,7 +484,8 @@ class Desk:
             if vals:
                 candidates.append((max(v["end"] for v in vals), tag, concept, vals))
         if not candidates:
-            print(f"  {label}: no candidate fact found")
+            if not quiet:
+                print(f"  {label}: no candidate fact found")
             return None
         _, tag, concept, vals = max(candidates, key=lambda x: x[0])
         latest_end = max(v["end"] for v in vals)
@@ -454,6 +517,8 @@ class Desk:
             return
         off = [f"{name} ({item['current']['end']})" for name, item in chosen.items() if item and item.get("current") and item["current"]["end"] != year_end]
         missing = [name for name, item in chosen.items() if not item or not item.get("current")]
+        if self.debt.get("current", {}).get("value") is not None and "current_debt" in missing:
+            missing.remove("current_debt")  # the debt facts show that there is no current portion
         print(f"  Check: every period end equals the 10-K's fiscal year end {year_end}: {'OK' if not off else 'MISMATCH ' + ', '.join(off)}")
         if missing:
             print(f"  Not found for that fiscal year: {', '.join(missing)}")
@@ -493,19 +558,19 @@ class Desk:
         rev, op, ni, eps, equity = (self.value(f.get(k)) for k in ("revenue", "operating_income", "net_income", "diluted_eps", "equity"))
         prior_rev = self.value(f.get("revenue"), "prior")
         prior_equity = self.value(f.get("equity"), "prior")
-        debt_lt = self.value(f.get("long_term_debt")) or 0.0
-        debt_cur = self.value(f.get("current_debt")) or 0.0
-        debt_terms = f"({millions(debt_lt)} + {millions(debt_cur)})"
-        if f.get("long_term_debt") and f["long_term_debt"]["tag"] == "LongTermDebt":
-            # This tag already includes current maturities; adding the current portion would count it twice.
-            debt_cur, debt_terms = 0.0, f"{millions(debt_lt)} [LongTermDebt includes its current portion]"
+        # Long-term debt with its current portion, as step 4 established it. A missing fact is never read as zero.
+        debt = self.debt.get("current") or debt_at({})
         cfo, capex = self.value(f.get("cash_from_operations")), self.value(f.get("capex"))
         avg_equity = ((equity + prior_equity) / 2) if equity is not None and prior_equity is not None else None
         self.ratios = []
 
-        def ratio(label: str, value: float | None, shown: str, arithmetic: str) -> None:
-            self.ratios.append({"name": label, "value": value, "shown": shown if value is not None else "unavailable", "arithmetic": arithmetic})
-            print(f"  {label}: {shown} = {arithmetic}" if value is not None else f"  {label}: unavailable (missing input)")
+        def ratio(label: str, value: float | None, shown: str, arithmetic: str, why: str = "missing input") -> None:
+            """Record one ratio. When it has no value, why says what is missing."""
+            entry = {"name": label, "value": value, "shown": shown if value is not None else "unavailable", "arithmetic": arithmetic}
+            if value is None:
+                entry["why"] = why
+            self.ratios.append(entry)
+            print(f"  {label}: {shown} = {arithmetic}" if value is not None else f"  {label}: unavailable ({why})")
 
         m = millions
         growth = rev / prior_rev - 1 if rev is not None and prior_rev else None
@@ -514,12 +579,15 @@ class Desk:
         ratio("Operating margin", margin, f"{margin:.2%}" if margin is not None else "", f"{m(op)} / {m(rev)}")
         roae = ni / avg_equity if ni is not None and avg_equity else None
         ratio("Return on average equity", roae, f"{roae:.2%}" if roae is not None else "", f"{m(ni)} / (({m(equity)} + {m(prior_equity)}) / 2)")
-        dte = (debt_lt + debt_cur) / equity if equity else None
-        ratio("Debt to equity", dte, f"{dte:.3f}" if dte is not None else "", f"{debt_terms} / {m(equity)}")
+        dte = debt["value"] / equity if debt["value"] is not None and equity else None
+        ratio("Debt to equity", dte, f"{dte:.3f}" if dte is not None else "",
+              f"{debt['terms']} / {m(equity)} {debt['note']}".strip() if dte is not None else "",
+              debt["why"] or "stockholders' equity is missing")
         fcf = cfo - capex if cfo is not None and capex is not None else None
         ratio("Free cash flow", fcf, f"${m(fcf)}M" if fcf is not None else "", f"{m(cfo)} - {m(capex)}")
         pe = price / eps if price is not None and eps else None
-        ratio("P/E", pe, f"{pe:.1f}" if pe is not None else "", f"{price:,.2f} / {eps:.2f} (price / diluted EPS)" if pe is not None else "needs --price")
+        ratio("P/E", pe, f"{pe:.1f}" if pe is not None else "", f"{price:,.2f} / {eps:.2f} (price / diluted EPS)" if pe is not None else "needs --price",
+              "no price was given" if price is None else "diluted EPS is missing or zero")
         if self.outdir.exists():
             (self.outdir / "ratios.json").write_text(json.dumps(self.ratios, indent=2), encoding="utf-8")
 

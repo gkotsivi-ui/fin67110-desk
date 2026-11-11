@@ -109,11 +109,10 @@ def more_ratios(desk: Desk) -> list[dict[str, Any]]:
             add("Free cash flow margin", (cfo - capex) / rev, f"{(cfo - capex) / rev:.2%}", f"({m(cfo)} - {m(capex)}) / {m(rev)}")
         if ni:
             add("Free cash flow / net income", (cfo - capex) / ni, f"{(cfo - capex) / ni:.2f}", f"({m(cfo)} - {m(capex)}) / {m(ni)}")
-    lt, cur, eq = v("long_term_debt", "prior"), v("current_debt", "prior") or 0.0, v("equity", "prior")
-    if lt is not None and eq:
-        if f.get("long_term_debt") and f["long_term_debt"]["tag"] == "LongTermDebt":
-            cur = 0.0  # This tag already includes current maturities.
-        add("Debt to equity, prior year", (lt + cur) / eq, f"{(lt + cur) / eq:.3f}", f"({m(lt)} + {m(cur)}) / {m(eq)}")
+    # The prior year's debt is judged on the prior year's facts; a missing part is never read as zero.
+    debt, eq = desk.debt.get("prior"), v("equity", "prior")
+    if debt and debt["value"] is not None and eq:
+        add("Debt to equity, prior year", debt["value"] / eq, f"{debt['value'] / eq:.3f}", f"{debt['terms']} / {m(eq)} {debt['note']}".strip())
     q = desk.quarter
     if q.get("eps") is not None and q.get("eps_prior"):
         g = q["eps"] / q["eps_prior"] - 1
