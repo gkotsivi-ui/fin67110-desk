@@ -17,6 +17,7 @@ Checked on 2026-11-11 and 2026-11-12.
 | The seven data steps, from SEC EDGAR, with no model | ran on six companies; see the known limits |
 | The agent team: three analyst roles, a Strategy Manager in code, a Verifier on every run | ran end to end on one company, on 2026-11-11 and again on 2026-11-12 |
 | The page: run the desk and read the report without a terminal | ran one company end to end from the page on 2026-11-12, and showed the verified report |
+| The three kinds of model key | each run of the agent team above used an Anthropic key. The Google path and the OpenAI path are tested on made-up replies. The OpenAI path was built on 2026-11-12 and has not yet run with a real key |
 | The closes reader, for one price | built; tested on made-up files. On 2026-11-12 LSEG Workspace was not running, and the price came from financialdatasets.ai |
 | The live record table | built and tested on a made-up repository; no live report yet |
 | The spinoff seeker, the worksheet with its view, the hook, and one command for all of them | not built yet |
@@ -27,8 +28,8 @@ Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them
 
 - A computer with Python 3.11 or newer, and git.
 - Your name and your email. SEC EDGAR asks every program for them. You need no account.
-- One model key: an Anthropic key (it starts with `sk-ant-`) or a Google AI Studio key (it starts with
-  `AIza`). An OpenAI key does not work yet.
+- One model key: an Anthropic key (it starts with `sk-ant-`), a Google AI Studio key (it starts with
+  `AIza`) or an OpenAI key (it starts with `sk-`). The key picks the provider.
 - About five minutes for each run, and a small charge on your model key. One run on a large company
   took 290 seconds and used about 102,000 input tokens and 38,000 output tokens (claude-opus-5-5,
   2026-11-11).
@@ -185,13 +186,15 @@ Run `check_env.py` first. It checks Python, the packages, `.env`, SEC EDGAR and 
 | What you see | What to do |
 |---|---|
 | `There is no .env file` | Do step 3 of the setup, and run the commands from the repository folder. If Windows saved the file as `.env.txt`, rename it to `.env`. |
-| `API_KEY ... is an OpenAI key` | The roles run on Anthropic or Google. Use a key that starts with `sk-ant-` or `AIza`. |
+| `API_KEY ... is not a key this desk can use` | Use a key that starts with `sk-ant-` (Anthropic), `AIza` (Google AI Studio) or `sk-` (OpenAI). |
+| `rejected API_KEY` | The provider does not accept the key. Paste a valid key into `.env`; the message names the provider's site. |
+| `Model ... was not found` | The provider has no model of that name for your key. Set `MODEL` in `.env` to a model your key can use. `check_env.py` shows the model the desk will ask for. |
 | `Could not install packages due to an OSError`, with a hint about Windows Long Path support | The folder's path is too long for Windows. Move the folder to a short path, for example `C:\fin67110-desk`, and do step 2 of the setup again. |
 | `ModuleNotFoundError` | The command did not use the virtual environment. Start the command with `.venv\Scripts\python` (Windows) or `.venv/bin/python` (Mac). |
 | `python` is not found, or the Microsoft Store opens | On Windows, type `py`. On a Mac, type `python3`. |
 | `SEC request failed: 403` | `SEC_USER_AGENT` needs your own name and email. |
-| `credit balance is too low` | Add credit to the Anthropic account, or use a Google AI Studio key. |
-| `The Gemini API is limiting this key` | Wait a minute and run again. |
+| `credit balance is too low`, or `has no credit left` | Add credit to the account behind the key, or use a key of another provider. |
+| `The Gemini API is limiting this key`, or the same for OpenAI | Wait a minute and run again. |
 | `Could not locate an Exhibit 99 with the earnings release` | The 8-K has no Exhibit 99 that the desk can read. Choose another company. |
 
 Known limits, as of 2026-11-11. The details are in [docs/decision-log.md](docs/decision-log.md).

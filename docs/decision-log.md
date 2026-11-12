@@ -240,6 +240,36 @@ November 9. Then we ran the full agent team on one of them. Entries 1 to 4 came 
   Open: the desk should say so in one clear line.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-12: the OpenAI key
+
+### 16. A path built with no key to prove it
+
+- **What we built.** With a key that starts with `sk-`, the roles and the Verifier call OpenAI's Responses
+  API by a plain web request, as the desk calls Gemini. The request asks OpenAI not to store the response.
+- **What is checked.** Tests on made-up replies in the API's shape. The text is found wherever the message
+  stands in the reply. A refusal, an empty reply and a reply cut off at the token limit each stop the role
+  with the reason. A bad key, a model the key cannot use, an account with no credit and too many requests
+  each give a message that says what to do. One request with a made-up key went to the real API through
+  the desk's own code. It got HTTP 401, and the desk's message said to paste a valid key.
+- **What is not checked.** No report has been written on OpenAI. We had no OpenAI key on 2026-11-12. The
+  shape of a real reply comes from OpenAI's reference pages and from a teammate's working desk, which
+  reads the reply through OpenAI's own library. Our code reads the raw reply, so the first real run may
+  show a difference. `EFFORT` is not sent to OpenAI.
+- **What AI got wrong: a date it could not support.** The coding agent wrote in the code that the default
+  model was one "that one of this team's desks ran on, on 2026-11-08". That desk names the model as its
+  default, and its repository holds two runs of that date. No file in those runs says which model served
+  them. The agent read the run folders before it committed the line, and the comment now says only what
+  the code shows. OpenAI's models page listed the model on 2026-11-12. Whether a key can use it is for
+  `check_env.py` to say: it asks OpenAI.
+- **What AI got wrong: a rule with no test.** OpenAI's message for a bad key shows the key with stars in
+  the middle. The desk cuts anything that looks like a key out of an error before it prints or saves it.
+  The agent's first test of a bad key used a made-up message with no key in it, so that rule had no test.
+  The request to the real API showed the stars. The test now seeds a message that shows the key.
+- **A change to the plan.** The plan said to move the Anthropic call to a plain web request in the same
+  work, to drop the package with the long path. We did not. The live runs use the Anthropic path, and it
+  changes only with a run of its own to prove it.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code. I verified the sources myself; the judgments are mine.
