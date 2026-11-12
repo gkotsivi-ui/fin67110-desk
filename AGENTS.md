@@ -9,9 +9,10 @@ source of truth: https://cinderzhang.github.io/FIN67110-Fall2026/ (project, grad
 1. **Secrets.** Keys, names and emails live only in `.env`, which is never committed. Before every push, show
    the team what is going public and scan it for keys. Ask before you create or change anything on GitHub.
 2. **Licensed data.** Never read, print or paste WRDS (CRSP, Compustat) values into a session or a model
-   prompt, and that includes tables that code derives from them. Treat LSEG the same until the team confirms
-   its terms. Checks print counts and PASS or FAIL, not values. If a command would print licensed values, a
-   team member runs it. Raw pulls and exports stay out of the repository.
+   prompt, and that includes tables that code derives from them. For WRDS, checks print counts and PASS or
+   FAIL, not values, and a team member runs any command that would print values. LSEG is different: on
+   2026-11-11 a team member confirmed that its terms allow its data in AI tools, so an LSEG price may enter a
+   prompt and a report. For every source, raw pulls and exports stay out of the repository.
 3. **SEC EDGAR.** Send the User-Agent from `.env` on every request and stay well under 10 requests a second.
 4. **History.** Live reports go straight to `main`. Never rewrite history on `main`: no rebase, squash, amend
    or force-push. Commit times are the team's evidence.

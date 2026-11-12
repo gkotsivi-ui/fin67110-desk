@@ -86,14 +86,11 @@ the worksheet's method file and its persona, the diagram, each member's roles pa
 - If the desk fails inside a window, the course's fallback report counts: paste the statements and the
   release into a chat, save the answer with "fallback" on its second line, and push it.
 
-### G5. A price reaches a model
+### G5. A price reaches a model: settled
 
-Today the desk sends the close to the Financial Analyst and prints it on the report's second line, and
-the Verifier's model reads that line. The team's rule is that no licensed value enters a model prompt.
-
-- **If LSEG's terms allow it:** no change.
-- **If they do not, or we do not know:** code computes P/E and the view after the roles have run and adds
-  them to the report. No role and no Verifier call receives a price. Size M.
+The desk sends the close to the Financial Analyst and prints it on the report's second line, and the
+Verifier's model reads that line. On 2026-11-11 gkotsivi-ui confirmed that LSEG's terms allow its data in
+AI tools, so the desk stays as it is. WRDS is different: its data never enters a prompt or a session.
 
 The WRDS base rate for the manual is run by a team member, and its output is pasted by a team member.
 
@@ -195,8 +192,8 @@ once F2 is done.
 6. Look at what is going public, scan it for keys, and push. Aim for Thursday evening. The hard limit is
    the Accepted time plus 24 hours.
 
-What to decide before Thursday: whether the run uses a price (G5), and whether F4 goes in first, so the
-live report does not show false "wrong" marks.
+Before Thursday: merge the fixes, copy `.env` into this folder, and start LSEG Workspace, so the run has
+its price.
 
 ## 8. The thing we own, and the decision we serve
 
@@ -223,7 +220,7 @@ choice in its own words.
 ## 9. What we need to decide
 
 1. Approve this plan, or change it.
-2. Do LSEG's terms allow its prices in an AI tool? (G5)
+2. Settled on 2026-11-11: LSEG's terms allow its prices in an AI tool (G5).
 3. Who is the third member, and which model keys does each member have?
 4. The thing we own, by Thursday's lab.
 5. May code changes go through pull requests with tests on each push? (G2)
