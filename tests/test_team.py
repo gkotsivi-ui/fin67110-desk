@@ -357,6 +357,49 @@ class GrowthOnALossTests(unittest.TestCase):
             self.assertNotIn(name, names)
 
 
+class NoAnnualFactsTests(unittest.TestCase):
+    """When the desk states no annual fact, the team still writes a verified report: the reader gets a report
+    with missing claims, not a stopped run. Made-up data."""
+
+    def test_the_team_still_writes_a_verified_report(self) -> None:
+        desk = offline_desk()
+        desk.annual_problem = "the XBRL company facts end their latest fiscal year on 2025-08-31, and the 10-K the desk read ends its year on 2026-08-30"
+        desk.fact_rows = {name: None for name in desk.fact_rows}
+        with contextlib.redirect_stdout(io.StringIO()):
+            desk.step5(None)
+        (desk.outdir / "facts.json").write_text(json.dumps({"ticker": desk.ticker, "facts": desk.fact_rows, "not_stated": desk.annual_problem}), encoding="utf-8")
+        quarter_only = {
+            "calculator_requests": [],
+            "statement_analysis": "The desk gave no annual facts for this 10-K, so this part states no annual figure.",
+            "latest_quarter": "The quarter's total revenue was 95,723, up 11.10% on 86,156; GAAP diluted EPS was $6.75 (release line).",
+            "peer_comparison": "| Company | Operating margin |\n|---|---|\n| PEER | 4.18% |",
+            "valuation": "No price was given and the desk gave no annual EPS, so there is no P/E to state.",
+            "definitions": [],
+            "insight": {"claim": "The quarter's revenue grew 11.10% = 95,723 / 86,156 - 1.", "source": "Earnings release", "line": "Total revenue | 95,723 | 86,156"},
+        }
+        advice = {
+            "recommendation": "Hold",
+            "deciding_number": {"label": "Quarter revenue growth", "value": "11.10%", "source": "Financial Analyst, release"},
+            "thesis": "The quarter's revenue grew 11.10%, but the desk could not establish the annual facts, so the case rests on one quarter.",
+            "what_would_change_it": "Annual facts that the desk can read.",
+            "strategic_recommendations": ["Watch the next quarter against 95,723."],
+            "insight": {"claim": "The company operates 939 warehouses, and the quarter's revenue grew 11.10%.", "source": "10-K Item 1",
+                        "line": "The Company operates 939 warehouses in 14 countries."},
+        }
+        model = FakeModel({"Research Analyst": research, "Financial Analyst": lambda p: quarter_only, "Investment Advisor": lambda p: advice,
+                           "Verifier (reader)": lambda p: {"numbers": []}, "Verifier (line check)": lambda p: {"checks": []}})
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            final = OfflineTeam(model, desk).graph().invoke({"ticker": "EXM", "peers": [], "price": None, "run_dir": str(desk.outdir)}, {"recursion_limit": 40})
+        # No part is sent back: an analyst that states no annual figure passes the Manager's checks.
+        self.assertEqual(re.findall(r"^=== (.+) ===$", out.getvalue(), re.M),
+                         ["The steps", "Research Analyst", "Financial Analyst", "Investment Advisor", "Strategy Manager", "Verifier"])
+        report = Path(final["verified_path"]).read_text(encoding="utf-8")
+        self.assertIn(f"| 1 | Total revenue, fiscal year ended 2026-08-30 | not found | {desk.annual_problem} |", report)
+        self.assertIn("| 9 | Latest quarter's revenue", report)
+        self.assertEqual(model.exchanges[1]["sent"]["context"]["annual_facts_not_stated"]["why"], desk.annual_problem)
+
+
 class SkipTests(unittest.TestCase):
     def test_every_path_to_the_end_runs_the_verifier(self) -> None:
         edges = OfflineTeam(FakeModel({}), None).graph().get_graph().edges

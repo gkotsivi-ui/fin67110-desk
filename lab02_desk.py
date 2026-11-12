@@ -257,6 +257,23 @@ def debt_at(values: dict[str, float]) -> dict[str, Any]:
     return {"value": None, "terms": "", "note": "", "tags": (), "why": why}
 
 
+# A cover page can give a 52-week year's end as the month end, a few days from the statements' date.
+# A difference of a year means that the facts are another year's.
+SAME_YEAR_END_DAYS = 7
+
+
+def annual_problem(facts_year_end: str | None, ten_k_year_end: str) -> str:
+    """Why the annual facts cannot be stated; "" when the latest fiscal year of the company facts is the year
+    of the 10-K the desk read. The reason holds dates and no amounts."""
+    if facts_year_end is None:
+        return "the XBRL company facts hold no full-year revenue under the tags the desk reads"
+    if not ten_k_year_end:
+        return ""
+    if abs((date.fromisoformat(facts_year_end) - date.fromisoformat(ten_k_year_end)).days) <= SAME_YEAR_END_DAYS:
+        return ""
+    return f"the XBRL company facts end their latest fiscal year on {facts_year_end}, and the 10-K the desk read ends its year on {ten_k_year_end}"
+
+
 def not_stated(quarter: dict[str, Any]) -> list[str]:
     """What step 6 could not read from the release, one line for each claim, with the reason."""
     names = {"revenue": "the quarter's revenue (claim 9)", "growth": "the quarter's growth (claim 10)", "eps": "the quarter's diluted EPS (claim 11)"}
@@ -279,6 +296,7 @@ class Desk:
         self.skipped_8k: list[dict[str, str]] = []
         self.fact_rows: dict[str, dict[str, dict[str, Any]]] = {}
         self.debt: dict[str, dict[str, Any]] = {}  # long-term debt with its current portion, for "current" and "prior"
+        self.annual_problem: str = ""  # why step 4 states no annual fact; "" when it states them
         self.ratios: list[dict[str, Any]] = []
         self.quarter: dict[str, Any] = {}
         self.peers: list[dict[str, Any]] = []
@@ -455,25 +473,35 @@ class Desk:
         chosen = {label: self.choose_fact(facts, tags, label) for label, tags in choices.items()}
         # Revenue is the fiscal-year anchor; all duration facts must share its exact periods.
         rev = chosen["revenue"]
-        if not rev:
-            raise RuntimeError("No supported revenue tag found in SEC company facts.")
-        current_end = rev["current"]["end"]
-        prior_end = rev["prior"]["end"] if rev.get("prior") else None
-        for label, item in chosen.items():
-            if item and label != "equity":
-                item["current"] = self.match_period(item["all"], current_end, duration=True)
-                item["prior"] = self.match_period(item["all"], prior_end, duration=True) if prior_end else None
-        # Balance sheet concepts are instant facts at each fiscal year end.
-        if chosen["equity"]:
-            self.at_year_ends(chosen["equity"], current_end, prior_end)
-        chosen.update(self.read_debt(facts, current_end, prior_end))
-        chosen = {name: chosen.get(name) for name in FACT_ORDER}
-        self.fact_rows = chosen
-        self.print_facts(chosen)
-        debt = self.debt["current"]
-        print("  Long-term debt with its current portion: "
-              + (f"{debt['terms']} {debt['note']}".strip() + " ($ millions)" if debt["value"] is not None else f"not established ({debt['why']})"))
-        self.check_year_end(chosen)
+        # The facts must be the facts of the 10-K that step 2 chose. EDGAR's facts file can lag a new 10-K, and a
+        # filer can move its revenue to a tag the desk does not read; in both cases the newest revenue is another year's.
+        self.annual_problem = annual_problem(rev["current"]["end"] if rev else None, self.selected.get("10-K", {}).get("reportDate") or "")
+        if self.annual_problem:
+            # State none of the annual facts, say why, and go on. A report with missing claims is better than
+            # one with another year's numbers, and better than no report.
+            current_end = None
+            chosen = {name: None for name in FACT_ORDER}
+            self.debt = {which: {"value": None, "terms": "", "note": "", "tags": (), "why": self.annual_problem} for which in ("current", "prior")}
+            self.fact_rows = chosen
+            print(f"  The annual facts are not stated: {self.annual_problem}")
+        else:
+            current_end = rev["current"]["end"]
+            prior_end = rev["prior"]["end"] if rev.get("prior") else None
+            for label, item in chosen.items():
+                if item and label != "equity":
+                    item["current"] = self.match_period(item["all"], current_end, duration=True)
+                    item["prior"] = self.match_period(item["all"], prior_end, duration=True) if prior_end else None
+            # Balance sheet concepts are instant facts at each fiscal year end.
+            if chosen["equity"]:
+                self.at_year_ends(chosen["equity"], current_end, prior_end)
+            chosen.update(self.read_debt(facts, current_end, prior_end))
+            chosen = {name: chosen.get(name) for name in FACT_ORDER}
+            self.fact_rows = chosen
+            self.print_facts(chosen)
+            debt = self.debt["current"]
+            print("  Long-term debt with its current portion: "
+                  + (f"{debt['terms']} {debt['note']}".strip() + " ($ millions)" if debt["value"] is not None else f"not established ({debt['why']})"))
+            self.check_year_end(chosen)
         out = {
             "company": self.company,
             "ticker": self.ticker,
@@ -482,6 +510,8 @@ class Desk:
             "ten_k": self.selected.get("10-K", {}).get("accessionNumber"),
             "facts": {name: self.public(item) for name, item in chosen.items()},
         }
+        if self.annual_problem:
+            out["not_stated"] = self.annual_problem
         (self.outdir / "facts.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
         print(f"Saved XBRL facts: {self.outdir / 'facts.json'}")
 
@@ -552,11 +582,13 @@ class Desk:
         year_end = self.selected.get("10-K", {}).get("reportDate")
         if not year_end:
             return
-        off = [f"{name} ({item['current']['end']})" for name, item in chosen.items() if item and item.get("current") and item["current"]["end"] != year_end]
+        # Step 4 states the facts only when their fiscal year is the 10-K's (annual_problem), so the ends agree here.
+        ends = sorted({item["current"]["end"] for item in chosen.values() if item and item.get("current")} - {year_end})
         missing = [name for name, item in chosen.items() if not item or not item.get("current")]
         if self.debt.get("current", {}).get("value") is not None and "current_debt" in missing:
             missing.remove("current_debt")  # the debt facts show that there is no current portion
-        print(f"  Check: every period end equals the 10-K's fiscal year end {year_end}: {'OK' if not off else 'MISMATCH ' + ', '.join(off)}")
+        note = "OK" if not ends else f"OK (the statements end on {', '.join(ends)}, within {SAME_YEAR_END_DAYS} days of the date on the 10-K's cover)"
+        print(f"  Check: every period end equals the 10-K's fiscal year end {year_end}: {note}")
         if missing:
             print(f"  Not found for that fiscal year: {', '.join(missing)}")
 
@@ -600,8 +632,9 @@ class Desk:
         cfo, capex = self.value(f.get("cash_from_operations")), self.value(f.get("capex"))
         avg_equity = ((equity + prior_equity) / 2) if equity is not None and prior_equity is not None else None
         self.ratios = []
+        missing = self.annual_problem or "missing input"  # why a ratio has no value, unless a ratio gives its own reason
 
-        def ratio(label: str, value: float | None, shown: str, arithmetic: str, why: str = "missing input") -> None:
+        def ratio(label: str, value: float | None, shown: str, arithmetic: str, why: str = missing) -> None:
             """Record one ratio. When it has no value, why says what is missing."""
             entry = {"name": label, "value": value, "shown": shown if value is not None else "unavailable", "arithmetic": arithmetic}
             if value is None:
@@ -619,12 +652,12 @@ class Desk:
         dte = debt["value"] / equity if debt["value"] is not None and equity else None
         ratio("Debt to equity", dte, f"{dte:.3f}" if dte is not None else "",
               f"{debt['terms']} / {m(equity)} {debt['note']}".strip() if dte is not None else "",
-              debt["why"] or "stockholders' equity is missing")
+              self.annual_problem or debt["why"] or "stockholders' equity is missing")
         fcf = cfo - capex if cfo is not None and capex is not None else None
         ratio("Free cash flow", fcf, f"${m(fcf)}M" if fcf is not None else "", f"{m(cfo)} - {m(capex)}")
         pe = price / eps if price is not None and eps else None
         ratio("P/E", pe, f"{pe:.1f}" if pe is not None else "", f"{price:,.2f} / {eps:.2f} (price / diluted EPS)" if pe is not None else "needs --price",
-              "no price was given" if price is None else "diluted EPS is missing or zero")
+              "no price was given" if price is None else self.annual_problem or "diluted EPS is missing or zero")
         if self.outdir.exists():
             (self.outdir / "ratios.json").write_text(json.dumps(self.ratios, indent=2), encoding="utf-8")
 
