@@ -12,6 +12,7 @@ Measured on 2026-11-11. The details are in [docs/decision-log.md](docs/decision-
 |---|---|
 | The desk runs end to end | One company from a terminal: 290 seconds, six parts and one send-back, a verified report |
 | The 11 core claims come from code | On that run the Verifier marked all of them correct |
+| A full run on `main` after the fixes | From the page, on 2026-11-12: 308 seconds; the Verifier marked 116 numbers correct, none wrong or unsupported, and left 3 prices unchecked |
 | The tests | 160 pass with no network and no key (69 from the base desk, 91 added since) |
 | A stranger's install | A clean virtual environment with the pinned packages installs, and the tests pass there |
 | The data steps on six companies | 1 clean; 1 with wrong quarter revenue and growth; 1 with a wrong debt to equity; 1 with an unsupported debt to equity; 1 that stopped; 1 that ran with awkward ratios |
@@ -106,6 +107,8 @@ Redoing them from the facts file is exact, and printed inputs are rounded, so we
 - Every report has an empty line "Partner's check", left from an earlier lab.
 - The three closing lines print as one paragraph in a report. They should be three.
 - The desk has no pause between its requests to SEC EDGAR. It is under the limit today, by timing only.
+- When LSEG Workspace is not running, the desk takes its price from financialdatasets.ai, and only the
+  report's second line says so. The desk should print one clear line when LSEG does not answer.
 - The base README says the role files are six-part personas. They are not yet.
 
 ## 4. Companies that do not fit (others pick the names)
@@ -183,12 +186,12 @@ A proposal. The team decides, and each member writes their own role.
 Cisco reports its first quarter after the close on Thu Nov 12. Its last five releases were accepted
 between 4:06 and 4:16 PM ET. Applied Materials reports in the same hour and is the second choice.
 
-1. Before 4 PM: `git pull`; run the tests; run `check_env.py`.
+1. Before 4 PM: `git pull`; run the tests; run `check_env.py`. Start LSEG Workspace and sign in.
 2. From about 4:10 PM: `python lab02_desk.py CSCO --step 2` prints the newest earnings 8-K and its
    Accepted time. Wait until it shows the Nov 12 filing. Do not ask more than once every few minutes.
 3. Run the desk from the page, so the page is proved on a live run too.
 4. Two members check the eleven core claims against the filings. Look hardest at the column headers of
-   claims 9 to 11.
+   claims 9 to 11. Read the report's second line: it names where the price came from.
 5. Move the run folder into `runs/live/`, commit it to `main`, run `python live_record.py`, commit the table.
 6. Look at what is going public, scan it for keys, and push. Aim for Thursday evening. The hard limit is
    the Accepted time plus 24 hours.

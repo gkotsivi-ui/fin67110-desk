@@ -10,14 +10,14 @@ Team: to be added. The thing we own: not decided yet. The joins: not built yet.
 
 ## What works today, and what does not
 
-Checked on 2026-11-11.
+Checked on 2026-11-11 and 2026-11-12.
 
 | Part | State |
 |---|---|
 | The seven data steps, from SEC EDGAR, with no model | ran on six companies; see the known limits |
-| The agent team: three analyst roles, a Strategy Manager in code, a Verifier on every run | ran end to end from a terminal on one company |
-| The page: run the desk and read the report without a terminal | loads, and its tests pass; a full run from the page was not repeated on this date |
-| The closes reader, for one price | built; tested on made-up files only on this date |
+| The agent team: three analyst roles, a Strategy Manager in code, a Verifier on every run | ran end to end on one company, on 2026-11-11 and again on 2026-11-12 |
+| The page: run the desk and read the report without a terminal | ran one company end to end from the page on 2026-11-12, and showed the verified report |
+| The closes reader, for one price | built; tested on made-up files. On 2026-11-12 LSEG Workspace was not running, and the price came from financialdatasets.ai |
 | The live record table | built and tested on a made-up repository; no live report yet |
 | The spinoff seeker, the worksheet with its view, the hook, and one command for all of them | not built yet |
 
@@ -159,6 +159,18 @@ them, and the Verifier marks each number in that text correct, wrong or unsuppor
 The desk needs one market number: the last close before the release was filed. It takes it from
 `--price`, or from LSEG Workspace (`LSEG_APP_KEY`), or from an exported file (`CLOSES_FILE`), or from
 financialdatasets.ai (`FINANCIAL_DATASETS_API_KEY`). `.env.example` describes each setting.
+
+For LSEG Workspace the desk needs one more package, LSEG's own library. Install it into the same
+environment (on a Mac, type `.venv/bin/python` in place of `.venv\Scripts\python`):
+
+```
+.venv\Scripts\python -m pip install -r requirements-lseg.txt
+```
+
+Then start the Workspace desktop app and sign in before each run. `check_env.py` says whether the
+library is there. It cannot tell whether Workspace is running. When Workspace does not answer, the desk
+takes the close from financialdatasets.ai if that key is set. The report's second line always names the
+source of its price, so read that line.
 
 Today the desk sends that one close to the Financial Analyst role, which is a model call, and prints it
 on the report's second line. If the terms of your price source do not allow its data in an AI tool,

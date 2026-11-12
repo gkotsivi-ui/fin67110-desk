@@ -35,6 +35,7 @@ venv/
 
 # Editors, coding agents and operating systems
 .claude/settings.local.json
+.claude/launch.json
 .vscode/
 .idea/
 .DS_Store

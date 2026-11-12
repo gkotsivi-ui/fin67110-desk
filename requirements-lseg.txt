@@ -1,0 +1,3 @@
+# Only for prices from LSEG Workspace. Install it after requirements.txt, into the same environment.
+# It moves httpx from 0.28.1 to 0.27.2. The desk ran end to end with that version on 2026-11-12.
+lseg-data==2.1.1
