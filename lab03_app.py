@@ -256,6 +256,15 @@ def cell(text: Any) -> str:
     return str(text).replace("|", "\\|").replace("\n", " ")
 
 
+def ratio_for_context(ratio: dict[str, Any]) -> dict[str, str]:
+    """A ratio as the Financial Analyst receives it. A ratio the desk could not establish carries the reason,
+    so that the analyst does not state one."""
+    if ratio["value"] is None:
+        return {"name": ratio["name"], "value": "not stated", "why": ratio.get("why") or "an input is missing",
+                "rule": "The desk could not establish this ratio. Do not state it and do not compute it."}
+    return {"name": ratio["name"], "value": ratio["shown"], "arithmetic": f"{ratio['arithmetic']} ($ millions, except per share)"}
+
+
 class Model:
     """One model behind the analyst roles and the Verifier: Anthropic's API for an Anthropic key, Google's Gemini API
     for a Google AI Studio key. Every exchange is kept for roles.json."""
@@ -423,7 +432,7 @@ class StrategyManager:
                 "10-K": f"accession {d.selected['10-K']['accessionNumber']}, fiscal year ended {d.selected['10-K']['reportDate']}",
                 "10-K Item 1 Business": self.business,
                 "10-K Item 7 MD&A": self.mdna,
-                "Earnings release": f"8-K accession {d.selected['8-K']['accessionNumber']}, Exhibit 99.1",
+                "Earnings release": f"8-K accession {d.selected['8-K']['accessionNumber']}, Exhibit {self.exhibit_label()}",
                 "Earnings release text": self.release,
                 FIRST_PARAGRAPH: self.first_paragraph,
             },
@@ -576,7 +585,7 @@ class StrategyManager:
         facts = [self.fact_entry(name, item) for name, item in d.fact_rows.items() if item and item.get("current")]
         q = d.quarter
         quarter: dict[str, Any] = {
-            "release": f"8-K accession {d.selected['8-K']['accessionNumber']}, Item 2.02, Exhibit 99.1, accepted {self.accepted('8-K')}",
+            "release": f"8-K accession {d.selected['8-K']['accessionNumber']}, Item 2.02, Exhibit {self.exhibit_label()}, accepted {self.accepted('8-K')}",
             "units": "the release states its own units (usually $ millions, except per share); copy its numbers as written",
             "header_lines": q.get("revenue_headers", []),
             "revenue_line": q.get("revenue_line"),
@@ -608,7 +617,7 @@ class StrategyManager:
             "ticker": d.ticker,
             "fiscal_year_end": d.selected["10-K"]["reportDate"],
             "facts": facts,
-            "ratios_computed_in_code": [{"name": r["name"], "value": r["shown"], "arithmetic": f"{r['arithmetic']} ($ millions, except per share)"} for r in d.ratios],
+            "ratios_computed_in_code": [ratio_for_context(r) for r in d.ratios],
             "latest_quarter": quarter,
             FIRST_PARAGRAPH: self.first_paragraph,
             "peers": peers,
@@ -766,7 +775,7 @@ class StrategyManager:
         def ratio(name: str) -> tuple[str, str]:
             r = ratios.get(name)
             if not r or r["value"] is None:
-                return "not computed", "an input is missing"
+                return "not computed", (r or {}).get("why") or "an input is missing"
             # P/E divides a price by a per-share figure; the other ratios use $ millions.
             return r["shown"], r["arithmetic"] if name == "P/E" else f"{r['arithmetic']} ($ millions)"
 
@@ -790,6 +799,10 @@ class StrategyManager:
         lines += [f"| {n} | {cell(claim)} | {cell(value)} | {cell(source)} |" for n, claim, value, source in rows]
         return "\n".join(lines)
 
+    def exhibit_label(self) -> str:
+        """The number of the exhibit that holds the release: 99.1 for most filers, 99 or 99.2 for some."""
+        return self.desk.selected["8-K"].get("exhibit_label", "99.1")
+
     def accepted(self, form: str) -> str:
         row = self.desk.selected[form]
         return f"{row['accepted_index']} ET" if row.get("accepted_index") else f"{row['acceptanceDateTime']} UTC"
@@ -799,7 +812,7 @@ class StrategyManager:
         line1 = (
             f"Filings read: 10-K {s['10-K']['accessionNumber']} (fiscal year ended {s['10-K']['reportDate']}, accepted {self.accepted('10-K')}); "
             f"10-Q {s['10-Q']['accessionNumber']} (quarter ended {s['10-Q']['reportDate']}, accepted {self.accepted('10-Q')}); "
-            f"8-K {s['8-K']['accessionNumber']} (Item 2.02 earnings release, Exhibit 99.1 {s['8-K'].get('exhibit99_1', '')}, accepted {self.accepted('8-K')}); "
+            f"8-K {s['8-K']['accessionNumber']} (Item 2.02 earnings release, Exhibit {self.exhibit_label()} {s['8-K'].get('exhibit99_1', '')}, accepted {self.accepted('8-K')}); "
             f"XBRL company facts, CIK {d.cik}"
         )
         t = self.run_time

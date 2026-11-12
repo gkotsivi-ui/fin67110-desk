@@ -58,12 +58,13 @@ def release_named(first_line: str) -> dict[str, str] | None:
     cik = re.search(r"CIK (\d{1,10})\b", first_line)
     if not filing or not cik:
         return None
-    exhibit = re.search(r"Exhibit 99\.1 ([^,)\s]+)", filing.group(2))
+    exhibit = re.search(r"Exhibit (99(?:\.\d+)?) ([^,)\s]+)", filing.group(2))
     accepted = re.search(r"accepted (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) ET", filing.group(2))
     return {
         "accession": filing.group(1),
         "cik": cik.group(1).zfill(10),
-        "exhibit": exhibit.group(1) if exhibit else "",
+        "exhibit_label": exhibit.group(1) if exhibit else "",
+        "exhibit": exhibit.group(2) if exhibit else "",
         "accepted": accepted.group(1) if accepted else "",
     }
 
@@ -153,7 +154,7 @@ def late(row: dict[str, Any]) -> bool:
 def release_link(row: dict[str, Any]) -> str:
     folder = f"https://www.sec.gov/Archives/edgar/data/{int(row['cik'])}/{row['accession'].replace('-', '')}"
     if row["exhibit"]:
-        return f"8-K {row['accession']}, Exhibit 99.1 [{row['exhibit']}]({folder}/{row['exhibit']})"
+        return f"8-K {row['accession']}, Exhibit {row['exhibit_label']} [{row['exhibit']}]({folder}/{row['exhibit']})"
     return f"8-K [{row['accession']}]({folder}/{row['accession']}-index.html)"
 
 

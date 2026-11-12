@@ -181,6 +181,38 @@ def join_cells(cells: list[str]) -> str:
     return " | ".join(out)
 
 
+# The heading of an income statement, in a release or in a filing.
+STATEMENT = re.compile(r"statements? of (income|operations|earnings)|income statements?", re.I)
+# An earnings release is an Exhibit 99 of its 8-K: EX-99.1 for most filers, EX-99 or another number for some.
+EXHIBIT_99 = re.compile(r"\bEX-99(?:\.(\d+))?(?![\d.])", re.I)
+
+
+def as_text(raw: str) -> str:
+    """A filing document as plain text. A document that is already plain text keeps its lines."""
+    return html_to_text(raw) if "<html" in raw[:1000].lower() or "<document" in raw[:1000].lower() else raw
+
+
+def has_income_statement(text: str) -> bool:
+    """True when a short line of the text is the heading of an income statement."""
+    return any(len(line) < 90 and STATEMENT.search(line) for line in text.splitlines())
+
+
+def exhibits_99(index_html: str, primary: str) -> list[tuple[str, str]]:
+    """The Exhibit 99 documents on a filing's EDGAR index page, in the page's order, each as its number and its
+    file name: ("99.1", "release.htm"). Only files that hold text: .htm, .html and .txt."""
+    found = []
+    for table_row in re.findall(r"<tr\b[^>]*>.*?</tr>", index_html, re.I | re.S):
+        kind = EXHIBIT_99.search(html_to_text(table_row))
+        if not kind:
+            continue
+        for href in re.findall(r"href=[\"']([^\"']+)[\"']", table_row, re.I):
+            name = Path(href.split("?", 1)[0]).name
+            if name and name != primary and name.lower().endswith((".htm", ".html", ".txt")):
+                found.append(("99" + (f".{kind.group(1)}" if kind.group(1) else ""), name))
+                break
+    return found
+
+
 def is_annual(fact: dict[str, Any]) -> bool:
     """True for a balance-sheet instant or a duration of one fiscal year (52 or 53 weeks)."""
     if not fact.get("start"):
@@ -191,6 +223,43 @@ def is_annual(fact: dict[str, Any]) -> bool:
 
 def millions(value: float | None) -> str:
     return f"{value / 1e6:,.1f}" if value is not None else "n/a"
+
+
+# The facts step 4 reads, in the order it prints them.
+FACT_ORDER = ["revenue", "operating_income", "net_income", "diluted_eps", "equity", "long_term_debt", "current_debt", "cash_from_operations", "capex"]
+# Claim 7 divides long-term debt, with its current portion, by equity. A balance sheet holds that debt in two
+# parts. Each pair is one definition: the noncurrent part, then the current part.
+DEBT_PAIRS = (
+    ("LongTermDebtNoncurrent", "LongTermDebtCurrent"),
+    ("LongTermDebtAndCapitalLeaseObligations", "LongTermDebtAndCapitalLeaseObligationsCurrent"),
+)
+# The tag for the whole amount. Filers also use it for other measures (docs/decision-log.md, entry 9), so the desk
+# never takes it as the amount; it only shows that there is no current portion.
+DEBT_TOTAL = "LongTermDebt"
+DEBT_TAGS = [tag for pair in DEBT_PAIRS for tag in pair] + [DEBT_TOTAL]
+
+
+def debt_at(values: dict[str, float]) -> dict[str, Any]:
+    """Long-term debt with its current portion, from the debt facts a 10-K reports at one balance-sheet date.
+
+    values maps an XBRL tag to its amount. The answer holds the amount ("value"), the numbers that make it
+    ("terms"), a note on the definition, and the tags it used. When the facts do not establish the amount,
+    "value" is None and "why" says so. A fact that is missing is never read as zero.
+    """
+    for noncurrent, current in DEBT_PAIRS:
+        if noncurrent in values and current in values:
+            note = "" if (noncurrent, current) == DEBT_PAIRS[0] else "(long-term debt with lease obligations, as the filing tags it)"
+            return {"value": values[noncurrent] + values[current], "terms": f"({millions(values[noncurrent])} + {millions(values[current])})",
+                    "note": note, "tags": (noncurrent, current), "why": ""}
+    noncurrent, current = DEBT_PAIRS[0]
+    if noncurrent in values and current not in values and values.get(DEBT_TOTAL) == values[noncurrent]:
+        note = f"(no current portion: the tag {DEBT_TOTAL}, which includes it, holds the same amount)"
+        return {"value": values[noncurrent], "terms": millions(values[noncurrent]), "note": note, "tags": (noncurrent,), "why": ""}
+    # The reason names tags and no amounts: every amount in a report must have a source a reader can check.
+    found = [tag for tag in DEBT_TAGS if tag in values]
+    why = (f"the 10-K gives {' and '.join(found)}, which does not establish long-term debt with its current portion"
+           if found else "no long-term debt fact at the fiscal year end under the tags the desk reads")
+    return {"value": None, "terms": "", "note": "", "tags": (), "why": why}
 
 
 def numbers_in(line: str) -> list[float]:
@@ -209,6 +278,7 @@ class Desk:
         self.http = requests.Session()
         self.http.headers.update({"User-Agent": user_agent, "Accept-Encoding": "gzip, deflate"})
         self.outdir = outdir
+        self.pages: dict[str, str] = {}  # each page this run fetched, by its address
         self.company: str = ""
         self.ticker: str = ""
         self.cik: str = ""
@@ -218,6 +288,7 @@ class Desk:
         self.selected: dict[str, dict[str, str]] = {}
         self.skipped_8k: list[dict[str, str]] = []
         self.fact_rows: dict[str, dict[str, dict[str, Any]]] = {}
+        self.debt: dict[str, dict[str, Any]] = {}  # long-term debt with its current portion, for "current" and "prior"
         self.ratios: list[dict[str, Any]] = []
         self.quarter: dict[str, Any] = {}
         self.peers: list[dict[str, Any]] = []
@@ -228,9 +299,12 @@ class Desk:
         return response.json()
 
     def get_text(self, url: str) -> str:
-        response = self.http.get(url, timeout=45)
-        response.raise_for_status()
-        return response.text
+        """A page from SEC EDGAR. Each address is fetched one time in a run, and later reads use that copy."""
+        if url not in self.pages:
+            response = self.http.get(url, timeout=45)
+            response.raise_for_status()
+            self.pages[url] = response.text
+        return self.pages[url]
 
     @staticmethod
     def accession_path(accession: str) -> str:
@@ -311,7 +385,7 @@ class Desk:
             pass
 
     def step3(self) -> None:
-        print("\n[3/7] Download filings and extract Exhibit 99.1")
+        print("\n[3/7] Download filings and extract the earnings release (Exhibit 99)")
         self.outdir.mkdir(parents=True, exist_ok=True)
         self.selected["8-K"]["exhibit99_1"] = self.find_exhibit(self.selected["8-K"])
         for form in ("10-K", "10-Q", "8-K"):
@@ -319,30 +393,26 @@ class Desk:
             name = row["primaryDocument"]
             if form == "8-K":
                 name = row["exhibit99_1"]
-            raw = self.get_text(self.filing_url(row, name))
-            text = html_to_text(raw) if "<html" in raw[:1000].lower() or "<document" in raw[:1000].lower() else raw
+            text = as_text(self.get_text(self.filing_url(row, name)))
             path = self.outdir / f"{form.replace('-', '')}_{row['filingDate']}_{Path(name).stem}.txt"
             path.write_text(text, encoding="utf-8")
             row["saved_text"] = str(path)
             print(f"{form}: {name} -> {path}")
 
     def find_exhibit(self, row: dict[str, str]) -> str:
+        """The file name of the earnings release among the 8-K's exhibits. row["exhibit_label"] gets its number:
+        99.1 for most filers, 99 or 99.2 for some."""
         base = f"{SEC}/Archives/edgar/data/{int(self.cik)}/{self.accession_path(row['accessionNumber'])}"
         # The filing index labels each document's exhibit type, so read it first.
         # Many issuers use descriptive names (for example, earningsrelease.htm).
         try:
-            index_url = f"{base}/{row['accessionNumber']}-index.html"
-            index_html = self.get_text(index_url)
-            for table_row in re.findall(r"<tr\b[^>]*>.*?</tr>", index_html, re.I | re.S):
-                if not re.search(r"EX[- ]?99\.1\b", html_to_text(table_row), re.I):
-                    continue
-                links = re.findall(r"href=[\"']([^\"']+)[\"']", table_row, re.I)
-                for href in links:
-                    filename = Path(href.split("?", 1)[0]).name
-                    if filename and filename != row["primaryDocument"]:
-                        return filename
+            candidates = exhibits_99(self.get_text(f"{base}/{row['accessionNumber']}-index.html"), row["primaryDocument"])
         except requests.RequestException:
-            pass
+            candidates = []
+        if candidates:
+            row["exhibit_label"], name = self.release_among(base, candidates)
+            return name
+        row["exhibit_label"] = "99.1"
         # Without an index page, guess from the file names in the filing directory.
         try:
             listing = self.get_json(f"{base}/index.json")
@@ -359,7 +429,22 @@ class Desk:
         for href, label in links:
             if re.search(r"Exhibit\s+99\.1|EX-99\.1", html_to_text(label), re.I):
                 return Path(href).name
-        raise RuntimeError("Could not locate the 8-K's Exhibit 99.1 in the SEC filing directory.")
+        raise RuntimeError("Could not locate an Exhibit 99 with the earnings release in the 8-K's SEC filing directory.")
+
+    def release_among(self, base: str, candidates: list[tuple[str, str]]) -> tuple[str, str]:
+        """Which Exhibit 99 is the earnings release: the first that holds an income statement.
+        The first exhibit when there is only one, or when none holds an income statement."""
+        if len(candidates) > 1:
+            for label, name in candidates[:4]:
+                try:
+                    text = as_text(self.get_text(f"{base}/{name}"))
+                except requests.RequestException:
+                    continue
+                if has_income_statement(text):
+                    if (label, name) != candidates[0]:
+                        print(f"The earnings release is Exhibit {label} ({name}): Exhibit {candidates[0][0]} holds no income statement.")
+                    return label, name
+        return candidates[0]
 
     def step4(self) -> None:
         print("\n[4/7] Read latest fiscal-year XBRL facts")
@@ -374,8 +459,6 @@ class Desk:
             "net_income": ["NetIncomeLoss", "ProfitLoss"],
             "diluted_eps": ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted"],
             "equity": ["StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"],
-            "long_term_debt": ["LongTermDebtNoncurrent", "LongTermDebtAndCapitalLeaseObligations", "LongTermDebt"],
-            "current_debt": ["LongTermDebtCurrent", "LongTermDebtAndCapitalLeaseObligationsCurrent"],
             "cash_from_operations": ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"],
             "capex": ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"],
         }
@@ -387,17 +470,19 @@ class Desk:
         current_end = rev["current"]["end"]
         prior_end = rev["prior"]["end"] if rev.get("prior") else None
         for label, item in chosen.items():
-            if item and label not in {"equity", "long_term_debt", "current_debt"}:
+            if item and label != "equity":
                 item["current"] = self.match_period(item["all"], current_end, duration=True)
                 item["prior"] = self.match_period(item["all"], prior_end, duration=True) if prior_end else None
         # Balance sheet concepts are instant facts at each fiscal year end.
-        for label in ("equity", "long_term_debt", "current_debt"):
-            item = chosen[label]
-            if item:
-                item["current"] = self.match_period(item["all"], current_end, duration=False)
-                item["prior"] = self.match_period(item["all"], prior_end, duration=False) if prior_end else None
+        if chosen["equity"]:
+            self.at_year_ends(chosen["equity"], current_end, prior_end)
+        chosen.update(self.read_debt(facts, current_end, prior_end))
+        chosen = {name: chosen.get(name) for name in FACT_ORDER}
         self.fact_rows = chosen
         self.print_facts(chosen)
+        debt = self.debt["current"]
+        print("  Long-term debt with its current portion: "
+              + (f"{debt['terms']} {debt['note']}".strip() + " ($ millions)" if debt["value"] is not None else f"not established ({debt['why']})"))
         self.check_year_end(chosen)
         out = {
             "company": self.company,
@@ -410,7 +495,31 @@ class Desk:
         (self.outdir / "facts.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
         print(f"Saved XBRL facts: {self.outdir / 'facts.json'}")
 
-    def choose_fact(self, facts: dict[str, Any], tags: list[str], label: str) -> dict[str, Any] | None:
+    def at_year_ends(self, item: dict[str, Any], current_end: str, prior_end: str | None) -> None:
+        """Set a balance-sheet fact's values at the two fiscal year ends."""
+        item["current"] = self.match_period(item["all"], current_end, duration=False)
+        item["prior"] = self.match_period(item["all"], prior_end, duration=False) if prior_end else None
+
+    def read_debt(self, facts: dict[str, Any], current_end: str, prior_end: str | None) -> dict[str, dict[str, Any] | None]:
+        """Read the debt facts at each fiscal year end and set self.debt for both years.
+        Returns the two fact rows that the desk prints: the parts it used, or the parts it found."""
+        found: dict[str, dict[str, Any]] = {}
+        for tag in DEBT_TAGS:
+            item = self.choose_fact(facts, [tag], tag, quiet=True)
+            if item:
+                self.at_year_ends(item, current_end, prior_end)
+                found[tag] = item
+        self.debt = {which: debt_at({tag: float(item[which]["val"]) for tag, item in found.items() if item.get(which)})
+                     for which in ("current", "prior")}
+        used = self.debt["current"]["tags"]
+        if used:
+            return {"long_term_debt": found[used[0]], "current_debt": found[used[1]] if len(used) > 1 else None}
+        this_year = [tag for tag in DEBT_TAGS if tag in found and found[tag].get("current")]
+        noncurrent = next((tag for tag in this_year if tag in {pair[0] for pair in DEBT_PAIRS}), None)
+        current = next((tag for tag in this_year if tag in {pair[1] for pair in DEBT_PAIRS}), None)
+        return {"long_term_debt": found.get(noncurrent), "current_debt": found.get(current)}
+
+    def choose_fact(self, facts: dict[str, Any], tags: list[str], label: str, quiet: bool = False) -> dict[str, Any] | None:
         candidates = []
         for tag in tags:
             concept = facts.get(tag)
@@ -422,7 +531,8 @@ class Desk:
             if vals:
                 candidates.append((max(v["end"] for v in vals), tag, concept, vals))
         if not candidates:
-            print(f"  {label}: no candidate fact found")
+            if not quiet:
+                print(f"  {label}: no candidate fact found")
             return None
         _, tag, concept, vals = max(candidates, key=lambda x: x[0])
         latest_end = max(v["end"] for v in vals)
@@ -454,6 +564,8 @@ class Desk:
             return
         off = [f"{name} ({item['current']['end']})" for name, item in chosen.items() if item and item.get("current") and item["current"]["end"] != year_end]
         missing = [name for name, item in chosen.items() if not item or not item.get("current")]
+        if self.debt.get("current", {}).get("value") is not None and "current_debt" in missing:
+            missing.remove("current_debt")  # the debt facts show that there is no current portion
         print(f"  Check: every period end equals the 10-K's fiscal year end {year_end}: {'OK' if not off else 'MISMATCH ' + ', '.join(off)}")
         if missing:
             print(f"  Not found for that fiscal year: {', '.join(missing)}")
@@ -493,19 +605,19 @@ class Desk:
         rev, op, ni, eps, equity = (self.value(f.get(k)) for k in ("revenue", "operating_income", "net_income", "diluted_eps", "equity"))
         prior_rev = self.value(f.get("revenue"), "prior")
         prior_equity = self.value(f.get("equity"), "prior")
-        debt_lt = self.value(f.get("long_term_debt")) or 0.0
-        debt_cur = self.value(f.get("current_debt")) or 0.0
-        debt_terms = f"({millions(debt_lt)} + {millions(debt_cur)})"
-        if f.get("long_term_debt") and f["long_term_debt"]["tag"] == "LongTermDebt":
-            # This tag already includes current maturities; adding the current portion would count it twice.
-            debt_cur, debt_terms = 0.0, f"{millions(debt_lt)} [LongTermDebt includes its current portion]"
+        # Long-term debt with its current portion, as step 4 established it. A missing fact is never read as zero.
+        debt = self.debt.get("current") or debt_at({})
         cfo, capex = self.value(f.get("cash_from_operations")), self.value(f.get("capex"))
         avg_equity = ((equity + prior_equity) / 2) if equity is not None and prior_equity is not None else None
         self.ratios = []
 
-        def ratio(label: str, value: float | None, shown: str, arithmetic: str) -> None:
-            self.ratios.append({"name": label, "value": value, "shown": shown if value is not None else "unavailable", "arithmetic": arithmetic})
-            print(f"  {label}: {shown} = {arithmetic}" if value is not None else f"  {label}: unavailable (missing input)")
+        def ratio(label: str, value: float | None, shown: str, arithmetic: str, why: str = "missing input") -> None:
+            """Record one ratio. When it has no value, why says what is missing."""
+            entry = {"name": label, "value": value, "shown": shown if value is not None else "unavailable", "arithmetic": arithmetic}
+            if value is None:
+                entry["why"] = why
+            self.ratios.append(entry)
+            print(f"  {label}: {shown} = {arithmetic}" if value is not None else f"  {label}: unavailable ({why})")
 
         m = millions
         growth = rev / prior_rev - 1 if rev is not None and prior_rev else None
@@ -514,12 +626,15 @@ class Desk:
         ratio("Operating margin", margin, f"{margin:.2%}" if margin is not None else "", f"{m(op)} / {m(rev)}")
         roae = ni / avg_equity if ni is not None and avg_equity else None
         ratio("Return on average equity", roae, f"{roae:.2%}" if roae is not None else "", f"{m(ni)} / (({m(equity)} + {m(prior_equity)}) / 2)")
-        dte = (debt_lt + debt_cur) / equity if equity else None
-        ratio("Debt to equity", dte, f"{dte:.3f}" if dte is not None else "", f"{debt_terms} / {m(equity)}")
+        dte = debt["value"] / equity if debt["value"] is not None and equity else None
+        ratio("Debt to equity", dte, f"{dte:.3f}" if dte is not None else "",
+              f"{debt['terms']} / {m(equity)} {debt['note']}".strip() if dte is not None else "",
+              debt["why"] or "stockholders' equity is missing")
         fcf = cfo - capex if cfo is not None and capex is not None else None
         ratio("Free cash flow", fcf, f"${m(fcf)}M" if fcf is not None else "", f"{m(cfo)} - {m(capex)}")
         pe = price / eps if price is not None and eps else None
-        ratio("P/E", pe, f"{pe:.1f}" if pe is not None else "", f"{price:,.2f} / {eps:.2f} (price / diluted EPS)" if pe is not None else "needs --price")
+        ratio("P/E", pe, f"{pe:.1f}" if pe is not None else "", f"{price:,.2f} / {eps:.2f} (price / diluted EPS)" if pe is not None else "needs --price",
+              "no price was given" if price is None else "diluted EPS is missing or zero")
         if self.outdir.exists():
             (self.outdir / "ratios.json").write_text(json.dumps(self.ratios, indent=2), encoding="utf-8")
 
@@ -529,7 +644,7 @@ class Desk:
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
         # Search the income statement first: a reconciliation table above it can repeat the same labels
         # with adjusted figures in its second column.
-        start = next((i for i, line in enumerate(lines) if len(line) < 90 and re.search(r"statements? of (income|operations|earnings)|income statements?", line, re.I)), 0)
+        start = next((i for i, line in enumerate(lines) if len(line) < 90 and STATEMENT.search(line)), 0)
         order = list(range(start, len(lines))) + list(range(start))
         # A total row first; a release without one states revenue or sales on a row of its own.
         patterns = [r"\s*total\s*(net\s*)?(revenues?|sales)\b", r"\s*(net\s*)?(revenues?|sales)\b"]

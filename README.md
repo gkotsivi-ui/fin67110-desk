@@ -180,19 +180,19 @@ Run `check_env.py` first. It checks Python, the packages, `.env`, SEC EDGAR and 
 | `SEC request failed: 403` | `SEC_USER_AGENT` needs your own name and email. |
 | `credit balance is too low` | Add credit to the Anthropic account, or use a Google AI Studio key. |
 | `The Gemini API is limiting this key` | Wait a minute and run again. |
-| `Could not locate the 8-K's Exhibit 99.1` | A known limit, below. The desk cannot read this company's release yet. |
+| `Could not locate an Exhibit 99 with the earnings release` | The 8-K has no Exhibit 99 that the desk can read. Choose another company. |
 
-Known limits. The first four were found on 2026-11-11 by running the desk on companies that reported
-that week; the fifth is from reading the code. The details are in
+Known limits. The first three were found on 2026-11-11 by running the desk on companies that reported
+that week; the fourth is from reading the code. The details are in
 [docs/decision-log.md](docs/decision-log.md).
 
-1. The desk stops when a company labels its release `EX-99` and not `EX-99.1`.
-2. When the desk finds no XBRL debt fact, it prints debt to equity as 0.000. That number can be wrong.
-3. When a release has an outlook table with a "Total revenue" row, the desk can read the quarter's
+1. When a release has an outlook table with a "Total revenue" row, the desk can read the quarter's
    revenue and growth from that row. Check claims 9 and 10 against the release's income statement.
-4. The Verifier marks some correct numbers wrong or unsupported: a decline written as a positive
-   percent, a change in margin points, and a figure with "less than" before it.
-5. The desk needs all three filings. A company with no 10-K yet, or one that files 20-F and 6-K, stops the run.
+2. For a company with discontinued operations, the desk can read diluted EPS "from continuing
+   operations" as the quarter's diluted EPS. Check claim 11 against the release.
+3. Debt to equity says "not computed" when the 10-K does not tag both parts of its long-term debt in
+   the way the desk reads. That is a missing claim, not an error.
+4. The desk needs all three filings. A company with no 10-K yet, or one that files 20-F and 6-K, stops the run.
 
 ## Tests
 

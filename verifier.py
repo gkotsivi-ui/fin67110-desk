@@ -172,6 +172,67 @@ def recompute(arithmetic: str) -> float | None:
         return None
 
 
+def recompute_named(arithmetic: str, variables: dict[str, float]) -> float | None:
+    """The value of arithmetic that names saved facts, as in "net_income / revenue": each name takes its value from
+    the facts file. None when a name is not a saved fact, or when the text is not arithmetic."""
+    text = arithmetic.replace("−", "-").replace("–", "-").replace("×", "*").replace("÷", "/")
+    known = set(variables)
+
+    def label(found: re.Match[str]) -> str:
+        """Words in brackets that hold no digit and name no fact, such as "($ millions)", are labels."""
+        inside = found.group(1)
+        return found.group(0) if re.search(r"\d", inside) or known & set(re.findall(r"[A-Za-z_]\w*", inside)) else " "
+
+    for piece in re.split(r"[=,;]", re.sub(r"(?<=\d),(?=\d)", "", text)):
+        piece = re.sub(r"\(([^()]*)\)", label, piece).strip()
+        names = set(re.findall(r"[A-Za-z_]\w*", piece))
+        if not names or not names <= known or re.search(r"[^\w\s.+\-*/()]", piece):
+            continue
+        try:
+            return calculate(piece, variables)
+        except (ValueError, SyntaxError, ZeroDivisionError, TypeError):
+            continue
+    return None
+
+
+# The words that say a number is a decline, directly before it ("fell 3.9%", "a decline of 3.9%") or directly
+# after it ("3.9% lower"). "Narrowed to 3.9%" and "down from 3.9%" give a level, not a decline.
+DECLINE_BEFORE = re.compile(r"\b(fell|falls?|falling|declin\w*|decreas\w*|drop\w*|down|shr[aiu]nk\w*|contract\w*|narrow\w*|reduc\w*|lower)"
+                            r"(\s+(by|of))?(\s+(about|approximately|roughly|nearly|almost))?\s*[-$(*]*$", re.I)
+DECLINE_AFTER = re.compile(r"^[*)]*\s*(%|percent|points?|pts)?[*)]*\s*(lower|decline|decrease|drop|fall|reduction|contraction)\b", re.I)
+POINTS_AFTER = re.compile(r"^[*)]*\s*(margin\s+|percentage\s+)?(points?|pts)\b", re.I)
+QUALIFIER = re.compile(r"\b(less than|more than|fewer than|greater than|at least|at most|up to|about|approximately|around|roughly|nearly|almost|over|under)\s+[$(*]*$", re.I)
+
+
+def places(number: str, line: str) -> list[tuple[str, str]]:
+    """Each place the number stands on the report line, as the text before it and the text after it."""
+    digits = re.search(r"\d[\d,]*(?:\.\d+)?", number)
+    if not digits:
+        return []
+    return [(line[:found.start()], line[found.end():])
+            for found in re.finditer(rf"(?<![\d.,]){re.escape(digits.group(0))}(?!\d|[.,]\d)", line)]
+
+
+def says_decline(line: str, number: str) -> bool:
+    """True when the words directly beside the number say that it is a decline."""
+    return any(DECLINE_BEFORE.search(before) or DECLINE_AFTER.search(after) for before, after in places(number, line))
+
+
+def in_points(line: str, number: str) -> bool:
+    """True when the number is a change in points, as in "3.51 margin points": 0.0351 written as 3.51."""
+    return any(POINTS_AFTER.search(after) for _, after in places(number, line))
+
+
+def qualified(number: str, line: str) -> str:
+    """The number with the words the report puts directly before it, as in "less than 2%". A filing line that says
+    "less than 2%" states that; it does not state "2%"."""
+    for before, _ in places(number, line):
+        words = QUALIFIER.search(before)
+        if words:
+            return f"{words.group(1).lower()} {number}"
+    return number
+
+
 def shown(value: float, scale: str, decimals: int) -> str:
     if scale == "per_share":
         return f"${value:,.2f}"
@@ -195,6 +256,8 @@ class Verifier:
         peers_file = run_dir / "peer_facts.json"
         peers = json.loads(peers_file.read_text(encoding="utf-8")) if peers_file.exists() else []
         self.facts = fact_table(facts, peers)
+        # The company's own facts by name, for arithmetic that names them: revenue, revenue_prior, and so on.
+        self.variables = {key: f["val"] for key, f in self.facts.items() if not f["peer"]}
 
     def run(self) -> dict[str, Any]:
         checked = lines_to_check(self.lines)
@@ -265,18 +328,33 @@ class Verifier:
         if kind == "price":
             return {**out, "mark": "not checked", "code": "a share price; the filings hold no prices"}
         if kind == "ratio":
-            value = recompute(str(source.get("arithmetic", "")))
+            arithmetic = str(source.get("arithmetic", ""))
             parsed = parse_number(number)
+            # Arithmetic in numbers is redone from those numbers. Arithmetic that names saved facts, such as
+            # "net_income / revenue", is redone from the facts file.
+            value, how = recompute(arithmetic), "recomputed"
+            from_facts = value is None
+            if from_facts:
+                value, how = recompute_named(arithmetic, self.variables), "recomputed from the saved facts"
             if value is None or not parsed:
                 return {**out, "mark": "unsupported", "code": "no arithmetic the Verifier can recompute"}
             stated, decimals = parsed
             tolerance = 0.5 * 10 ** -decimals * (1 + 1e-9)
-            as_percent = scale == "percent" or "%" in number
-            if abs(value - stated) <= tolerance or (as_percent and abs(value * 100 - stated) <= tolerance):
-                return {**out, "mark": "correct", "code": f"recomputed: {source.get('arithmetic')}"}
-            right = value * 100 if as_percent and abs(value * 100 - stated) < abs(value - stated) else value
-            return {**out, "mark": "wrong", "code": f"recomputed {right:,.{decimals}f}, not {stated:,.{decimals}f}",
-                    "correction": f"{right:,.{decimals}f}{'%' if as_percent else ''}", "real": f"arithmetic: {source.get('arithmetic')}"}
+            line = self.lines[int(r["line"]) - 1]
+            percent_sign = scale == "percent" or "%" in number
+            # The forms the right number can take: a percent or a change in points is the ratio times 100, and
+            # an amount from the facts file is in dollars, which the report may write in thousands, millions or billions.
+            forms = ([value * 100] if percent_sign or in_points(line, number) else []) + [value]
+            if from_facts:
+                forms += [value / 1e3, value / 1e6, value / 1e9]
+            if any(abs(form - stated) <= tolerance for form in forms):
+                return {**out, "mark": "correct", "code": f"{how}: {arithmetic}"}
+            # A decline may be written as a positive number when the words beside it say that it is a decline.
+            if stated > 0 and says_decline(line, number) and any(abs(-form - stated) <= tolerance for form in forms):
+                return {**out, "mark": "correct", "code": f"{how} as a decline, as the line says: {arithmetic}"}
+            right = min(forms, key=lambda form: abs(abs(form) - abs(stated)))
+            return {**out, "mark": "wrong", "code": f"{how} {right:,.{decimals}f}, not {stated:,.{decimals}f}",
+                    "correction": f"{right:,.{decimals}f}{'%' if percent_sign else ''}", "real": f"arithmetic: {arithmetic}"}
         if kind == "xbrl":
             if not fact:
                 return {**out, "mark": "unsupported", "code": f"{source.get('tag')} at {source.get('period_end') or 'that period'} is not in the saved facts"}
@@ -313,7 +391,9 @@ class Verifier:
         pending = [r for r in records if r["mark"] == "pending"]
         if not pending:
             return
-        items = [{"id": i, "number": r.get("number"), "what": r.get("what"), "period": r.get("period"), "document": r["document"], "line": r["line_found"]} for i, r in enumerate(pending)]
+        # The model reads the number with the words the report puts before it: "less than 2%", not "2%".
+        items = [{"id": i, "number": qualified(str(r.get("number", "")), self.lines[int(r["line"]) - 1]), "what": r.get("what"), "period": r.get("period"),
+                  "document": r["document"], "line": r["line_found"]} for i, r in enumerate(pending)]
         packet = {"task": "For each item, decide whether the cited line states the number, for that period, in that definition.", "context": {"items": items}, "expected_output": CHECK_OUTPUT}
         answers = {str(a.get("id")): a for a in self.model.ask("Verifier (line check)", CHECKER, packet).get("checks") or [] if isinstance(a, dict)}
         for i, r in enumerate(pending):

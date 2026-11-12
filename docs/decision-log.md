@@ -40,7 +40,9 @@ November 9. Then we ran the full agent team on one of them. Entries 1 to 4 came 
   2025-09-27). There, the company facts hold no debt liability at that date. The only tags with "Debt" in
   their names are debt securities the company owns, which are assets. The 0.000 may be right, but no fact
   states it, so the desk had no support for it. A search for tags by the word "Debt" would be a new error.
-- **Status.** Open. PLAN.md, fix F1.
+- **Status.** Fixed on 2026-11-11 (F1). For both companies the desk now prints
+  `Debt to equity: unavailable (no long-term debt fact at the fiscal year end under the tags the desk reads)`.
+  Entry 9 gives the rule and the evidence for it.
 - **What we will not delegate again.** (the team writes this)
 
 ### 3. The run stopped on a release labelled EX-99
@@ -50,7 +52,8 @@ November 9. Then we ran the full agent team on one of them. Entries 1 to 4 came 
 - **What the filing says.** The filing's index page lists the release with the type `EX-99`.
 - **How we caught it.** The run ended with exit code 1 and no report.
 - **Cause.** The desk looks for the label `EX-99.1` only.
-- **Status.** Open. PLAN.md, fix F3.
+- **Status.** Fixed on 2026-11-11 (F3). The desk takes the first Exhibit 99 that holds an income statement.
+  On this filing it now reads `rezi-20261003prexhibit99.htm`, and the seven steps finish.
 - **What we will not delegate again.** (the team writes this)
 
 ### 4. The Verifier marked nine correct numbers wrong or unsupported
@@ -69,7 +72,10 @@ November 9. Then we ran the full agent team on one of them. Entries 1 to 4 came 
 - **How we caught it.** We opened each flagged line, read the source it quotes, and redid the arithmetic.
 - **Why it matters.** A verifier that flags correct numbers costs as much as one that misses wrong ones.
   A reader who trusts the marks would correct a right number.
-- **Status.** Open. PLAN.md, fix F4.
+- **Status.** Fixed on 2026-11-11 (F4). On the same saved report the fixed Verifier marks 150 of 150 numbers
+  correct. We also sent the first run's own list of 155 numbers through the fixed code, with no model call:
+  154 correct and 1 unsupported. That one is the "less than 2%" line, which needs the model. Asked about
+  "less than 2%" and not "2%", the model now answers that the line states it.
 - **What we will not delegate again.** (the team writes this)
 
 ### 5. The coding agent reported those nine marks as errors before it read them
@@ -113,6 +119,47 @@ November 9. Then we ran the full agent team on one of them. Entries 1 to 4 came 
   all 87 tests passed.
 - **What we changed.** The README tells a Windows reader to keep the path short, and names the error.
 - **What we will not delegate again.** (the team writes this)
+
+## 2026-11-11: the three fixes before the first live run
+
+### 9. The tag for total long-term debt is not always the total
+
+- **What we planned.** Read long-term debt as the noncurrent part plus the current part, and stop when the
+  tag for the total, `LongTermDebt`, does not equal that sum.
+- **What real filings show.** Before we wrote the rule, we read the debt facts in the latest 10-K of 17
+  companies: the six from entries 1 to 4, and the course's build-out set. Eight report all three tags. In five
+  the total equals the two parts. In three it does not: the total is a figure from the debt note, and the two
+  parts are the balance sheet's lines. The planned rule would have dropped a correct ratio for those three.
+- **The rule now.** The two balance-sheet parts are the amount. A current portion of zero is a fact; a current
+  portion that is missing is not zero. The total tag is never taken as the amount. It is used for one thing:
+  when it equals the noncurrent part and no current part is reported, there is no current portion.
+- **The result on the 17.** Debt to equity is stated for 12 and not stated for 5 (Mercury Systems, Sonos,
+  Oracle, Dell, Super Micro). None is read as zero. Each of the five uses tags the desk does not accept, or
+  reports one part only. A missing claim costs nothing in the audit; a wrong one fails it.
+- **How we caught it.** We looked at real filings before we trusted a rule that sounded right.
+- **What we will not delegate again.** (the team writes this)
+
+### 10. The coding agent's memory of a tag's meaning was wrong
+
+- **What happened.** Claude Code planned to accept `SecuredLongTermDebt` as a total that includes the
+  current portion. SEC EDGAR's own description of the tag, in the company facts file, says "excluding the
+  current portion".
+- **How we caught it.** The survey for entry 9 printed EDGAR's description of every tag it found.
+- **What we changed.** A tag enters the desk's list from EDGAR's description and from real filings, never
+  from what a model remembers.
+- **What we will not delegate again.** (the team writes this)
+
+### 11. Found while we checked the fixes, and not fixed
+
+- **EPS from continuing operations.** For the release in 8-K 0001740332-26-000029, the desk reads the row
+  "Diluted earnings (loss) per share from continuing operations" as the quarter's diluted EPS. Claim 11 is
+  GAAP diluted EPS. For a company with discontinued operations those are two numbers. Open: PLAN.md, fix F2.
+- **A restated number keeps its source whatever the sentence says.** The Verifier lets "fell 3.92%" take
+  the source of "-3.92%" on another line. It would let "grew 3.92%" take it too. A known limit.
+- **The list of numbers changes between runs.** From the same report, the model that lists the numbers gave
+  155 in one run and 150 in the next. Both lists covered the same 68 lines.
+- **Rounded inputs.** The desk prints amounts in $ millions with one decimal. For a company that reports in
+  thousands, a ratio that a reader redoes from the printed inputs can differ in its last digit. Open.
 
 This is a learning exercise, not financial advice.
 

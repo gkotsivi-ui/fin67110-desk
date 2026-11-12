@@ -1,6 +1,6 @@
 # Plan
 
-Draft of 2026-11-11, for the team to approve. Until it is approved, nothing below is built. The base is
+Approved by gkotsivi-ui on 2026-11-11. F1, F3 and F4 are done; section 3 says so. The base is
 gkotsivi-ui/equity-analyst-project at commit 3908d6d. The course site is the source of truth:
 https://cinderzhang.github.io/FIN67110-Fall2026/
 
@@ -12,10 +12,10 @@ Measured on 2026-11-11. The details are in [docs/decision-log.md](docs/decision-
 |---|---|
 | The desk runs end to end | One company from a terminal: 290 seconds, six parts and one send-back, a verified report |
 | The 11 core claims come from code | On that run the Verifier marked all of them correct |
-| The tests | 87 pass with no network and no key (69 from the base desk, 18 for the live record) |
+| The tests | 121 pass with no network and no key (69 from the base desk, 52 added since) |
 | A stranger's install | A clean virtual environment with the pinned packages installs, and the tests pass there |
 | The data steps on six companies | 1 clean; 1 with wrong quarter revenue and growth; 1 with a wrong debt to equity; 1 with an unsupported debt to equity; 1 that stopped; 1 that ran with awkward ratios |
-| The Verifier | It marked 9 correct numbers wrong or unsupported on the clean company |
+| The Verifier | It marked 9 correct numbers wrong or unsupported on the clean company. Fixed (F4): 150 of 150 correct on the same report |
 | Not built | The seeker, the worksheet with its view, the hook, the one command, the replay, the hit-rate table, the audits, the manual |
 
 ## 2. What the grade rewards, in the order we protect it
@@ -38,10 +38,10 @@ Size: S is half a day or less, M is one to two days, L is three days or more.
 
 | Fix | What changes | Size |
 |---|---|---|
-| F1 | Debt to equity: when no debt fact is found, the claim is "not stated", never 0.000. A short list of accepted debt tags, each with a test. When the total and its parts both exist, they must agree. | S |
+| F1 | **Done.** Debt to equity is stated only when the 10-K reports both balance-sheet parts of long-term debt, or shows that there is no current portion. Otherwise it is "not computed", with the reason, never 0.000. The planned check against the total tag was dropped: in 3 of 8 real filings that tag is another measure (decision log, entry 9). | S |
 | F2 | Claims 9 to 11: read the revenue and EPS rows only inside the release's income statement. Find the two quarter columns by their dates, not by position. Read the units from the statement's header. | M |
 | F2b | Check the release against XBRL: the year-ago quarter must equal last year's filed fact, and the new quarter must equal the 10-Q's fact when the 10-Q is already filed. A claim that fails is omitted. | M |
-| F3 | Find the release by what it holds, not only by the label EX-99.1: accept EX-99 and EX-99.x, and take the exhibit that has an income statement. | S |
+| F3 | **Done.** The release is the first Exhibit 99 that holds an income statement, whatever its number. The first line of the report names the exhibit by its own number. | S |
 | F6 | One claims file for each run, written by code: each claim's value, period, definition, source and status (stated or omitted, with the reason). The report's table is printed from it. | M |
 | F7 | The roles' text may hold a number only when code finds it in the claims file or in the line the text quotes. Code removes a sentence that fails and lists what it removed. | M |
 | F8 | Stop when the facts do not belong to the 10-K the desk chose. Today the desk prints MISMATCH and goes on. | S |
@@ -99,8 +99,10 @@ The WRDS base rate for the manual is run by a team member, and its output is pas
 
 ### G6. The Verifier flags correct numbers
 
-F4: read a decline as a negative change; print a calculator result with its numbers, so it can be
-redone; keep "less than" with its figure. Each with a test on made-up data. Size S each.
+F4, **done**: a decline may be written as a positive number when the words beside it say so; arithmetic
+that names saved facts is redone from the facts file; "less than" stays with its figure for the line
+check. Each has a test on made-up data. We had planned to print calculator results with their numbers.
+Redoing them from the facts file is exact, and printed inputs are rounded, so we did that instead.
 
 ### G7. Small things a reader would notice
 
@@ -123,9 +125,10 @@ be made at all, the run stops and names the part and the cause. The desk never f
 | Three quarter columns, or last year first | F2: columns by date; F2b: check against XBRL |
 | A release in thousands; a loss in parentheses; a space between the dollar sign and the number | F2: units from the header; tests for each form |
 | Adjusted EPS beside GAAP EPS | Read the GAAP income statement only; never a reconciliation table |
+| Discontinued operations: EPS "from continuing operations" beside total EPS | F2: take the total diluted EPS row; when only the continuing row is found, omit claim 11 |
 | No operating income fact | Omit claim 3 |
 | A noncontrolling interest | Net income and equity on the parent's tags only; else omit |
-| Debt under another tag, or no debt at all | F1: an accepted tag, or "not stated" |
+| Debt under another tag, one part only, or no debt at all | F1, done: "not computed", with the reason. Of 17 real 10-Ks, 5 are in this group, Oracle and Dell among them |
 | A bank, an insurer or a REIT | Omit the claims that do not apply (operating margin, debt to equity, free cash flow) and say why; jcleeper65/Analyst has a check to port |
 | A recent IPO or spinoff with one year of statements | Omit growth and return on average equity |
 | No 10-K yet, or no 10-Q yet | Today the run stops. Change: run on what exists and omit the rest |
