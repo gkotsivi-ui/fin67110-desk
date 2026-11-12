@@ -1,6 +1,6 @@
 # Plan
 
-Approved by gkotsivi-ui on 2026-11-11. F1, F3 and F4 are done; section 3 says so. The base is
+Approved by gkotsivi-ui on 2026-11-11. F1, F2, F3 and F4 are done; section 3 says so. The base is
 gkotsivi-ui/equity-analyst-project at commit 3908d6d. The course site is the source of truth:
 https://cinderzhang.github.io/FIN67110-Fall2026/
 
@@ -12,7 +12,7 @@ Measured on 2026-11-11. The details are in [docs/decision-log.md](docs/decision-
 |---|---|
 | The desk runs end to end | One company from a terminal: 290 seconds, six parts and one send-back, a verified report |
 | The 11 core claims come from code | On that run the Verifier marked all of them correct |
-| The tests | 121 pass with no network and no key (69 from the base desk, 52 added since) |
+| The tests | 153 pass with no network and no key (69 from the base desk, 84 added since) |
 | A stranger's install | A clean virtual environment with the pinned packages installs, and the tests pass there |
 | The data steps on six companies | 1 clean; 1 with wrong quarter revenue and growth; 1 with a wrong debt to equity; 1 with an unsupported debt to equity; 1 that stopped; 1 that ran with awkward ratios |
 | The Verifier | It marked 9 correct numbers wrong or unsupported on the clean company. Fixed (F4): 150 of 150 correct on the same report |
@@ -39,7 +39,7 @@ Size: S is half a day or less, M is one to two days, L is three days or more.
 | Fix | What changes | Size |
 |---|---|---|
 | F1 | **Done.** Debt to equity is stated only when the 10-K reports both balance-sheet parts of long-term debt, or shows that there is no current portion. Otherwise it is "not computed", with the reason, never 0.000. The planned check against the total tag was dropped: in 3 of 8 real filings that tag is another measure (decision log, entry 9). | S |
-| F2 | Claims 9 to 11: read the revenue and EPS rows only inside the release's income statement. Find the two quarter columns by their dates, not by position. Read the units from the statement's header. | M |
+| F2 | **Done** (`release.py`). Claims 9 to 11 are read only inside the release's income statement. The two quarter columns are found by their dates, not by position. The units come from the statement's header. EPS is the row for the whole company. A claim that the rules cannot read is "not found", with the reason. Right on eight real releases (decision log, entry 12). | M |
 | F2b | Check the release against XBRL: the year-ago quarter must equal last year's filed fact, and the new quarter must equal the 10-Q's fact when the 10-Q is already filed. A claim that fails is omitted. | M |
 | F3 | **Done.** The release is the first Exhibit 99 that holds an income statement, whatever its number. The first line of the report names the exhibit by its own number. | S |
 | F6 | One claims file for each run, written by code: each claim's value, period, definition, source and status (stated or omitted, with the reason). The report's table is printed from it. | M |
@@ -119,10 +119,11 @@ be made at all, the run stops and names the part and the cause. The desk never f
 | The newest Item 2.02 8-K is not a quarterly release (a pre-announcement, monthly figures) | Use the newest one with an income statement; else omit claims 9 to 11 |
 | A fiscal year that does not end in December; a 52 or 53 week year | Already handled; every period is printed with its dates |
 | A fourth-quarter release, when the latest 10-K is a year older | State both periods with their dates; never call the 10-K's year "this year" |
-| Three quarter columns, or last year first | F2: columns by date; F2b: check against XBRL |
-| A release in thousands; a loss in parentheses; a space between the dollar sign and the number | F2: units from the header; tests for each form |
-| Adjusted EPS beside GAAP EPS | Read the GAAP income statement only; never a reconciliation table |
-| Discontinued operations: EPS "from continuing operations" beside total EPS | F2: take the total diluted EPS row; when only the continuing row is found, omit claim 11 |
+| Three quarter columns, or last year first | F2, done: columns by date. F2b, open: check against XBRL |
+| A release in thousands; a loss in parentheses; a space between the dollar sign and the number | F2, done: units from the header; a test for each form |
+| Adjusted EPS beside GAAP EPS | F2, done: the GAAP income statement only; never a reconciliation table |
+| Discontinued operations: EPS "from continuing operations" beside total EPS | F2, done: the row for the whole company; when only the continuing row is found, claim 11 is omitted |
+| A loss this year or last year | Done: no growth rate on a base that is zero or negative (decision log, entry 13) |
 | No operating income fact | Omit claim 3 |
 | A noncontrolling interest | Net income and equity on the parent's tags only; else omit |
 | Debt under another tag, one part only, or no debt at all | F1, done: "not computed", with the reason. Of 17 real 10-Ks, 5 are in this group, Oracle and Dell among them |
@@ -179,8 +180,7 @@ A proposal. The team decides, and each member writes their own role.
 ## 7. Thursday's run (Week 4)
 
 Cisco reports its first quarter after the close on Thu Nov 12. Its last five releases were accepted
-between 4:06 and 4:16 PM ET. Applied Materials reports in the same hour and is the second choice,
-once F2 is done.
+between 4:06 and 4:16 PM ET. Applied Materials reports in the same hour and is the second choice.
 
 1. Before 4 PM: `git pull`; run the tests; run `check_env.py`.
 2. From about 4:10 PM: `python lab02_desk.py CSCO --step 2` prints the newest earnings 8-K and its
