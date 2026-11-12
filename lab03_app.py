@@ -256,6 +256,13 @@ def cell(text: Any) -> str:
     return str(text).replace("|", "\\|").replace("\n", " ")
 
 
+def quarter_shown(quarter: dict[str, Any], key: str) -> str:
+    """A figure of the quarter as the release prints it: "17,252" for revenue, "$0.97" or "$(0.04)" for EPS."""
+    if quarter.get(f"{key}_shown"):
+        return quarter[f"{key}_shown"]
+    return f"${quarter[key]:.2f}" if key.startswith("eps") else f"{quarter[key]:,.0f}"
+
+
 def ratio_for_context(ratio: dict[str, Any]) -> dict[str, str]:
     """A ratio as the Financial Analyst receives it. A ratio the desk could not establish carries the reason,
     so that the analyst does not state one."""
@@ -584,9 +591,12 @@ class StrategyManager:
         d = self.desk
         facts = [self.fact_entry(name, item) for name, item in d.fact_rows.items() if item and item.get("current")]
         q = d.quarter
+        units = f"the release's income statement is in {q['units']}, except per share" if q.get("units") else "the release states its own units"
         quarter: dict[str, Any] = {
             "release": f"8-K accession {d.selected['8-K']['accessionNumber']}, Item 2.02, Exhibit {self.exhibit_label()}, accepted {self.accepted('8-K')}",
-            "units": "the release states its own units (usually $ millions, except per share); copy its numbers as written",
+            "units": f"{units}; copy its numbers as written",
+            "this_quarter_is_the_column_for": q.get("period"),
+            "the_same_quarter_last_year_is_the_column_for": q.get("prior_period"),
             "header_lines": q.get("revenue_headers", []),
             "revenue_line": q.get("revenue_line"),
             "eps_heading": q.get("eps_heading"),
@@ -597,8 +607,11 @@ class StrategyManager:
             quarter["computed_in_code"] = [{
                 "name": "Quarter revenue growth on the same quarter last year",
                 "value": f"{q['revenue_growth']:.2%}",
-                "arithmetic": f"{q['revenue']:,.0f} / {q['revenue_prior']:,.0f} - 1 (the first two columns of the revenue line)",
+                "arithmetic": f"{quarter_shown(q, 'revenue')} / {quarter_shown(q, 'revenue_prior')} - 1 (the revenue line's column for this quarter over its column for the same quarter last year)",
             }]
+        if q.get("why"):
+            # A claim the desk could not read from the release carries its reason, so that the analyst does not state one.
+            quarter["not_stated"] = {"claims": q["why"], "rule": "The desk could not read these from the release. Do not state them and do not compute them."}
         peers = []
         for peer in d.peers:
             facts_ = peer["facts"]
@@ -779,7 +792,10 @@ class StrategyManager:
             # P/E divides a price by a per-share figure; the other ratios use $ millions.
             return r["shown"], r["arithmetic"] if name == "P/E" else f"{r['arithmetic']} ($ millions)"
 
-        q = d.quarter
+        q, why = d.quarter, d.quarter.get("why", {})
+        units = f"in {q['units']}" if q.get("units") else "in the release's units"
+        this, last = q.get("period"), q.get("prior_period")
+        growth = q.get("revenue_growth")
         rows = [
             ("1", f"Total revenue, fiscal year ended {d.selected['10-K']['reportDate']}", *fact("revenue")),
             ("2", "Revenue growth versus the prior year", *ratio("Revenue growth")),
@@ -790,9 +806,16 @@ class StrategyManager:
             ("6", "Return on average equity", *ratio("Return on average equity")),
             ("7", "Debt to equity, current portion included", *ratio("Debt to equity")),
             ("8", "Free cash flow (cash from operations - additions to property and equipment)", *ratio("Free cash flow")),
-            ("9", "Latest quarter's revenue (release units)", f"{q['revenue']:,.0f}" if q.get("revenue") is not None else "not found", f"release line: {q.get('revenue_line')}"),
-            ("10", "Quarter growth versus the same quarter last year", f"{q['revenue_growth']:.2%}" if q.get("revenue_growth") is not None else "not computed", f"{q['revenue']:,.0f} / {q['revenue_prior']:,.0f} - 1, the release's first two columns" if q.get("revenue_growth") is not None else "no revenue line"),
-            ("11", "Quarter diluted EPS, GAAP", f"${q['eps']:.2f}" if q.get("eps") is not None else "not found", f"release line: {q.get('eps_line')}"),
+            # Claims 9 to 11 come from the release's income statement (release.py). A claim the desk could not read says why.
+            ("9", f"Latest quarter's revenue ({'the column for ' + this + '; ' if this else ''}{units})",
+             quarter_shown(q, "revenue") if q.get("revenue") is not None else "not found",
+             f"release line: {q.get('revenue_line')}" if q.get("revenue") is not None else why.get("revenue", "no revenue line")),
+            ("10", "Quarter growth versus the same quarter last year" + (f" (the columns for {this} and {last})" if this and last else ""),
+             f"{growth:.2%}" if growth is not None else "not computed",
+             f"{quarter_shown(q, 'revenue')} / {quarter_shown(q, 'revenue_prior')} - 1 (the revenue line's column for this quarter over its column for the same quarter last year)"
+             if growth is not None else why.get("growth", "no revenue line")),
+            ("11", "Quarter diluted EPS, GAAP", quarter_shown(q, "eps") if q.get("eps") is not None else "not found",
+             f"release line: {q.get('eps_line')}" if q.get("eps") is not None else why.get("eps", "no diluted EPS line")),
             ("-", "P/E (price / diluted EPS)", *ratio("P/E")),
         ]
         lines = ["| # | Claim | Value | Source |", "|---|---|---|---|"]

@@ -182,17 +182,14 @@ Run `check_env.py` first. It checks Python, the packages, `.env`, SEC EDGAR and 
 | `The Gemini API is limiting this key` | Wait a minute and run again. |
 | `Could not locate an Exhibit 99 with the earnings release` | The 8-K has no Exhibit 99 that the desk can read. Choose another company. |
 
-Known limits. The first three were found on 2026-11-11 by running the desk on companies that reported
-that week; the fourth is from reading the code. The details are in
-[docs/decision-log.md](docs/decision-log.md).
+Known limits, as of 2026-11-11. The details are in [docs/decision-log.md](docs/decision-log.md).
 
-1. When a release has an outlook table with a "Total revenue" row, the desk can read the quarter's
-   revenue and growth from that row. Check claims 9 and 10 against the release's income statement.
-2. For a company with discontinued operations, the desk can read diluted EPS "from continuing
-   operations" as the quarter's diluted EPS. Check claim 11 against the release.
-3. Debt to equity says "not computed" when the 10-K does not tag both parts of its long-term debt in
+1. The quarter's revenue, growth and diluted EPS (claims 9 to 11) are read from the release's income
+   statement by rules. When the rules cannot read a claim, the report says "not found" or "not computed",
+   with the reason. The figures are not yet checked against XBRL, so check them against the release.
+2. Debt to equity says "not computed" when the 10-K does not tag both parts of its long-term debt in
    the way the desk reads. That is a missing claim, not an error.
-4. The desk needs all three filings. A company with no 10-K yet, or one that files 20-F and 6-K, stops the run.
+3. The desk needs all three filings. A company with no 10-K yet, or one that files 20-F and 6-K, stops the run.
 
 ## Tests
 

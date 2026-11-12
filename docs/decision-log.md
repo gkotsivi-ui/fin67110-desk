@@ -22,7 +22,9 @@ November 9. Then we ran the full agent team on one of them. Entries 1 to 4 came 
 - **How we caught it.** Step 6 prints the lines above the row it chose. The lines said "Business Outlook".
 - **Cause.** Step 6 looks for a row that starts with "Total revenue" in the whole release before it looks
   for a row that starts with "Revenue" in the income statement.
-- **Status.** Open. PLAN.md, fix F2.
+- **Status.** Fixed on 2026-11-11 (F2). The desk reads claims 9 to 11 only inside the release's income
+  statement, and it chooses the columns by their dates. On this release it now reads
+  `Revenue | $9,115 | $7,302 | $24,037 | $21,568` and prints growth of 24.83%. Entry 12 gives the check.
 - **What we will not delegate again.** (the team writes this)
 
 ### 2. Debt to equity was printed as 0.000 for a company with debt
@@ -153,13 +155,48 @@ November 9. Then we ran the full agent team on one of them. Entries 1 to 4 came 
 
 - **EPS from continuing operations.** For the release in 8-K 0001740332-26-000029, the desk reads the row
   "Diluted earnings (loss) per share from continuing operations" as the quarter's diluted EPS. Claim 11 is
-  GAAP diluted EPS. For a company with discontinued operations those are two numbers. Open: PLAN.md, fix F2.
+  GAAP diluted EPS. For a company with discontinued operations those are two numbers. Fixed with F2
+  (entry 12): the desk now reads $0.08, the row for the whole company, not $0.14.
 - **A restated number keeps its source whatever the sentence says.** The Verifier lets "fell 3.92%" take
   the source of "-3.92%" on another line. It would let "grew 3.92%" take it too. A known limit.
 - **The list of numbers changes between runs.** From the same report, the model that lists the numbers gave
   155 in one run and 150 in the next. Both lists covered the same 68 lines.
 - **Rounded inputs.** The desk prints amounts in $ millions with one decimal. For a company that reports in
   thousands, a ratio that a reader redoes from the printed inputs can differ in its last digit. Open.
+
+## 2026-11-11: the quarter's rows (F2)
+
+### 12. The release reader, checked on eight real releases
+
+- **What was wrong.** The desk looked for a revenue row and a "Diluted" row anywhere in the release, and it
+  took the first two figures of each row as this quarter and last year's quarter. Entries 1 and 11 are two
+  of the errors that this made. A third: for one release it read no EPS at all, because the release prints
+  `$ (0.04)` with a space after the dollar sign.
+- **The rules now** (`release.py`, with no model). Find the income statement by its heading. Read the
+  statement's header: its units, its periods, the date of each column. The quarter is the column with the
+  newest date, and last year's quarter is the column one year before it. Read total revenue and diluted EPS
+  for the whole company at those two columns. When a rule cannot be met, the claim is not stated, and the
+  report gives the reason.
+- **The check.** We ran the reader on the saved text of eight real releases: the six companies of the first
+  probe, and two more from the course's build-out set. All eight gave the statement's own rows. Three
+  changed: growth of 24.83% where the desk had printed 1,950.00%; EPS of $0.08 where it had printed $0.14;
+  EPS of $(0.04) where it had found none. One release prints its own change column beside the figures, 58%
+  for revenue, and the reader's 57.75% agrees with it.
+- **What is still open.** The figures are not yet checked against XBRL (PLAN.md, fix F2b). A layout the
+  eight did not have can still be misread, or more likely not read.
+- **What we will not delegate again.** (the team writes this)
+
+### 13. A wider loss was offered to the analyst as growth
+
+- **What the code did.** For the Financial Analyst the desk computed "growth" as this year over last year
+  minus one, for any last year that was not zero. From the facts of 10-K 0001769628-26-000104, a net loss
+  of 1,167.0 after a net loss of 863.0 ($ millions), that rule gives "Net income growth: 35.23%". An analyst
+  who copies it writes that net income grew.
+- **How we caught it.** By reading `team.py` during the work for entry 12, and then doing the arithmetic on
+  a real company's facts. No report had shown it yet.
+- **What we changed.** The desk computes no growth rate on a base that is zero or negative, and no share of
+  a net loss.
+- **What we will not delegate again.** (the team writes this)
 
 This is a learning exercise, not financial advice.
 

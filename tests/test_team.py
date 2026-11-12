@@ -333,6 +333,30 @@ class PriorYearDebtTests(unittest.TestCase):
                                           CURRENT: [fact(None, YEAR_END, 100e6)]}), [])
 
 
+class GrowthOnALossTests(unittest.TestCase):
+    """A growth rate needs a base above zero. Made-up numbers."""
+
+    def names(self, change: Any) -> list[str]:
+        desk = example_desk(Path(tempfile.mkdtemp()))
+        change(desk)
+        return [r["name"] for r in team.more_ratios(desk)]
+
+    def test_growth_rates_on_a_profit(self) -> None:
+        names = self.names(lambda desk: None)
+        for name in ("Operating income growth", "Diluted EPS growth", "Quarter diluted EPS growth on the same quarter last year"):
+            self.assertIn(name, names)
+
+    def test_no_growth_rate_from_a_loss(self) -> None:
+        def losses(desk: Any) -> None:
+            desk.fact_rows["operating_income"]["prior"]["val"] = -19.6e6
+            desk.fact_rows["diluted_eps"]["prior"]["val"] = -0.65
+            desk.quarter.update(eps=-1.27, eps_prior=-0.22)
+
+        names = self.names(losses)
+        for name in ("Operating income growth", "Diluted EPS growth", "Quarter diluted EPS growth on the same quarter last year"):
+            self.assertNotIn(name, names)
+
+
 class SkipTests(unittest.TestCase):
     def test_every_path_to_the_end_runs_the_verifier(self) -> None:
         edges = OfflineTeam(FakeModel({}), None).graph().get_graph().edges

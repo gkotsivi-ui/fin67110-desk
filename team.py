@@ -83,12 +83,14 @@ def more_ratios(desk: Desk) -> list[dict[str, Any]]:
             out.append({"name": name, "value": value, "shown": shown, "arithmetic": arithmetic})
 
     m = millions
+    # A growth rate needs a base above zero. From a loss of 22 to a loss of 127 is not "growth of 477%", so
+    # the desk computes no rate on a base that is zero or negative.
     for name, label in (("operating_income", "Operating income"), ("net_income", "Net income"), ("cash_from_operations", "Cash from operations"), ("capex", "Additions to property and equipment")):
         a, b = v(name), v(name, "prior")
-        if a is not None and b:
+        if a is not None and b is not None and b > 0:
             add(f"{label} growth", a / b - 1, f"{a / b - 1:.2%}", f"{m(a)} / {m(b)} - 1")
     eps, eps_prior = v("diluted_eps"), v("diluted_eps", "prior")
-    if eps is not None and eps_prior:
+    if eps is not None and eps_prior is not None and eps_prior > 0:
         add("Diluted EPS growth", eps / eps_prior - 1, f"{eps / eps_prior - 1:.2%}", f"{eps:.2f} / {eps_prior:.2f} - 1")
     for which, year in (("current", "latest year"), ("prior", "prior year")):
         rev, op, ni = v("revenue", which), v("operating_income", which), v("net_income", which)
@@ -100,23 +102,24 @@ def more_ratios(desk: Desk) -> list[dict[str, Any]]:
     cfo, capex, cfo_p, capex_p = v("cash_from_operations"), v("capex"), v("cash_from_operations", "prior"), v("capex", "prior")
     if cfo_p is not None and capex_p is not None:
         add("Free cash flow, prior year", cfo_p - capex_p, f"${m(cfo_p - capex_p)}M", f"{m(cfo_p)} - {m(capex_p)}")
-        if cfo is not None and capex is not None and cfo_p - capex_p:
+        if cfo is not None and capex is not None and cfo_p - capex_p > 0:
             g = (cfo - capex) / (cfo_p - capex_p) - 1
             add("Free cash flow growth", g, f"{g:.2%}", f"({m(cfo)} - {m(capex)}) / ({m(cfo_p)} - {m(capex_p)}) - 1")
     rev, ni = v("revenue"), v("net_income")
     if cfo is not None and capex is not None:
         if rev:
             add("Free cash flow margin", (cfo - capex) / rev, f"{(cfo - capex) / rev:.2%}", f"({m(cfo)} - {m(capex)}) / {m(rev)}")
-        if ni:
+        if ni is not None and ni > 0:  # a share of a net loss has no meaning
             add("Free cash flow / net income", (cfo - capex) / ni, f"{(cfo - capex) / ni:.2f}", f"({m(cfo)} - {m(capex)}) / {m(ni)}")
     # The prior year's debt is judged on the prior year's facts; a missing part is never read as zero.
     debt, eq = desk.debt.get("prior"), v("equity", "prior")
     if debt and debt["value"] is not None and eq:
         add("Debt to equity, prior year", debt["value"] / eq, f"{debt['value'] / eq:.3f}", f"{debt['terms']} / {m(eq)} {debt['note']}".strip())
     q = desk.quarter
-    if q.get("eps") is not None and q.get("eps_prior"):
+    if q.get("eps") is not None and (q.get("eps_prior") or 0) > 0:
         g = q["eps"] / q["eps_prior"] - 1
-        add("Quarter diluted EPS growth on the same quarter last year", g, f"{g:.2%}", f"{q['eps']:.2f} / {q['eps_prior']:.2f} - 1 (the release's first two columns)")
+        add("Quarter diluted EPS growth on the same quarter last year", g, f"{g:.2%}",
+            f"{q['eps']:.2f} / {q['eps_prior']:.2f} - 1 (the release's column for this quarter over its column for the same quarter last year)")
     return out
 
 
