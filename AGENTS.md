@@ -36,7 +36,19 @@ source of truth: https://cinderzhang.github.io/FIN67110-Fall2026/ (project, grad
   its test does.
 - Keep the code simple and explain each change. All three members must be able to defend every part.
 
-## Before you finish a change
+## Live-record error documentation
+
+For each live record, create a separate Markdown file in `docs/live-record-errors/`, following that
+folder's README. Observe and document errors; do not fix them unless the user asks. Preserve the live
+run's original files and results. Let the run continue where its existing behavior permits; do not bypass
+an existing stop or failure to force completion. Document stopped and incomplete runs too.
+
+Look across the whole process, including SEC parsing, calculations, conclusions, verification, skills,
+the hook, numerical evidence, and runtime errors. These are examples, not an exhaustive checklist.
+For each error record its type, where it happened, a description, and why it happened. Cite saved
+evidence, distinguish confirmed causes from hypotheses, and say when the cause is unknown.
+
+## Required checks for changes
 
 ```
 python -m unittest discover -s tests
