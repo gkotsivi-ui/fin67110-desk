@@ -198,6 +198,29 @@ November 9. Then we ran the full agent team on one of them. Entries 1 to 4 came 
   a net loss.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-12: the facts of the 10-K the desk chose (F8)
+
+### 14. We planned to stop the run, and chose not to
+
+- **The risk.** Step 2 chooses the latest 10-K. Step 4 takes the newest fiscal year in EDGAR's company facts.
+  The two can differ: the facts file can lag a new 10-K, and a filer can move its revenue to a tag the desk
+  does not read. The desk printed `MISMATCH` and then wrote another year's numbers under the new 10-K's name.
+- **The plan said to stop the run.** The coding agent wrote that line of the plan, and it does not agree with
+  the plan's own rule: a run stops only when no report can be made. Here a report can be made. A stopped run
+  gives the other team no report, which costs more than eight missing claims.
+- **What the desk does now.** When the two fiscal years differ, it states none of the annual facts and none
+  of their ratios, and each of those claims gives the reason in the report. The quarter's claims and the rest
+  of the report go on. The same happens when the company facts hold no revenue under the tags the desk
+  reads; before, that stopped the run. A date on the 10-K's cover within 7 days of the statements' date is
+  the same year.
+- **How it was checked.** Tests on made-up facts, and one whole run of the team with no annual facts. On
+  real data the guard did not fire: for a 10-K filed two days before (accession 0001260221-26-000077),
+  EDGAR's facts already held the new year. We found no real case of a lag to test on.
+- **Seen on the way, and not fixed.** That same 10-K reports its debt under tags from two families, so debt
+  to equity is not computed for it either. One bank ran to the end with six of the eleven claims not stated;
+  we did not check its five stated claims against its filings.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code. I verified the sources myself; the judgments are mine.

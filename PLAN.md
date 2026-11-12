@@ -1,6 +1,6 @@
 # Plan
 
-Approved by gkotsivi-ui on 2026-11-11. F1, F2, F3 and F4 are done; section 3 says so. The base is
+Approved by gkotsivi-ui on 2026-11-11. F1, F2, F3, F4 and F8 are done; section 3 says so. The base is
 gkotsivi-ui/equity-analyst-project at commit 3908d6d. The course site is the source of truth:
 https://cinderzhang.github.io/FIN67110-Fall2026/
 
@@ -12,7 +12,7 @@ Measured on 2026-11-11. The details are in [docs/decision-log.md](docs/decision-
 |---|---|
 | The desk runs end to end | One company from a terminal: 290 seconds, six parts and one send-back, a verified report |
 | The 11 core claims come from code | On that run the Verifier marked all of them correct |
-| The tests | 153 pass with no network and no key (69 from the base desk, 84 added since) |
+| The tests | 160 pass with no network and no key (69 from the base desk, 91 added since) |
 | A stranger's install | A clean virtual environment with the pinned packages installs, and the tests pass there |
 | The data steps on six companies | 1 clean; 1 with wrong quarter revenue and growth; 1 with a wrong debt to equity; 1 with an unsupported debt to equity; 1 that stopped; 1 that ran with awkward ratios |
 | The Verifier | It marked 9 correct numbers wrong or unsupported on the clean company. Fixed (F4): 150 of 150 correct on the same report |
@@ -44,7 +44,7 @@ Size: S is half a day or less, M is one to two days, L is three days or more.
 | F3 | **Done.** The release is the first Exhibit 99 that holds an income statement, whatever its number. The first line of the report names the exhibit by its own number. | S |
 | F6 | One claims file for each run, written by code: each claim's value, period, definition, source and status (stated or omitted, with the reason). The report's table is printed from it. | M |
 | F7 | The roles' text may hold a number only when code finds it in the claims file or in the line the text quotes. Code removes a sentence that fails and lists what it removed. | M |
-| F8 | Stop when the facts do not belong to the 10-K the desk chose. Today the desk prints MISMATCH and goes on. | S |
+| F8 | **Done, and changed.** When the facts on EDGAR are not the facts of the 10-K the desk chose, the desk states none of the annual facts, gives the reason in the report, and goes on. We had planned to stop the run, but a stopped run gives the other team no report at all, and a missing claim costs nothing. The same now happens when no revenue fact is found (decision log, entry 14). | S |
 
 ### G2. Another team cannot run it (85 becomes 70)
 
@@ -124,6 +124,7 @@ be made at all, the run stops and names the part and the cause. The desk never f
 | Adjusted EPS beside GAAP EPS | F2, done: the GAAP income statement only; never a reconciliation table |
 | Discontinued operations: EPS "from continuing operations" beside total EPS | F2, done: the row for the whole company; when only the continuing row is found, claim 11 is omitted |
 | A loss this year or last year | Done: no growth rate on a base that is zero or negative (decision log, entry 13) |
+| EDGAR's facts are not yet the new 10-K's, or the filer moved its revenue to a tag the desk does not read | F8, done: no annual fact is stated, with the reason; the quarter's claims and the rest of the report go on |
 | No operating income fact | Omit claim 3 |
 | A noncontrolling interest | Net income and equity on the parent's tags only; else omit |
 | Debt under another tag, one part only, or no debt at all | F1, done: "not computed", with the reason. Of 17 real 10-Ks, 5 are in this group, Oracle and Dell among them |

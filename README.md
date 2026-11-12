@@ -189,7 +189,9 @@ Known limits, as of 2026-11-11. The details are in [docs/decision-log.md](docs/d
    with the reason. The figures are not yet checked against XBRL, so check them against the release.
 2. Debt to equity says "not computed" when the 10-K does not tag both parts of its long-term debt in
    the way the desk reads. That is a missing claim, not an error.
-3. The desk needs all three filings. A company with no 10-K yet, or one that files 20-F and 6-K, stops the run.
+3. When SEC EDGAR's company facts are not yet the facts of the 10-K the desk read, the report states no
+   annual figure and says why. The quarter's claims and the rest of the report are still written.
+4. The desk needs all three filings. A company with no 10-K yet, or one that files 20-F and 6-K, stops the run.
 
 ## Tests
 
