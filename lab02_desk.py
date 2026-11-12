@@ -18,6 +18,8 @@ from typing import Any
 
 import requests
 
+from release import has_income_statement, numbers_in, read_quarter  # noqa: F401  (numbers_in: tests and other code import it from here)
+
 SEC = "https://www.sec.gov"
 DATA = "https://data.sec.gov"
 
@@ -181,8 +183,6 @@ def join_cells(cells: list[str]) -> str:
     return " | ".join(out)
 
 
-# The heading of an income statement, in a release or in a filing.
-STATEMENT = re.compile(r"statements? of (income|operations|earnings)|income statements?", re.I)
 # An earnings release is an Exhibit 99 of its 8-K: EX-99.1 for most filers, EX-99 or another number for some.
 EXHIBIT_99 = re.compile(r"\bEX-99(?:\.(\d+))?(?![\d.])", re.I)
 
@@ -190,11 +190,6 @@ EXHIBIT_99 = re.compile(r"\bEX-99(?:\.(\d+))?(?![\d.])", re.I)
 def as_text(raw: str) -> str:
     """A filing document as plain text. A document that is already plain text keeps its lines."""
     return html_to_text(raw) if "<html" in raw[:1000].lower() or "<document" in raw[:1000].lower() else raw
-
-
-def has_income_statement(text: str) -> bool:
-    """True when a short line of the text is the heading of an income statement."""
-    return any(len(line) < 90 and STATEMENT.search(line) for line in text.splitlines())
 
 
 def exhibits_99(index_html: str, primary: str) -> list[tuple[str, str]]:
@@ -262,15 +257,10 @@ def debt_at(values: dict[str, float]) -> dict[str, Any]:
     return {"value": None, "terms": "", "note": "", "tags": (), "why": why}
 
 
-def numbers_in(line: str) -> list[float]:
-    """The numeric cells of a table row after its label, without percentages; "(1.2)" is negative."""
-    values = []
-    for cell in line.split(" | ")[1:]:
-        match = re.fullmatch(r"\$?\(?\$?\s?(\d[\d,]*(?:\.\d+)?)\)?", cell.strip())
-        if match:
-            value = float(match.group(1).replace(",", ""))
-            values.append(-value if "(" in cell else value)
-    return values
+def not_stated(quarter: dict[str, Any]) -> list[str]:
+    """What step 6 could not read from the release, one line for each claim, with the reason."""
+    names = {"revenue": "the quarter's revenue (claim 9)", "growth": "the quarter's growth (claim 10)", "eps": "the quarter's diluted EPS (claim 11)"}
+    return [f"{names[claim]}: {why}" for claim, why in quarter.get("why", {}).items()]
 
 
 class Desk:
@@ -639,58 +629,34 @@ class Desk:
             (self.outdir / "ratios.json").write_text(json.dumps(self.ratios, indent=2), encoding="utf-8")
 
     def step6(self) -> None:
-        print("\n[6/7] Quote quarter revenue and diluted EPS lines from the release")
+        print("\n[6/7] Read the quarter's revenue and diluted EPS from the release's income statement")
         path = Path(self.selected["8-K"]["saved_text"])
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-        # Search the income statement first: a reconciliation table above it can repeat the same labels
-        # with adjusted figures in its second column.
-        start = next((i for i, line in enumerate(lines) if len(line) < 90 and STATEMENT.search(line)), 0)
-        order = list(range(start, len(lines))) + list(range(start))
-        # A total row first; a release without one states revenue or sales on a row of its own.
-        patterns = [r"\s*total\s*(net\s*)?(revenues?|sales)\b", r"\s*(net\s*)?(revenues?|sales)\b"]
-        revenue_index = next((i for p in patterns for i in order if re.match(p, lines[i], re.I) and len(numbers_in(lines[i])) >= 2), None)
-        print("  Total revenue row:")
-        if revenue_index is None:
-            print("    No matching table row found; inspect the saved release text manually.")
-        else:
-            for line in lines[max(0, revenue_index - 6):revenue_index + 1]:
-                if line.strip():
-                    print(f"    {line.strip()[:500]}")
-
-        eps_index = next((i for i in order if re.match(r"\s*diluted\b.*\d\.\d{2}\b", lines[i], re.I) and numbers_in(lines[i])), None)
-        eps_heading = None
-        if eps_index is not None:
-            eps_heading = next((i for i in range(eps_index - 1, max(-1, eps_index - 6), -1) if re.search(r"net income per common share|earnings per share", lines[i], re.I)), None)
-        print("  Diluted EPS row:")
-        if eps_index is None:
-            print("    No matching table row found; inspect the saved release text manually.")
-        else:
-            if eps_heading is not None:
-                print(f"    {lines[eps_heading].strip()}")
-            print(f"    {lines[eps_index].strip()[:500]}")
+        # release.py holds the rules: rows inside the income statement only, and columns by their dates.
+        q = read_quarter(lines)
+        if q["statement"]:
+            print(f"  Income statement, in {q['units'] or 'units its header does not state'}:")
+            for line in q["revenue_headers"]:
+                print(f"    {line[:300]}")
+            print(f"  Total revenue row:\n    {q['revenue_line'][:500]}")
+        if q.get("eps_line"):
+            print("  Diluted EPS row:" + (f"\n    {q['eps_heading']}" if q["eps_heading"] else "") + f"\n    {q['eps_line'][:500]}")
+        if q.get("revenue") is not None:
+            print(f"  The quarter is the column for {q['period']}" + (f"; the same quarter last year is the column for {q['prior_period']}" if q.get("prior_period") else ""))
+        if q.get("revenue_growth") is not None:
+            print(f"  Quarter revenue growth = {q['revenue_shown']} / {q['revenue_prior_shown']} - 1 = {q['revenue_growth']:.2%}")
+        if q.get("eps") is not None:
+            print(f"  Quarter diluted EPS = {q['eps_shown']}" + (f"; same quarter last year {q['eps_prior_shown']}" if q.get("eps_prior") is not None else ""))
+        for line in not_stated(q):
+            print(f"  Not stated: {line}")
 
         # The release's own sentence, which reads word for word in the filing.
         sentence = next((line for line in lines if re.search(r"per diluted share|diluted (?:earnings|EPS|net income) per", line, re.I) and re.search(r"\$\s?\d", line)), None)
         if sentence:
             flag = " (mentions adjusted or non-GAAP figures; claim 11 is GAAP)" if re.search(r"adjusted|non-GAAP", sentence, re.I) else ""
             print(f"  Release sentence{flag}:\n    {sentence.strip()[:700]}")
-
-        self.quarter = {
-            "revenue_line": lines[revenue_index].strip() if revenue_index is not None else None,
-            "revenue_headers": [x.strip() for x in lines[max(0, revenue_index - 6):revenue_index] if x.strip()] if revenue_index is not None else [],
-            "eps_line": lines[eps_index].strip() if eps_index is not None else None,
-            "eps_heading": lines[eps_heading].strip() if eps_heading is not None else None,
-            "sentence": sentence.strip() if sentence else None,
-        }
-        revenue = numbers_in(lines[revenue_index]) if revenue_index is not None else []
-        eps = numbers_in(lines[eps_index]) if eps_index is not None else []
-        if len(revenue) >= 2 and revenue[1]:
-            growth = revenue[0] / revenue[1] - 1
-            self.quarter.update(revenue=revenue[0], revenue_prior=revenue[1], revenue_growth=growth)
-            print(f"  Quarter revenue growth = {revenue[0]:,.0f} / {revenue[1]:,.0f} - 1 = {growth:.2%} (first two columns: this quarter and the same quarter last year; check the headers above)")
-        if len(eps) >= 2:
-            self.quarter.update(eps=eps[0], eps_prior=eps[1])
-            print(f"  Quarter diluted EPS = {eps[0]:.2f}; same quarter last year {eps[1]:.2f} (first two columns)")
+        q["sentence"] = sentence.strip() if sentence else None
+        self.quarter = q
 
     def step7(self, peers: list[str]) -> None:
         print("\n[7/7] Peer facts and operating margins")

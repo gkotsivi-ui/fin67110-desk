@@ -464,6 +464,30 @@ class StrategyManagerTests(unittest.TestCase):
         self.assertIn("- Parts sent back once: none", report)
         self.assertTrue((manager.desk.outdir / "audit.md").exists())
 
+    def test_a_quarter_claim_the_desk_could_not_read_says_why(self) -> None:
+        manager, _ = self.manager({})
+        manager.desk.quarter = {
+            "revenue_line": "Revenue | 500 | 480", "revenue": 500.0, "revenue_shown": "500", "period": "October 25, 2026", "units": "millions",
+            "why": {"growth": "the income statement has no column for the same quarter one year before",
+                    "eps": "the income statement has no diluted EPS row that the desk can read"},
+        }
+        table = manager.core_table()
+        self.assertIn("| 9 | Latest quarter's revenue (the column for October 25, 2026; in millions) | 500 | release line: Revenue \\| 500 \\| 480 |", table)
+        self.assertIn("| 10 | Quarter growth versus the same quarter last year | not computed | the income statement has no column for the same quarter one year before |", table)
+        self.assertIn("| 11 | Quarter diluted EPS, GAAP | not found | the income statement has no diluted EPS row that the desk can read |", table)
+        quarter = manager.financial_context()["latest_quarter"]
+        self.assertEqual(set(quarter["not_stated"]["claims"]), {"growth", "eps"})
+        self.assertNotIn("computed_in_code", quarter)
+
+    def test_the_quarter_as_the_release_prints_it(self) -> None:
+        manager, _ = self.manager({})
+        manager.desk.quarter.update(revenue_shown="95,723", revenue_prior_shown="86,156", eps=-0.04, eps_shown="$(0.04)",
+                                    period="August 30, 2026", prior_period="August 31, 2025", units="thousands", why={})
+        table = manager.core_table()
+        self.assertIn("| 10 | Quarter growth versus the same quarter last year (the columns for August 30, 2026 and August 31, 2025) | 11.10% | 95,723 / 86,156 - 1 (", table)
+        self.assertIn("| 11 | Quarter diluted EPS, GAAP | $(0.04) |", table)
+        self.assertNotIn("not_stated", manager.financial_context()["latest_quarter"])
+
     def test_a_number_the_desk_never_gave_is_sent_back_once(self) -> None:
         replies = iter([dict(GOOD_ANALYSIS, statement_analysis="Revenue was about $303.2 billion, up roughly 10%."), GOOD_ANALYSIS])
         manager, model = self.manager({"Research Analyst": research, "Financial Analyst": lambda p: next(replies), "Investment Advisor": advisor})
