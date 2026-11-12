@@ -221,6 +221,25 @@ November 9. Then we ran the full agent team on one of them. Entries 1 to 4 came 
   we did not check its five stated claims against its filings.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-12: the rehearsal before the first live run
+
+### 15. A full run on main, and three slips it caught
+
+- **What we ran.** `main` at commit 7cad05f, from the page, on the release in 8-K 0000858877-26-000106. It
+  took 308 seconds: six parts and one send-back. The Verifier marked 116 numbers correct, none wrong and
+  none unsupported, and left 3 prices unchecked. The eleven core claims are the same as on 2026-11-11.
+- **Slip 1: the README did not say to install LSEG's library.** The coding agent dropped that line when it
+  rewrote the README. `check_env.py` caught it on `main`: "LSEG_APP_KEY is set, but lseg-data is not
+  installed." Now `requirements-lseg.txt` names the version, and the README says when to install it.
+- **Slip 2: the first page the coding agent started was the old desk's.** Its tool starts a page from the
+  folder the session began in, and that folder holds the individual desk. We caught it by reading the
+  server's folder before we pressed Run. A rehearsal on that page would have proved the wrong code.
+- **Slip 3: the price did not come from LSEG, and the page did not say why.** LSEG Workspace was not
+  running. LSEG's library printed its errors where the page does not show them, and the desk took the close
+  from financialdatasets.ai. We saw it only because the report's second line names the source of its price.
+  Open: the desk should say so in one clear line.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code. I verified the sources myself; the judgments are mine.
