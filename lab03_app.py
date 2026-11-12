@@ -625,7 +625,7 @@ class StrategyManager:
                 "operating_income": f"${millions(op['current']['val'])} million (us-gaap:{op['tag']})" if op and op.get("current") else "not found",
                 "operating_margin": f"{peer['operating_margin']:.2%} = {millions(op['current']['val'])} / {millions(rev['current']['val'])} ($ millions)" if peer.get("operating_margin") is not None else "not computed",
             })
-        return {
+        context = {
             "company": d.company,
             "ticker": d.ticker,
             "fiscal_year_end": d.selected["10-K"]["reportDate"],
@@ -637,6 +637,11 @@ class StrategyManager:
             "price": self.price_note,
             "calculator_variables": {name: f"{value / 1e6:,.1f} ($ millions)" if name in self.money else f"{value:,.2f}" for name, value in self.variables.items()},
         }
+        if d.annual_problem:
+            # The facts on EDGAR are not the facts of the 10-K the desk read, so the desk gave none of them.
+            context["annual_facts_not_stated"] = {"why": d.annual_problem, "rule": "The desk could not establish this company's annual facts. "
+                                                  "Do not state an annual figure for it and do not compute one."}
+        return context
 
     def fact_entry(self, name: str, item: dict[str, Any]) -> dict[str, Any]:
         def shown(fact: dict[str, Any]) -> str:
@@ -781,7 +786,7 @@ class StrategyManager:
             item = d.fact_rows.get(name)
             current = item.get("current") if item else None
             if not current:
-                return "not found", "the desk found no fact for the fiscal year"
+                return "not found", d.annual_problem or "the desk found no fact for the fiscal year"
             value = f"${millions(current['val'])}M" if item["unit"] == "USD" else f"${current['val']:.2f}"
             return value, f"us-gaap:{item['tag']}, {current.get('start', 'instant')} to {current['end']}, {current.get('form')} {current.get('accn')}"
 

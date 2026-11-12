@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import contextlib
 import io
+import json
 import re
 import sys
 import tempfile
@@ -170,12 +171,13 @@ def company_facts(debt: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
     return {"facts": {"us-gaap": facts}}
 
 
-def desk_after_steps_4_and_5(debt: dict[str, list[dict[str, Any]]]) -> tuple[Desk, str]:
-    """A desk that read the made-up company facts, and everything steps 4 and 5 printed."""
+def desk_after_steps_4_and_5(debt: dict[str, list[dict[str, Any]]], report_date: str = YEAR_END, facts: dict[str, Any] | None = None) -> tuple[Desk, str]:
+    """A desk that read the made-up company facts, and everything steps 4 and 5 printed.
+    report_date is the fiscal year end of the 10-K the desk chose in step 2."""
     desk = Desk("Test Agent test@example.com", Path(tempfile.mkdtemp()))
     desk.company, desk.ticker, desk.cik = "Example Corp", "EXM", "0000000001"
-    desk.selected = {"10-K": {"accessionNumber": "0000000001-26-000001", "reportDate": YEAR_END}}
-    desk.get_json = lambda url: company_facts(debt)
+    desk.selected = {"10-K": {"accessionNumber": "0000000001-26-000001", "reportDate": report_date}}
+    desk.get_json = lambda url: facts or company_facts(debt)
     printed = io.StringIO()
     with contextlib.redirect_stdout(printed):
         desk.step4()
@@ -236,6 +238,54 @@ class DebtInTheStepsTests(unittest.TestCase):
         })
         self.assertEqual(self.debt_to_equity(desk)["shown"], "0.255")
         self.assertIsNone(desk.debt["prior"]["value"])
+
+
+class FactsOfTheChosenTenKTests(unittest.TestCase):
+    """The annual facts must be the facts of the 10-K the desk read. When they are not, the desk states none of
+    them, says why, and goes on: a report with missing claims is better than wrong ones, or no report. Made-up facts."""
+
+    DEBT = {NONCURRENT: [fact(None, LAST_YEAR_END, 4000e6), fact(None, YEAR_END, 5000e6)],
+            CURRENT: [fact(None, LAST_YEAR_END, 50e6), fact(None, YEAR_END, 100e6)]}
+
+    def test_the_10ks_own_fiscal_year_states_the_facts(self) -> None:
+        desk, printed = desk_after_steps_4_and_5(self.DEBT)
+        self.assertEqual(desk.annual_problem, "")
+        self.assertEqual(desk.fact_rows["revenue"]["current"]["val"], 100000e6)
+        self.assertIn(f"equals the 10-K's fiscal year end {YEAR_END}: OK", printed)
+
+    def test_facts_that_stop_a_year_before_the_10k_are_not_stated(self) -> None:
+        # The 10-K the desk read ends its year in 2027. The company facts stop in 2026: EDGAR has not caught up,
+        # or the filer changed its revenue tag.
+        desk, printed = desk_after_steps_4_and_5(self.DEBT, report_date="2027-08-29")
+        self.assertIn(YEAR_END, desk.annual_problem)
+        self.assertIn("2027-08-29", desk.annual_problem)
+        self.assertTrue(all(item is None for item in desk.fact_rows.values()))
+        self.assertTrue(all(r["value"] is None for r in desk.ratios))
+        self.assertEqual({r["why"] for r in desk.ratios if r["name"] != "P/E"}, {desk.annual_problem})
+        self.assertNotIn("100,000.0", printed)  # another year's revenue is never printed as this year's
+        self.assertIn("The annual facts are not stated", printed)
+        saved = json.loads((desk.outdir / "facts.json").read_text(encoding="utf-8"))
+        self.assertIsNone(saved["facts"]["revenue"])
+        self.assertEqual(saved["not_stated"], desk.annual_problem)
+
+    def test_a_cover_date_a_few_days_from_the_year_end_is_the_same_year(self) -> None:
+        desk, printed = desk_after_steps_4_and_5(self.DEBT, report_date="2026-08-31")
+        self.assertEqual(desk.annual_problem, "")
+        self.assertEqual(desk.fact_rows["revenue"]["current"]["val"], 100000e6)
+        self.assertIn("OK", printed)
+
+    def test_no_revenue_fact_states_no_annual_fact_and_does_not_stop(self) -> None:
+        facts = company_facts(self.DEBT)
+        del facts["facts"]["us-gaap"]["Revenues"]
+        desk, printed = desk_after_steps_4_and_5({}, facts=facts)
+        self.assertIn("revenue", desk.annual_problem)
+        self.assertTrue(all(item is None for item in desk.fact_rows.values()))
+        self.assertIn("Debt to equity: unavailable", printed)
+
+    def test_without_a_10k_date_the_facts_are_read_as_before(self) -> None:
+        desk, _ = desk_after_steps_4_and_5(self.DEBT, report_date="")
+        self.assertEqual(desk.annual_problem, "")
+        self.assertIsNotNone(desk.fact_rows["revenue"])
 
 
 ACCESSION = "0000000001-26-000004"
@@ -463,6 +513,24 @@ class StrategyManagerTests(unittest.TestCase):
         self.assertEqual(model.roles, ["Research Analyst", "Financial Analyst", "Investment Advisor"])
         self.assertIn("- Parts sent back once: none", report)
         self.assertTrue((manager.desk.outdir / "audit.md").exists())
+
+    def test_annual_claims_the_desk_could_not_establish_say_why(self) -> None:
+        desk = example_desk(Path(tempfile.mkdtemp()))
+        desk.annual_problem = "the XBRL company facts end their latest fiscal year on 2025-08-31, and the 10-K the desk read ends its year on 2026-08-30"
+        desk.fact_rows = {name: None for name in desk.fact_rows}
+        with contextlib.redirect_stdout(io.StringIO()):
+            desk.step5(None)
+        manager = app.StrategyManager(desk, FakeModel({}), None, "none", app.datetime.now().astimezone(), "Claude Code")
+        table = manager.core_table()
+        self.assertIn(f"| 1 | Total revenue, fiscal year ended 2026-08-30 | not found | {desk.annual_problem} |", table)
+        self.assertIn(f"| 2 | Revenue growth versus the prior year | not computed | {desk.annual_problem} |", table)
+        self.assertIn(f"| 7 | Debt to equity, current portion included | not computed | {desk.annual_problem} |", table)
+        self.assertIn("| 9 | Latest quarter's revenue", table)  # the quarter's claims come from the release and are still stated
+        self.assertIn("| 95,723 |", table)
+        context = manager.financial_context()
+        self.assertEqual((context["facts"], context["calculator_variables"].get("revenue")), ([], None))
+        self.assertEqual(context["annual_facts_not_stated"]["why"], desk.annual_problem)
+        self.assertNotIn("annual_facts_not_stated", self.manager({})[0].financial_context())
 
     def test_a_quarter_claim_the_desk_could_not_read_says_why(self) -> None:
         manager, _ = self.manager({})

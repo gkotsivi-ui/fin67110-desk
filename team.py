@@ -170,6 +170,7 @@ class Team:
             "more_ratios": more,
             "quarter": desk.quarter,
             "price": note,
+            "annual_facts_not_stated": desk.annual_problem or None,
         })
         return {"desk": desk, "manager": manager, "price": price, "more": more, "outputs": {}, "runs": {a: 0 for a in ANALYSTS}, "feedback": {}, "sent_back": [], "calculator": []}
 
