@@ -99,20 +99,20 @@ def provider_of(key: str) -> str:
 
 
 def api_key_problem(key: str, where: Path | None) -> str | None:
-    """Why API_KEY cannot run the roles; None for an Anthropic key or a Google AI Studio key."""
-    provider = provider_of(key)
-    if provider in ("anthropic", "google"):
+    """Why API_KEY cannot run the roles; None for a key of Anthropic, of Google AI Studio or of OpenAI."""
+    if provider_of(key) and not is_placeholder(key):
         return None
     if where is None and not key:
         return no_env_message()
     place = where or "the environment"
     if is_placeholder(key):
-        return (f"API_KEY in {place} is empty or still the example. Paste your Anthropic key (it starts with sk-ant-) "
-                "or your Google AI Studio key (it starts with AIza), or run python set_keys.py.")
-    kind = "an OpenAI key" if provider == "openai" else "not a key this desk can use"
-    return (f"API_KEY in {place} is {kind}. The roles and the Verifier run on Anthropic's API (a key that starts with sk-ant-, "
-            "from platform.claude.com) or on Google's Gemini API (a key that starts with AIza, from aistudio.google.com). "
-            "The seven steps alone (lab02_desk.py) need no model key.")
+        return (f"API_KEY in {place} is empty or still the example. Paste your Anthropic key (it starts with sk-ant-), "
+                "your Google AI Studio key (it starts with AIza) or your OpenAI key (it starts with sk-), "
+                "or run python set_keys.py.")
+    return (f"API_KEY in {place} is not a key this desk can use. The roles and the Verifier run on Anthropic's API "
+            "(a key that starts with sk-ant-, from platform.claude.com), on Google's Gemini API (a key that starts "
+            "with AIza, from aistudio.google.com) or on OpenAI's API (a key that starts with sk-, from "
+            "platform.openai.com). The seven steps alone (lab02_desk.py) need no model key.")
 
 
 CELL_BREAK = "\x01"  # a block tag inside a table cell; see html_to_text

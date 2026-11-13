@@ -1,4 +1,4 @@
-"""Offline tests of the setup: how .env is read, the key checks, and the Gemini path against a fake reply.
+"""Offline tests of the setup: how .env is read, the key checks, and the Gemini and OpenAI paths against made-up replies.
 
 Run from the repository folder: python -m unittest discover -s tests
 """
@@ -8,7 +8,9 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import os
 import re
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -61,22 +63,36 @@ class EnvFile(unittest.TestCase):
             self.assertTrue(is_placeholder(example[name]), name)
         self.assertFalse(is_placeholder("A Student a@purdue.edu"))
 
+    def test_the_example_names_the_default_model_of_each_provider(self) -> None:
+        text = (ROOT / ".env.example").read_text(encoding="utf-8")
+        for model in (app.DEFAULT_MODEL, app.GEMINI_MODEL, app.OPENAI_MODEL):
+            self.assertIn(model, text)
+
 
 class KeyChecks(unittest.TestCase):
     def test_providers(self) -> None:
         self.assertEqual([provider_of(k) for k in (ANTHROPIC, GOOGLE, OPENAI, "abc")], ["anthropic", "google", "openai", ""])
 
-    def test_anthropic_and_google_keys_pass(self) -> None:
-        self.assertIsNone(api_key_problem(ANTHROPIC, ENV))
-        self.assertIsNone(api_key_problem(GOOGLE, ENV))
+    def test_a_key_of_each_provider_passes(self) -> None:
+        for key in (ANTHROPIC, GOOGLE, OPENAI):
+            self.assertIsNone(api_key_problem(key, ENV), key[:8])
 
-    def test_an_openai_key_says_which_keys_work(self) -> None:
-        message = api_key_problem(OPENAI, ENV)
-        for words in ("an OpenAI key", "sk-ant-", "AIza", "lab02_desk.py) need no model key"):
+    def test_a_key_of_no_provider_says_which_keys_work(self) -> None:
+        message = api_key_problem("abc" + "x" * 40, ENV)
+        for words in ("not a key this desk can use", "sk-ant-", "AIza", "sk-", "OpenAI", "lab02_desk.py) need no model key"):
             self.assertIn(words, message)
+
+    def test_set_keys_takes_a_key_of_each_provider(self) -> None:
+        import set_keys
+
+        check = dict((name, check) for name, _, check in set_keys.KEYS)["API_KEY"]
+        for key in (ANTHROPIC, GOOGLE, OPENAI):
+            self.assertIsNone(check(key), key[:8])
+        self.assertIsNotNone(check("abc"))
 
     def test_example_key_and_no_env_file(self) -> None:
         self.assertIn("still the example", api_key_problem("", ENV))
+        self.assertIn("still the example", api_key_problem("sk-paste-your-key-here", ENV))  # a prefix alone is not a key
         with tempfile.TemporaryDirectory() as tmp, contextlib.chdir(tmp):
             self.assertIn("There is no .env file", api_key_problem("", None))
             (Path(tmp) / ".env.txt").write_text("API_KEY=x\n", encoding="utf-8")
@@ -104,6 +120,14 @@ class GeminiPath(unittest.TestCase):
         self.assertEqual(app.Model(GOOGLE, "gemini/gemini-3.5-flash-lite", "medium").model, "gemini-3.5-flash-lite")
         self.assertEqual(app.Model(ANTHROPIC, "gemini-3.8-flash", "medium").model, app.DEFAULT_MODEL)
         self.assertEqual(app.Model(ANTHROPIC, "claude-sonnet-5-5", "medium").model, "claude-sonnet-5-5")
+        # An OpenAI key: MODEL when it names an OpenAI model, else the default for OpenAI.
+        self.assertEqual(app.Model(OPENAI, app.DEFAULT_MODEL, "medium").model, app.OPENAI_MODEL)
+        self.assertEqual(app.Model(OPENAI, "gemini-3.8-flash", "medium").model, app.OPENAI_MODEL)
+        self.assertEqual(app.Model(OPENAI, "openai/gpt-x-test", "medium").model, "gpt-x-test")
+        # A model of OpenAI does not apply to another provider's key.
+        self.assertEqual(app.Model(GOOGLE, "gpt-x-test", "medium").model, app.GEMINI_MODEL)
+        self.assertEqual(app.Model(ANTHROPIC, "gpt-x-test", "medium").model, app.DEFAULT_MODEL)
+        self.assertEqual([app.Model(key, "", "medium").vendor for key in (ANTHROPIC, GOOGLE, OPENAI)], ["Anthropic", "Google", "OpenAI"])
 
     def test_a_reply_is_read_as_an_anthropic_message_is(self) -> None:
         model = app.Model(GOOGLE, app.GEMINI_MODEL, "medium")
@@ -130,6 +154,125 @@ class GeminiPath(unittest.TestCase):
         with self.assertRaises(app.RoleError) as caught:
             self.ask(app.Model(GOOGLE, app.GEMINI_MODEL, "medium"), FakeResponse(200, reply))
         self.assertIn("declined", str(caught.exception))
+
+
+class EmptyResponse(FakeResponse):
+    """A reply with no body, as OpenAI's API gives for a request with no key."""
+
+    def __init__(self, status: int) -> None:
+        super().__init__(status, {})
+        self.text = ""
+
+    def json(self) -> dict[str, Any]:
+        raise ValueError("no JSON in the body")
+
+
+class OpenAIPath(unittest.TestCase):
+    """The OpenAI path against made-up replies in the shape of OpenAI's Responses API. No test calls OpenAI."""
+
+    REPLY = {
+        "id": "resp_test", "status": "completed", "model": "gpt-x-test-2026-01-01",
+        "output": [
+            {"type": "reasoning", "summary": []},
+            {"type": "message", "role": "assistant", "status": "completed",
+             "content": [{"type": "output_text", "text": '{"answer": 42}', "annotations": []}]},
+        ],
+        "usage": {"input_tokens": 120, "output_tokens": 42},
+    }
+
+    def ask(self, response: FakeResponse) -> tuple[dict[str, Any], mock.MagicMock, app.Model]:
+        model = app.Model(OPENAI, "gpt-x-test", "medium")
+        with mock.patch.object(app.requests, "post", return_value=response) as post, contextlib.redirect_stdout(io.StringIO()):
+            return model.ask("Research Analyst", "Reply with JSON.", {"task": "test"}), post, model
+
+    def refused(self, response: FakeResponse) -> str:
+        with self.assertRaises(app.RoleError) as caught:
+            self.ask(response)
+        return str(caught.exception)
+
+    def test_a_reply_is_read_as_an_anthropic_message_is(self) -> None:
+        data, post, model = self.ask(FakeResponse(200, self.REPLY))
+        self.assertEqual(data, {"answer": 42})
+        self.assertEqual(post.call_args.args[0], "https://api.openai.com/v1/responses")
+        self.assertEqual(post.call_args.kwargs["headers"], {"Authorization": f"Bearer {OPENAI}"})  # the key goes in a header, never in the URL
+        sent = post.call_args.kwargs["json"]
+        self.assertEqual((sent["model"], sent["instructions"], sent["store"]), ("gpt-x-test", "Reply with JSON.", False))
+        self.assertEqual(json.loads(sent["input"]), {"task": "test"})
+        self.assertEqual(model.exchanges[0]["served_by"], "gpt-x-test-2026-01-01")
+        self.assertEqual(model.exchanges[0]["usage"], {"input_tokens": 120, "output_tokens": 42})
+
+    def test_the_text_is_found_wherever_the_message_stands(self) -> None:
+        reply = dict(self.REPLY, output=list(reversed(self.REPLY["output"])), usage={"prompt_tokens": 7, "completion_tokens": 5})
+        data, _, model = self.ask(FakeResponse(200, reply))
+        self.assertEqual(data, {"answer": 42})
+        self.assertEqual(model.exchanges[0]["usage"], {"input_tokens": 7, "output_tokens": 5})
+
+    def test_a_bad_key_stops_with_what_to_do(self) -> None:
+        error = {"error": {"message": "Incorrect API key provided.", "type": "invalid_request_error", "param": None, "code": "invalid_api_key"}}
+        # OpenAI's own message can show the key, whole or with stars in the middle. The desk's message shows neither.
+        starred = f"{OPENAI[:8]}{'*' * 30}{OPENAI[-4:]}"
+        shown = {"error": {"message": f"Incorrect API key provided: {starred}. The key sent was {OPENAI}.", "code": "invalid_api_key"}}
+        for response in (FakeResponse(401, error), EmptyResponse(401), FakeResponse(401, shown)):
+            message = self.refused(response)
+            self.assertIn("rejected API_KEY", message)
+            for part in (OPENAI, starred, OPENAI[-4:] + "."):
+                self.assertNotIn(part, message)
+
+    def test_a_model_the_key_cannot_use(self) -> None:
+        error = {"error": {"message": "The model `gpt-x-test` does not exist or you do not have access to it.", "type": "invalid_request_error", "code": "model_not_found"}}
+        for status in (404, 400):
+            self.assertIn("Set MODEL in .env", self.refused(FakeResponse(status, error)))
+
+    def test_no_credit_is_not_the_same_as_too_many_requests(self) -> None:
+        quota = {"error": {"message": "You exceeded your current quota.", "type": "insufficient_quota", "code": "insufficient_quota"}}
+        rate = {"error": {"message": "Rate limit reached.", "type": "requests", "code": "rate_limit_exceeded"}}
+        self.assertIn("credit", self.refused(FakeResponse(429, quota)))
+        self.assertIn("Wait a minute", self.refused(FakeResponse(429, rate)))
+
+    def test_a_refusal_and_an_empty_reply(self) -> None:
+        refusal = dict(self.REPLY, output=[{"type": "message", "content": [{"type": "refusal", "refusal": "I cannot help with that."}]}])
+        self.assertIn("declined", self.refused(FakeResponse(200, refusal)))
+        self.assertIn("declined", self.refused(FakeResponse(200, dict(self.REPLY, status="incomplete", incomplete_details={"reason": "content_filter"}, output=[]))))
+        self.assertIn("no text", self.refused(FakeResponse(200, dict(self.REPLY, output=[]))))
+
+    def test_a_reply_cut_off_at_the_token_limit_says_so(self) -> None:
+        cut = dict(self.REPLY, status="incomplete", incomplete_details={"reason": "max_output_tokens"},
+                   output=[{"type": "message", "content": [{"type": "output_text", "text": '{"answer": 4'}]}])
+        self.assertIn("stop reason max_tokens", self.refused(FakeResponse(200, cut)))
+
+    def test_the_desk_code_names_no_openai_model_but_its_default(self) -> None:
+        source = (ROOT / "lab03_app.py").read_text(encoding="utf-8")
+        self.assertEqual(set(re.findall(r"\bgpt-[\w.-]+", source)), {app.OPENAI_MODEL})
+
+
+class CheckEnvOffline(unittest.TestCase):
+    """check_env.py --offline, run in a folder that holds a made-up .env. It makes no network call."""
+
+    SETTINGS = ("SEC_USER_AGENT", "API_KEY", "ANTHROPIC_API_KEY", "MODEL", "LSEG_APP_KEY", "CLOSES_FILE", "FINANCIAL_DATASETS_API_KEY")
+
+    def check(self, key: str) -> str:
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / ".env").write_text(f"SEC_USER_AGENT=A Student a@purdue.edu\nAPI_KEY={key}\n", encoding="utf-8")
+            # The settings of the person who runs the tests stay out of the check.
+            env = {name: value for name, value in os.environ.items() if name not in self.SETTINGS}
+            done = subprocess.run([sys.executable, str(ROOT / "check_env.py"), "--offline"], cwd=tmp, env=env,
+                                  capture_output=True, encoding="utf-8", errors="replace", timeout=120)
+        return done.stdout + done.stderr
+
+    def test_it_names_the_provider_and_the_model_and_prints_no_key(self) -> None:
+        for key, kind, model in ((ANTHROPIC, "an Anthropic key", app.DEFAULT_MODEL), (GOOGLE, "a Google AI Studio key", app.GEMINI_MODEL),
+                                 (OPENAI, "an OpenAI key", app.OPENAI_MODEL)):
+            printed = self.check(key)
+            line = next((text for text in printed.splitlines() if "API_KEY:" in text), printed)
+            self.assertTrue(line.startswith("ok"), line)
+            self.assertIn(f"API_KEY: {kind}", line)
+            self.assertIn(f"the roles will run on {model}", line)
+            self.assertNotIn(key, printed)
+
+    def test_a_key_of_no_provider_is_a_fix(self) -> None:
+        printed = self.check("abc" + "x" * 40)
+        self.assertIn("FIX   API_KEY in", printed)
+        self.assertIn("not a key this desk can use", printed)
 
 
 class NoCompanyNamedInSetupCode(unittest.TestCase):

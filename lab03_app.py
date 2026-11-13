@@ -35,15 +35,25 @@ FALLBACK_MODELS = {"claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5", "cla
 GEMINI_MODEL = "gemini-3.8-flash"
 GEMINI_API = "https://generativelanguage.googleapis.com/v1beta"
 GEMINI_STOPS = {"STOP": "end_turn", "MAX_TOKENS": "max_tokens"}
+# With an OpenAI key (it starts with sk-, and not with sk-ant-), the roles run on OpenAI's Responses API; MODEL can
+# name another OpenAI model. The default is the default of one teammate's own desk. OpenAI's models page listed it
+# on 2026-11-12, with the Responses API among its endpoints.
+OPENAI_MODEL = "gpt-6.1-sol"
+OPENAI_API = "https://api.openai.com/v1"
 
 
 def model_for(provider: str, model: str) -> str:
     """The model ID for the key's provider. MODEL may be written as CrewAI writes it (gemini/gemini-3.5-flash-lite);
-    a model of the other provider does not apply, so that provider's default is used."""
+    a model of another provider does not apply, so the default of the key's own provider is used."""
     if provider == "google":
         name = model.removeprefix("gemini/").removeprefix("models/")
         return name if name.startswith("gemini") else GEMINI_MODEL
+    if provider == "openai":
+        name = model.removeprefix("openai/")
+        return name if name and not name.startswith(("claude", "gemini", "models/")) else OPENAI_MODEL
     return model if model.startswith("claude") else DEFAULT_MODEL
+
+
 PARTS = [
     "Overview",
     "Market Positioning and Growth Outlook",
@@ -274,15 +284,17 @@ def ratio_for_context(ratio: dict[str, Any]) -> dict[str, str]:
 
 class Model:
     """One model behind the analyst roles and the Verifier: Anthropic's API for an Anthropic key, Google's Gemini API
-    for a Google AI Studio key. Every exchange is kept for roles.json."""
+    for a Google AI Studio key, OpenAI's API for an OpenAI key. The key picks the provider. Every exchange is kept
+    for roles.json."""
 
     def __init__(self, api_key: str, model: str, effort: str) -> None:
-        self.provider = "google" if provider_of(api_key) == "google" else "anthropic"
-        self.vendor = "Google" if self.provider == "google" else "Anthropic"
+        provider = provider_of(api_key)
+        self.provider = provider if provider in ("google", "openai") else "anthropic"
+        self.vendor = {"google": "Google", "openai": "OpenAI"}.get(self.provider, "Anthropic")
         self.model = model_for(self.provider, model)
         self.effort = effort
         self.exchanges: list[dict[str, Any]] = []
-        self.api_key = api_key if self.provider == "google" else ""
+        self.api_key = api_key if self.provider != "anthropic" else ""
         self.client = anthropic.Anthropic(api_key=api_key) if self.provider == "anthropic" else None
 
     def ask(self, role: str, instructions: str, packet: dict[str, Any]) -> dict[str, Any]:
@@ -310,6 +322,8 @@ class Model:
     def send(self, instructions: str, packet: dict[str, Any]) -> tuple[str, Any]:
         if self.provider == "google":
             return self.send_gemini(instructions, packet)
+        if self.provider == "openai":
+            return self.send_openai(instructions, packet)
         request: dict[str, Any] = {
             "model": self.model,
             "max_tokens": 32000,
@@ -381,6 +395,87 @@ class Model:
         if message.stop_reason == "max_tokens":
             print("    the reply reached max_tokens and may be cut off")
         return text, message
+
+    def send_openai(self, instructions: str, packet: dict[str, Any]) -> tuple[str, Any]:
+        """One call to OpenAI's Responses API. The reply gets the fields that ask() reads from an Anthropic message.
+        The request sets no output format and no token limit: the role's instructions ask for JSON, and ask() tries
+        once more when a reply is not JSON, as it does for every provider."""
+        body = {
+            "model": self.model,
+            "instructions": instructions,
+            "input": json.dumps(packet, indent=1, ensure_ascii=False),
+            "store": False,  # OpenAI keeps each response on its side unless the request says not to
+        }
+        try:
+            # The key goes in a header, never in the URL.
+            response = requests.post(f"{OPENAI_API}/responses", json=body,
+                                     headers={"Authorization": f"Bearer {self.api_key}"}, timeout=600)
+        except requests.RequestException as exc:
+            raise RoleError("Could not reach the OpenAI API. Check the network and run again.") from exc
+        if response.status_code != 200:
+            raise RoleError(openai_error(response, self.model))
+        try:
+            data = response.json()
+        except ValueError as exc:
+            raise RoleError("The OpenAI API sent a reply that is not JSON. Run again.") from exc
+        if data.get("error"):
+            raise RoleError(f"The OpenAI API reported an error: {without_key(str(data['error']))[:300]}")
+        # The reply's text is in the "message" items of "output". Other items hold the model's reasoning, and the
+        # message is not always the first item.
+        parts = [part for item in data.get("output") or [] if item.get("type") == "message" for part in item.get("content") or []]
+        refusal = next((str(part.get("refusal") or "refusal") for part in parts if part.get("type") == "refusal"), "")
+        reason = str((data.get("incomplete_details") or {}).get("reason") or "")
+        if refusal or reason == "content_filter":
+            raise RoleError(f"The model declined the request (OpenAI: {refusal or reason}).")
+        text = "".join(str(part.get("text") or "") for part in parts if part.get("type") == "output_text")
+        if not text:
+            raise RoleError("The OpenAI API sent a reply with no text. Run again.")
+        status = str(data.get("status") or "completed")
+        usage = data.get("usage") or {}
+        message = SimpleNamespace(
+            model=data.get("model") or self.model,
+            stop_reason="max_tokens" if reason == "max_output_tokens" else "end_turn" if status == "completed" else status,
+            usage=SimpleNamespace(
+                # The Responses API says input_tokens and output_tokens. OpenAI's older API says prompt_tokens and
+                # completion_tokens, so both pairs are read.
+                input_tokens=int(usage.get("input_tokens") or usage.get("prompt_tokens") or 0),
+                output_tokens=int(usage.get("output_tokens") or usage.get("completion_tokens") or 0),
+            ),
+        )
+        if message.stop_reason == "max_tokens":
+            print("    the reply reached max_tokens and may be cut off")
+        return text, message
+
+
+def without_key(text: str) -> str:
+    """The text with anything that looks like an OpenAI key cut out. OpenAI's message for a bad key shows part of
+    the key, and no part of a key goes into what the desk prints or saves."""
+    return re.sub(r"\bsk-[\w*.\-]{6,}", "sk-...", text)
+
+
+def openai_error(response: requests.Response, model: str) -> str:
+    """The OpenAI API's error, with what to do about it. The reply can have no body at all."""
+    try:
+        error = response.json().get("error") or {}
+    except (ValueError, AttributeError):
+        error = {}
+    if not isinstance(error, dict):
+        error = {"message": str(error)}
+    said = without_key(str(error.get("message") or response.text).strip())[:300]  # the key is cut out first, then the length
+    kind = str(error.get("code") or error.get("type") or "")
+    status = response.status_code
+    detail = f"{status}: {said}" if said else str(status)
+    if status == 401:
+        return f"The OpenAI API rejected API_KEY ({detail}). Paste a valid key from platform.openai.com into .env."
+    if status == 404 or kind == "model_not_found":
+        return (f"Model {model} was not found, or this key cannot use it ({detail}). "
+                "Set MODEL in .env to an OpenAI model that this key can use.")
+    if kind == "insufficient_quota":
+        return (f"The OpenAI account behind API_KEY has no credit left ({detail}). "
+                "Add credit at platform.openai.com, or use a key of another provider.")
+    if status == 429:
+        return f"The OpenAI API is limiting this key ({detail}). Wait a minute and run again."
+    return f"The OpenAI API refused the request ({detail})."
 
 
 def gemini_error(response: requests.Response, model: str) -> str:

@@ -13,8 +13,10 @@ EXAMPLE = HERE / ".env.example"
 KEYS: list[tuple[str, str, Callable[[str], str | None] | None]] = [
     ("SEC_USER_AGENT", "name and email for SEC EDGAR, as in Your Name your.email@purdue.edu",
      lambda v: None if "@" in v else "it has no email"),
-    ("API_KEY", "Anthropic API key (it starts with sk-ant-) or Google AI Studio key (it starts with AIza)",
-     lambda v: None if v.startswith(("sk-ant-", "AIza")) else "it does not start with sk-ant- or AIza"),
+    # One model key. An Anthropic key starts with sk-ant-, a Google AI Studio key with AIza, an OpenAI key with sk-.
+    ("API_KEY", "model key: an Anthropic key (it starts with sk-ant-), a Google AI Studio key (it starts with AIza) "
+                "or an OpenAI key (it starts with sk-)",
+     lambda v: None if v.startswith(("sk-", "AIza")) else "it does not start with sk-ant-, AIza or sk-"),
     ("FINANCIAL_DATASETS_API_KEY", "class financialdatasets.ai key", None),
 ]
 

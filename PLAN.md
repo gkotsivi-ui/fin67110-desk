@@ -49,13 +49,18 @@ Size: S is half a day or less, M is one to two days, L is three days or more.
 
 ### G2. Another team cannot run it (85 becomes 70)
 
-- **An OpenAI key does not work.** Add it as a plain web request, as the Gemini path is. Size M.
+- **An OpenAI key: built on 2026-11-12, not yet proven.** It is a plain web request, as the Gemini path
+  is, with tests on made-up replies. A made-up key gets OpenAI's real refusal, and the desk's message
+  shows no part of the key. No real key was at hand, so no report has been written on OpenAI. Left to do:
+  a teammate with an OpenAI key runs `check_env.py` and one company, and we read that report's Verifier
+  table as we read the others (decision log, entry 16). Size S.
 - **Accuracy must not depend on the model.** Run one company on each provider's cheapest model. The
   claims table must be the same on all of them, and the hook must pass. Size S, after F6 and F7.
 - **A long folder path stops the install on Windows.** One package needs a path of 138 characters
   inside the repository folder, and Windows allows 260 in all. The README now says to keep the path
-  short. Calling Anthropic by a plain web request, as the desk calls Gemini, would remove that
-  package. Do it with the OpenAI key.
+  short. Calling Anthropic by a plain web request, as the desk calls Gemini and OpenAI, would remove
+  that package. Not done with the OpenAI key: the Anthropic path is the one the live runs use, so it
+  changes only with a run of its own to prove it. Size S.
 - **Only the direct packages are pinned.** Add a constraints file from a clean install, tested on a Mac. Size S.
 - **Nobody outside has followed the README.** Each teammate does it on their own computer this week, with
   the README alone, and writes down every place they had to guess. One Windows and one Mac at least.
@@ -157,7 +162,7 @@ CoreWeave, NVIDIA, AMD, Broadcom, Dell, Super Micro, Vertiv.
 | Tue Nov 17 | Lab 08: the one command, the replay, the seconds. Arrive with the hand-drawn diagram and the base rate. |
 | Wed Nov 18 | Checkpoint 3 page drafted. The live record table in it comes from `live_record.py`. |
 | **Thu Nov 19, 11:59 PM ET** | **Checkpoint 3 uploaded.** Lab 09: two names from another team, and the three-column table. |
-| Sun Nov 22 | Week 5 live report inside its window. F6, F7 and the hook done. OpenAI key works. |
+| Sun Nov 22 | Week 5 live report inside its window. F6, F7 and the hook done. One real run on an OpenAI key, by a teammate who has one. |
 | Mon Nov 23 | Freeze. The sweep on the build-out set shows no wrong number in the companies we checked by hand. Two people who did not write the README have run the desk from it, one on Windows and one on a Mac. |
 | **Tue Nov 24** | **The exchange.** They run ours. We run theirs and audit both reports. |
 | Nov 25 to 29 | Week 6 live report if a release is convenient. Start `audits.md`. Ask one reader outside the course to run the desk from the README and write what they used it for: the project page counts that as adoption evidence too. |

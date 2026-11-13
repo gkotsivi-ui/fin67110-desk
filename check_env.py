@@ -74,10 +74,10 @@ if where is not None or key:
     else:
         provider = provider_of(key)
         if "anthropic" not in missing:
-            from lab03_app import DEFAULT_MODEL, GEMINI_API, model_for
+            from lab03_app import DEFAULT_MODEL, GEMINI_API, OPENAI_API, model_for, openai_error
 
             model = model_for(provider, setting("MODEL") or DEFAULT_MODEL)
-        kind = "an Anthropic key" if provider == "anthropic" else "a Google AI Studio key"
+        kind = {"anthropic": "an Anthropic key", "google": "a Google AI Studio key", "openai": "an OpenAI key"}[provider]
         report(True, f"API_KEY: {kind} ({key[:4]}..., {len(key)} characters)" + (f"; the roles will run on {model}" if model else ""))
 lseg_key, closes_file = setting("LSEG_APP_KEY"), setting("CLOSES_FILE")
 if lseg_key:
@@ -106,14 +106,23 @@ if not OFFLINE and agent_ok:
         report(False, f"Could not reach SEC EDGAR ({exc.__class__.__name__}). Check the network.")
 if not OFFLINE and model:
     # Free calls that read one model's details: they show that the key works and the model exists.
-    google = provider_of(key) == "google"
-    url = f"{GEMINI_API}/models/{model}" if google else f"https://api.anthropic.com/v1/models/{model}"
-    headers = {"x-goog-api-key": key} if google else {"x-api-key": key, "anthropic-version": "2023-06-01"}
-    vendor, console = ("Google", "aistudio.google.com") if google else ("Anthropic", "platform.claude.com")
+    provider = provider_of(key)
+    if provider == "google":
+        vendor, console = "Google", "aistudio.google.com"
+        url, headers = f"{GEMINI_API}/models/{model}", {"x-goog-api-key": key}
+    elif provider == "openai":
+        vendor, console = "OpenAI", "platform.openai.com"
+        url, headers = f"{OPENAI_API}/models/{model}", {"Authorization": f"Bearer {key}"}
+    else:
+        vendor, console = "Anthropic", "platform.claude.com"
+        url, headers = f"https://api.anthropic.com/v1/models/{model}", {"x-api-key": key, "anthropic-version": "2023-06-01"}
     try:
         r = requests.get(url, headers=headers, timeout=20)
         if r.status_code == 200:
             report(True, f"{vendor} accepts API_KEY, and {model} is available")
+        elif provider == "openai":
+            # The words a run would print for the same answer: a bad key, a model this key cannot use, or no credit.
+            report(False, openai_error(r, model))
         elif r.status_code == 404:
             report(False, f"{vendor} accepts API_KEY, but has no model {model}. Set MODEL in .env to a current model ID.")
         else:
