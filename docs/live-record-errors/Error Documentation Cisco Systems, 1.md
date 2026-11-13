@@ -15,6 +15,7 @@
   the page at about 09:50 on 2026-11-13.
 - The eleven core claims in the report's table, against the saved 10-K text and the saved release text. The
   coding agent checked each one. The table below names the line of the saved text that holds each number.
+- Team member gkotsivi-ui confirmed on 2026-11-13 that they checked the eleven core claims themselves.
 - The Verifier's marks in `verified_report.md` and `verification.json`: 127 numbers, 125 correct, 0 wrong,
   0 unsupported, 2 not checked. The two that are not checked are the price, which the report states twice.
 
