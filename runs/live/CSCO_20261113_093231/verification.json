@@ -1,0 +1,2376 @@
+{
+ "counts": {
+  "correct": 125,
+  "wrong": 0,
+  "unsupported": 0,
+  "not checked": 2
+ },
+ "records": [
+  {
+   "line": "13",
+   "number": "16%",
+   "what": "Product revenue growth",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "10-K",
+    "line": "Within total revenue, product revenue increased by 16% and services revenue was flat."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the 10-K text",
+   "model": "states it: The line says product revenue increased by 16%.",
+   "correction": "",
+   "real": "",
+   "line_found": "Within total revenue, product revenue increased by 16% and services revenue was flat.",
+   "document": "10-K"
+  },
+  {
+   "line": "18",
+   "number": "$34,668 million",
+   "what": "Networking product revenue",
+   "scale": "millions",
+   "source": {
+    "type": "line",
+    "document": "10-K",
+    "line": "Networking | $34,668 | $28,304 | $29,229 | $6,364 | 22%"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the 10-K text",
+   "model": "states it: The current-year column of the Networking row is $34,668 (millions).",
+   "correction": "",
+   "real": "",
+   "line_found": "Networking | $34,668 | $28,304 | $29,229 | $6,364 | 22%",
+   "document": "10-K"
+  },
+  {
+   "line": "18",
+   "number": "22%",
+   "what": "Networking revenue growth",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "10-K",
+    "line": "Networking | $34,668 | $28,304 | $29,229 | $6,364 | 22%"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the 10-K text",
+   "model": "states it: The Networking row shows 22% growth ($6,364 over $28,304).",
+   "correction": "",
+   "real": "",
+   "line_found": "Networking | $34,668 | $28,304 | $29,229 | $6,364 | 22%",
+   "document": "10-K"
+  },
+  {
+   "line": "20",
+   "number": "80%",
+   "what": "Inventory increase",
+   "period": "end of the fiscal year",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "10-K",
+    "line": "Inventory as of July 25, 2026 increased by 80% and inventory purchase commitments with contract manufacturers and suppliers increased by 126% from our balances at the end of fiscal 2025."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the 10-K text",
+   "model": "states it: The line says inventory as of the fiscal year end increased by 80%.",
+   "correction": "",
+   "real": "",
+   "line_found": "Inventory as of July 25, 2026 increased by 80% and inventory purchase commitments with contract manufacturers and suppliers increased by 126% from our balances at the end of fiscal 2025.",
+   "document": "10-K"
+  },
+  {
+   "line": "20",
+   "number": "126%",
+   "what": "Inventory purchase commitments increase",
+   "period": "end of the fiscal year",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "10-K",
+    "line": "Inventory as of July 25, 2026 increased by 80% and inventory purchase commitments with contract manufacturers and suppliers increased by 126% from our balances at the end of fiscal 2025."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the 10-K text",
+   "model": "states it: The line says inventory purchase commitments increased by 126% from the end of fiscal 2025.",
+   "correction": "",
+   "real": "",
+   "line_found": "Inventory as of July 25, 2026 increased by 80% and inventory purchase commitments with contract manufacturers and suppliers increased by 126% from our balances at the end of fiscal 2025.",
+   "document": "10-K"
+  },
+  {
+   "line": "26",
+   "number": "$63,325.0M",
+   "what": "Total revenue",
+   "period": "fiscal year ended 2026-07-25",
+   "scale": "millions",
+   "fact": "revenue",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "revenue",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "27",
+   "number": "11.77%",
+   "what": "Revenue growth",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "63,325.0 / 56,654.0 - 1"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 63,325.0 / 56,654.0 - 1",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "28",
+   "number": "$15,368.0M",
+   "what": "Operating income",
+   "scale": "millions",
+   "fact": "operating_income",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:OperatingIncomeLoss",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "operating_income",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:OperatingIncomeLoss at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "29",
+   "number": "24.27%",
+   "what": "Operating margin",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "15,368.0 / 63,325.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 15,368.0 / 63,325.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "30",
+   "number": "$13,267.0M",
+   "what": "Net income attributable to company",
+   "scale": "millions",
+   "fact": "net_income",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:NetIncomeLoss",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "net_income",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:NetIncomeLoss at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "31",
+   "number": "$3.33",
+   "what": "Diluted EPS, GAAP",
+   "scale": "per_share",
+   "fact": "diluted_eps",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:EarningsPerShareDiluted",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "diluted_eps",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:EarningsPerShareDiluted at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "32",
+   "number": "27.32%",
+   "what": "Return on average equity",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "13,267.0 / ((50,285.0 + 46,843.0) / 2)"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 13,267.0 / ((50,285.0 + 46,843.0) / 2)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "33",
+   "number": "0.455",
+   "what": "Debt to equity",
+   "scale": "ratio",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "(19,372.0 + 3,500.0) / 50,285.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: (19,372.0 + 3,500.0) / 50,285.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "34",
+   "number": "$12,767.0M",
+   "what": "Free cash flow",
+   "scale": "millions",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "14,177.0 - 1,410.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 14,177.0 - 1,410.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "35",
+   "number": "18,517",
+   "what": "Latest quarter revenue",
+   "period": "October 24, 2026",
+   "scale": "millions",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Total revenue | 18,517 | 14,883"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The current-quarter column of the Total revenue row is 18,517.",
+   "correction": "",
+   "real": "",
+   "line_found": "Total revenue | 18,517 | 14,883",
+   "document": "release"
+  },
+  {
+   "line": "36",
+   "number": "24.42%",
+   "what": "Quarter revenue growth",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "18,517 / 14,883 - 1"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 18,517 / 14,883 - 1",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "37",
+   "number": "$1.14",
+   "what": "Quarter diluted EPS, GAAP",
+   "scale": "per_share",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Diluted | $1.14 | $0.72"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The current-quarter diluted EPS on the statement line is $1.14.",
+   "correction": "",
+   "real": "",
+   "line_found": "Diluted | $1.14 | $0.72",
+   "document": "release"
+  },
+  {
+   "line": "38",
+   "number": "30.6",
+   "what": "P/E",
+   "scale": "ratio",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "102.01 / 3.33"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 102.01 / 3.33",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "44",
+   "number": "$63.3 billion",
+   "what": "Total revenue",
+   "scale": "billions",
+   "fact": "revenue",
+   "source": {
+    "type": "line",
+    "document": "10-K",
+    "line": "Total revenue was $63.3 billion, an increase of 12% compared with fiscal 2025."
+   },
+   "kind": "line",
+   "fact_key": "revenue",
+   "mark": "correct",
+   "code": "the line is in the 10-K text",
+   "model": "states it: The line states total revenue of $63.3 billion.",
+   "correction": "",
+   "real": "",
+   "line_found": "Total revenue was $63.3 billion, an increase of 12% compared with fiscal 2025.",
+   "document": "10-K"
+  },
+  {
+   "line": "44",
+   "number": "12%",
+   "what": "Revenue growth",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "10-K",
+    "line": "Total revenue was $63.3 billion, an increase of 12% compared with fiscal 2025."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the 10-K text",
+   "model": "states it: The line states a 12% increase in total revenue versus fiscal 2025.",
+   "correction": "",
+   "real": "",
+   "line_found": "Total revenue was $63.3 billion, an increase of 12% compared with fiscal 2025.",
+   "document": "10-K"
+  },
+  {
+   "line": "55",
+   "number": "$63,325.0 million",
+   "what": "Total revenue",
+   "period": "FY2026",
+   "scale": "millions",
+   "fact": "revenue",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "revenue",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "55",
+   "number": "$56,654.0 million",
+   "what": "Prior-year total revenue",
+   "period": "FY2025",
+   "scale": "millions",
+   "fact": "revenue_prior",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+    "period_end": "2025-07-26"
+   },
+   "kind": "xbrl",
+   "fact_key": "revenue_prior",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax at 2025-07-26",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "57",
+   "number": "11.77%",
+   "what": "Revenue growth",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "63,325.0 / 56,654.0 - 1"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 63,325.0 / 56,654.0 - 1",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "58",
+   "number": "$15,368.0 million",
+   "what": "Operating income",
+   "period": "FY2026",
+   "scale": "millions",
+   "fact": "operating_income",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:OperatingIncomeLoss",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "operating_income",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:OperatingIncomeLoss at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "58",
+   "number": "$11,760.0 million",
+   "what": "Prior-year operating income",
+   "period": "FY2025",
+   "scale": "millions",
+   "fact": "operating_income_prior",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:OperatingIncomeLoss",
+    "period_end": "2025-07-26"
+   },
+   "kind": "xbrl",
+   "fact_key": "operating_income_prior",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:OperatingIncomeLoss at 2025-07-26",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "60",
+   "number": "30.68%",
+   "what": "Operating income growth",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "15,368.0 / 11,760.0 - 1"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 15,368.0 / 11,760.0 - 1",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "61",
+   "number": "$13,267.0 million",
+   "what": "Net income attributable to Cisco",
+   "period": "FY2026",
+   "scale": "millions",
+   "fact": "net_income",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:NetIncomeLoss",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "net_income",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:NetIncomeLoss at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "61",
+   "number": "$10,180.0 million",
+   "what": "Prior-year net income",
+   "period": "FY2025",
+   "scale": "millions",
+   "fact": "net_income_prior",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:NetIncomeLoss",
+    "period_end": "2025-07-26"
+   },
+   "kind": "xbrl",
+   "fact_key": "net_income_prior",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:NetIncomeLoss at 2025-07-26",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "63",
+   "number": "30.32%",
+   "what": "Net income growth",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "13,267.0 / 10,180.0 - 1"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 13,267.0 / 10,180.0 - 1",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "64",
+   "number": "$3.33",
+   "what": "GAAP diluted EPS",
+   "period": "FY2026",
+   "scale": "per_share",
+   "fact": "diluted_eps",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:EarningsPerShareDiluted",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "diluted_eps",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:EarningsPerShareDiluted at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "64",
+   "number": "$2.55",
+   "what": "Prior-year GAAP diluted EPS",
+   "period": "FY2025",
+   "scale": "per_share",
+   "fact": "diluted_eps_prior",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:EarningsPerShareDiluted",
+    "period_end": "2025-07-26"
+   },
+   "kind": "xbrl",
+   "fact_key": "diluted_eps_prior",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:EarningsPerShareDiluted at 2025-07-26",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "66",
+   "number": "30.59%",
+   "what": "Diluted EPS growth",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "3.33 / 2.55 - 1"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 3.33 / 2.55 - 1",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "67",
+   "number": "30.68%",
+   "what": "Operating income growth",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 60, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "67",
+   "number": "11.77%",
+   "what": "Revenue growth",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 27, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "70",
+   "number": "24.27%",
+   "what": "Operating margin",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "15,368.0 / 63,325.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 15,368.0 / 63,325.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "70",
+   "number": "20.76%",
+   "what": "Prior-year operating margin",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "11,760.0 / 56,654.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 11,760.0 / 56,654.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "71",
+   "number": "20.95%",
+   "what": "Net margin",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "13,267.0 / 63,325.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 13,267.0 / 63,325.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "71",
+   "number": "17.97%",
+   "what": "Prior-year net margin",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "10,180.0 / 56,654.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 10,180.0 / 56,654.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "75",
+   "number": "$50,285.0 million",
+   "what": "Stockholders' equity",
+   "period": "2026-07-25",
+   "scale": "millions",
+   "fact": "equity",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:StockholdersEquity",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "equity",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:StockholdersEquity at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "75",
+   "number": "$46,843.0 million",
+   "what": "Prior stockholders' equity",
+   "period": "2025-07-26",
+   "scale": "millions",
+   "fact": "equity_prior",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:StockholdersEquity",
+    "period_end": "2025-07-26"
+   },
+   "kind": "xbrl",
+   "fact_key": "equity_prior",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:StockholdersEquity at 2025-07-26",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "77",
+   "number": "27.32%",
+   "what": "Return on average equity",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "13,267.0 / ((50,285.0 + 46,843.0) / 2)"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 13,267.0 / ((50,285.0 + 46,843.0) / 2)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "78",
+   "number": "26.38%",
+   "what": "Return on year-end equity",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "13,267.0 / 50,285.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 13,267.0 / 50,285.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "83",
+   "number": "$19,372.0 million",
+   "what": "Long-term debt, noncurrent",
+   "period": "2026-07-25",
+   "scale": "millions",
+   "fact": "long_term_debt",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:LongTermDebtNoncurrent",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "long_term_debt",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:LongTermDebtNoncurrent at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "84",
+   "number": "$3,500.0 million",
+   "what": "Current portion of long-term debt",
+   "period": "2026-07-25",
+   "scale": "millions",
+   "fact": "current_debt",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:LongTermDebtCurrent",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "current_debt",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:LongTermDebtCurrent at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "85",
+   "number": "$22,861.0 million",
+   "what": "Prior long-term debt, noncurrent",
+   "period": "2025-07-26",
+   "scale": "millions",
+   "fact": "long_term_debt_prior",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:LongTermDebtNoncurrent",
+    "period_end": "2025-07-26"
+   },
+   "kind": "xbrl",
+   "fact_key": "long_term_debt_prior",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:LongTermDebtNoncurrent at 2025-07-26",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "85",
+   "number": "$1,750.0 million",
+   "what": "Prior current long-term debt",
+   "period": "2025-07-26",
+   "scale": "millions",
+   "fact": "current_debt_prior",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:LongTermDebtCurrent",
+    "period_end": "2025-07-26"
+   },
+   "kind": "xbrl",
+   "fact_key": "current_debt_prior",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:LongTermDebtCurrent at 2025-07-26",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "86",
+   "number": "0.455",
+   "what": "Debt to equity",
+   "scale": "ratio",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "(19,372.0 + 3,500.0) / 50,285.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: (19,372.0 + 3,500.0) / 50,285.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "86",
+   "number": "0.525",
+   "what": "Prior-year debt to equity",
+   "scale": "ratio",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "(22,861.0 + 1,750.0) / 46,843.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: (22,861.0 + 1,750.0) / 46,843.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "90",
+   "number": "$14,177.0 million",
+   "what": "Cash from operations",
+   "period": "FY2026",
+   "scale": "millions",
+   "fact": "cash_from_operations",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "cash_from_operations",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:NetCashProvidedByUsedInOperatingActivities at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "90",
+   "number": "$14,193.0 million",
+   "what": "Prior-year cash from operations",
+   "period": "FY2025",
+   "scale": "millions",
+   "fact": "cash_from_operations_prior",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+    "period_end": "2025-07-26"
+   },
+   "kind": "xbrl",
+   "fact_key": "cash_from_operations_prior",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:NetCashProvidedByUsedInOperatingActivities at 2025-07-26",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "92",
+   "number": "-0.11%",
+   "what": "Cash from operations growth",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "14,177.0 / 14,193.0 - 1"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 14,177.0 / 14,193.0 - 1",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "93",
+   "number": "$1,410.0 million",
+   "what": "Additions to property and equipment",
+   "period": "FY2026",
+   "scale": "millions",
+   "fact": "capex",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "capex",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:PaymentsToAcquirePropertyPlantAndEquipment at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "93",
+   "number": "$905.0 million",
+   "what": "Prior-year property additions",
+   "period": "FY2025",
+   "scale": "millions",
+   "fact": "capex_prior",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+    "period_end": "2025-07-26"
+   },
+   "kind": "xbrl",
+   "fact_key": "capex_prior",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:PaymentsToAcquirePropertyPlantAndEquipment at 2025-07-26",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "95",
+   "number": "55.80%",
+   "what": "Property additions growth",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "1,410.0 / 905.0 - 1"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 1,410.0 / 905.0 - 1",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "96",
+   "number": "$12,767.0M",
+   "what": "Free cash flow",
+   "scale": "millions",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "14,177.0 - 1,410.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 14,177.0 - 1,410.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "96",
+   "number": "$13,288.0M",
+   "what": "Prior-year free cash flow",
+   "scale": "millions",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "14,193.0 - 905.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 14,193.0 - 905.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "97",
+   "number": "-3.92%",
+   "what": "Free cash flow growth",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "(14,177.0 - 1,410.0) / (14,193.0 - 905.0) - 1"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: (14,177.0 - 1,410.0) / (14,193.0 - 905.0) - 1",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "98",
+   "number": "20.16%",
+   "what": "Free cash flow margin",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "(14,177.0 - 1,410.0) / 63,325.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: (14,177.0 - 1,410.0) / 63,325.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "99",
+   "number": "0.96",
+   "what": "Free cash flow / net income",
+   "scale": "ratio",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "(14,177.0 - 1,410.0) / 13,267.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: (14,177.0 - 1,410.0) / 13,267.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "100",
+   "number": "-0.11%",
+   "what": "Cash from operations growth",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 92, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "100",
+   "number": "30.32%",
+   "what": "Net income growth",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 63, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "100",
+   "number": "3.92%",
+   "what": "Free cash flow decline",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 97, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "108",
+   "number": "18,517",
+   "what": "Quarter total revenue",
+   "period": "October 24, 2026",
+   "scale": "millions",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Total revenue | 18,517 | 14,883"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The current-quarter column of the Total revenue row is 18,517.",
+   "correction": "",
+   "real": "",
+   "line_found": "Total revenue | 18,517 | 14,883",
+   "document": "release"
+  },
+  {
+   "line": "108",
+   "number": "14,883",
+   "what": "Prior-year quarter total revenue",
+   "period": "October 25, 2025",
+   "scale": "millions",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Total revenue | 18,517 | 14,883"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The prior-year quarter column of the Total revenue row is 14,883.",
+   "correction": "",
+   "real": "",
+   "line_found": "Total revenue | 18,517 | 14,883",
+   "document": "release"
+  },
+  {
+   "line": "109",
+   "number": "24.42%",
+   "what": "Quarter revenue growth",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "18,517 / 14,883 - 1"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 18,517 / 14,883 - 1",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "110",
+   "number": "24%",
+   "what": "Release rounded revenue growth",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Increase of 24% year over year"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line states a 24% year-over-year increase.",
+   "correction": "",
+   "real": "",
+   "line_found": "Increase of 24% year over year",
+   "document": "release"
+  },
+  {
+   "line": "113",
+   "number": "$1.14",
+   "what": "Quarter GAAP diluted EPS",
+   "scale": "per_share",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Diluted | $1.14 | $0.72"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The current-quarter diluted EPS on the statement line is $1.14.",
+   "correction": "",
+   "real": "",
+   "line_found": "Diluted | $1.14 | $0.72",
+   "document": "release"
+  },
+  {
+   "line": "113",
+   "number": "$0.72",
+   "what": "Prior-year quarter diluted EPS",
+   "scale": "per_share",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Diluted | $1.14 | $0.72"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The prior-year quarter column of the diluted EPS line is $0.72.",
+   "correction": "",
+   "real": "",
+   "line_found": "Diluted | $1.14 | $0.72",
+   "document": "release"
+  },
+  {
+   "line": "114",
+   "number": "58.33%",
+   "what": "Quarter diluted EPS growth",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "1.14 / 0.72 - 1"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 1.14 / 0.72 - 1",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "115",
+   "number": "$1.14",
+   "what": "Quarter diluted EPS",
+   "scale": "per_share",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Diluted Earnings per Share (EPS) | $1.14 | $0.72 | 58%"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The current-quarter column of the diluted EPS row is $1.14.",
+   "correction": "",
+   "real": "",
+   "line_found": "Diluted Earnings per Share (EPS) | $1.14 | $0.72 | 58%",
+   "document": "release"
+  },
+  {
+   "line": "115",
+   "number": "$0.72",
+   "what": "Prior-year quarter diluted EPS",
+   "scale": "per_share",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Diluted Earnings per Share (EPS) | $1.14 | $0.72 | 58%"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The prior-year quarter column of the diluted EPS row is $0.72.",
+   "correction": "",
+   "real": "",
+   "line_found": "Diluted Earnings per Share (EPS) | $1.14 | $0.72 | 58%",
+   "document": "release"
+  },
+  {
+   "line": "115",
+   "number": "58%",
+   "what": "Release diluted EPS growth",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Diluted Earnings per Share (EPS) | $1.14 | $0.72 | 58%"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The diluted EPS row shows 58% growth.",
+   "correction": "",
+   "real": "",
+   "line_found": "Diluted Earnings per Share (EPS) | $1.14 | $0.72 | 58%",
+   "document": "release"
+  },
+  {
+   "line": "118",
+   "number": "30.2%",
+   "what": "Quarter GAAP operating margin",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "GAAP: 30.2%; Non-GAAP: 37.8%"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line states GAAP 30.2%, though it does not itself name operating margin.",
+   "correction": "",
+   "real": "",
+   "line_found": "GAAP: 30.2%; Non-GAAP: 37.8%",
+   "document": "release"
+  },
+  {
+   "line": "118",
+   "number": "37.8%",
+   "what": "Quarter non-GAAP operating margin",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "GAAP: 30.2%; Non-GAAP: 37.8%"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line states non-GAAP 37.8%, though it does not itself name operating margin.",
+   "correction": "",
+   "real": "",
+   "line_found": "GAAP: 30.2%; Non-GAAP: 37.8%",
+   "document": "release"
+  },
+  {
+   "line": "119",
+   "number": "$1.40",
+   "what": "Quarter non-GAAP EPS",
+   "scale": "per_share",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "label": "non-GAAP EPS"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The current-quarter column of the Non-GAAP EPS row is $1.40.",
+   "correction": "",
+   "real": "",
+   "line_found": "Non-GAAP EPS | $1.40 | $1.00",
+   "document": "release"
+  },
+  {
+   "line": "120",
+   "number": "30.2%",
+   "what": "Quarter GAAP operating margin",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 118, where the report sources it (line)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "120",
+   "number": "24.27%",
+   "what": "FY2026 operating margin",
+   "period": "FY2026",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 29, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "128",
+   "number": "$63,325.0 million",
+   "what": "Total revenue",
+   "period": "2026-07-25 (FY2026)",
+   "scale": "millions",
+   "fact": "revenue",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "revenue",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "128",
+   "number": "$15,368.0 million",
+   "what": "Operating income",
+   "period": "2026-07-25 (FY2026)",
+   "scale": "millions",
+   "fact": "operating_income",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:OperatingIncomeLoss",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "operating_income",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:OperatingIncomeLoss at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "128",
+   "number": "24.27%",
+   "what": "Operating margin",
+   "period": "2026-07-25 (FY2026)",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "15,368.0 / 63,325.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 15,368.0 / 63,325.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "133",
+   "number": "30.6",
+   "what": "P/E",
+   "scale": "ratio",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "102.01 / 3.33"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 102.01 / 3.33",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "136",
+   "number": "$102.01",
+   "what": "Share price close",
+   "period": "2026-11-12",
+   "scale": "per_share",
+   "source": {
+    "type": "price"
+   },
+   "kind": "price",
+   "fact_key": null,
+   "mark": "not checked",
+   "code": "a share price; the filings hold no prices",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "139",
+   "number": "$3.33",
+   "what": "FY2026 GAAP diluted EPS",
+   "period": "FY2026",
+   "scale": "per_share",
+   "fact": "diluted_eps",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:EarningsPerShareDiluted",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "diluted_eps",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:EarningsPerShareDiluted at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "144",
+   "number": "30.6",
+   "what": "P/E multiple",
+   "scale": "ratio",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 38, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "145",
+   "number": "30.59%",
+   "what": "FY2026 diluted EPS growth",
+   "period": "FY2026",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 66, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "146",
+   "number": "58.33%",
+   "what": "Q1 GAAP diluted EPS growth",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 114, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "146",
+   "number": "$1.14",
+   "what": "Quarter diluted EPS",
+   "scale": "per_share",
+   "source": {
+    "type": "line",
+    "document": "release"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 37, where the report sources it (line)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "146",
+   "number": "$0.72",
+   "what": "Prior-year quarter diluted EPS",
+   "scale": "per_share",
+   "source": {
+    "type": "line",
+    "document": "release"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 113, where the report sources it (line)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "147",
+   "number": "27.32%",
+   "what": "Return on average equity",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 32, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "147",
+   "number": "26.38%",
+   "what": "Return on year-end equity",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 78, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "148",
+   "number": "0.455",
+   "what": "Debt to equity",
+   "scale": "ratio",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 33, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "148",
+   "number": "0.525",
+   "what": "Prior-year debt to equity",
+   "scale": "ratio",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 86, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "151",
+   "number": "$12,767.0M",
+   "what": "Free cash flow",
+   "scale": "millions",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 34, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "151",
+   "number": "3.92%",
+   "what": "Free cash flow decline",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 97, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "152",
+   "number": "0.96",
+   "what": "Free cash flow / net income",
+   "scale": "ratio",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 99, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "156",
+   "number": "3.92%",
+   "what": "Free cash flow decline",
+   "period": "FY2026",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 97, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "156",
+   "number": "$12,767.0M",
+   "what": "Free cash flow",
+   "period": "FY2026",
+   "scale": "millions",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 34, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "156",
+   "number": "30.32%",
+   "what": "Net income growth",
+   "period": "FY2026",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 63, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "156",
+   "number": "55.80%",
+   "what": "Property additions growth",
+   "period": "FY2026",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 95, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "156",
+   "number": "$1,410.0 million",
+   "what": "Additions to property and equipment",
+   "period": "FY2026",
+   "scale": "millions",
+   "fact": "capex",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "capex",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:PaymentsToAcquirePropertyPlantAndEquipment at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "156",
+   "number": "$14,177.0 million",
+   "what": "Cash from operations",
+   "period": "FY2026",
+   "scale": "millions",
+   "fact": "cash_from_operations",
+   "source": {
+    "type": "xbrl",
+    "tag": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+    "period_end": "2026-07-25"
+   },
+   "kind": "xbrl",
+   "fact_key": "cash_from_operations",
+   "mark": "correct",
+   "code": "equals the facts file: us-gaap:NetCashProvidedByUsedInOperatingActivities at 2026-07-25",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "156",
+   "number": "-0.11%",
+   "what": "Cash from operations growth",
+   "period": "FY2026",
+   "scale": "percent",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "restates line 92, where the report sources it (ratio)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "163",
+   "number": "$9B",
+   "what": "Expected hyperscaler AI infrastructure revenue",
+   "period": "FY27",
+   "scale": "billions",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "•Raised expectation for AI infrastructure revenue from hyperscalers to $9B in FY27, more than double the total for FY26"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line states expected hyperscaler AI infrastructure revenue of $9B in FY27.",
+   "correction": "",
+   "real": "",
+   "line_found": "•Raised expectation for AI infrastructure revenue from hyperscalers to $9B in FY27, more than double the total for FY26",
+   "document": "release"
+  },
+  {
+   "line": "165",
+   "number": "$74.8 billion",
+   "what": "Revenue guidance low end",
+   "period": "full-year",
+   "scale": "billions",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Revenue | $74.8 billion - $75.8 billion"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The low end of the revenue guidance range is $74.8 billion.",
+   "correction": "",
+   "real": "",
+   "line_found": "Revenue | $74.8 billion - $75.8 billion",
+   "document": "release"
+  },
+  {
+   "line": "165",
+   "number": "$75.8 billion",
+   "what": "Revenue guidance high end",
+   "period": "full-year",
+   "scale": "billions",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Revenue | $74.8 billion - $75.8 billion"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The high end of the revenue guidance range is $75.8 billion.",
+   "correction": "",
+   "real": "",
+   "line_found": "Revenue | $74.8 billion - $75.8 billion",
+   "document": "release"
+  },
+  {
+   "line": "169",
+   "number": "$18.5 billion",
+   "what": "Quarter total revenue",
+   "period": "first quarter",
+   "scale": "billions",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Revenue -- Total revenue was $18.5 billion, up 24%, with product revenue up 32% and services revenue up 1%."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line states total revenue of $18.5 billion.",
+   "correction": "",
+   "real": "",
+   "line_found": "Revenue -- Total revenue was $18.5 billion, up 24%, with product revenue up 32% and services revenue up 1%.",
+   "document": "release"
+  },
+  {
+   "line": "169",
+   "number": "24%",
+   "what": "Quarter revenue growth",
+   "period": "first quarter",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Revenue -- Total revenue was $18.5 billion, up 24%, with product revenue up 32% and services revenue up 1%."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line says total revenue was up 24%.",
+   "correction": "",
+   "real": "",
+   "line_found": "Revenue -- Total revenue was $18.5 billion, up 24%, with product revenue up 32% and services revenue up 1%.",
+   "document": "release"
+  },
+  {
+   "line": "169",
+   "number": "32%",
+   "what": "Quarter product revenue growth",
+   "period": "first quarter",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Revenue -- Total revenue was $18.5 billion, up 24%, with product revenue up 32% and services revenue up 1%."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line says product revenue was up 32%.",
+   "correction": "",
+   "real": "",
+   "line_found": "Revenue -- Total revenue was $18.5 billion, up 24%, with product revenue up 32% and services revenue up 1%.",
+   "document": "release"
+  },
+  {
+   "line": "169",
+   "number": "1%",
+   "what": "Quarter services revenue growth",
+   "period": "first quarter",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Revenue -- Total revenue was $18.5 billion, up 24%, with product revenue up 32% and services revenue up 1%."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line says services revenue was up 1%.",
+   "correction": "",
+   "real": "",
+   "line_found": "Revenue -- Total revenue was $18.5 billion, up 24%, with product revenue up 32% and services revenue up 1%.",
+   "document": "release"
+  },
+  {
+   "line": "170",
+   "number": "43%",
+   "what": "Networking revenue growth",
+   "period": "the quarter",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Product revenue performance reflected growth in Networking up 43%, Security up 7%, Collaboration up 8%, and Observability up 2%."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line says Networking was up 43%.",
+   "correction": "",
+   "real": "",
+   "line_found": "Product revenue performance reflected growth in Networking up 43%, Security up 7%, Collaboration up 8%, and Observability up 2%.",
+   "document": "release"
+  },
+  {
+   "line": "170",
+   "number": "7%",
+   "what": "Security revenue growth",
+   "period": "the quarter",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Product revenue performance reflected growth in Networking up 43%, Security up 7%, Collaboration up 8%, and Observability up 2%."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line says Security was up 7%.",
+   "correction": "",
+   "real": "",
+   "line_found": "Product revenue performance reflected growth in Networking up 43%, Security up 7%, Collaboration up 8%, and Observability up 2%.",
+   "document": "release"
+  },
+  {
+   "line": "170",
+   "number": "8%",
+   "what": "Collaboration revenue growth",
+   "period": "the quarter",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Product revenue performance reflected growth in Networking up 43%, Security up 7%, Collaboration up 8%, and Observability up 2%."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line says Collaboration was up 8%.",
+   "correction": "",
+   "real": "",
+   "line_found": "Product revenue performance reflected growth in Networking up 43%, Security up 7%, Collaboration up 8%, and Observability up 2%.",
+   "document": "release"
+  },
+  {
+   "line": "170",
+   "number": "2%",
+   "what": "Observability revenue growth",
+   "period": "the quarter",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "Product revenue performance reflected growth in Networking up 43%, Security up 7%, Collaboration up 8%, and Observability up 2%."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line says Observability was up 2%.",
+   "correction": "",
+   "real": "",
+   "line_found": "Product revenue performance reflected growth in Networking up 43%, Security up 7%, Collaboration up 8%, and Observability up 2%.",
+   "document": "release"
+  },
+  {
+   "line": "171",
+   "number": "63.7%",
+   "what": "GAAP total gross margin",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "On a GAAP basis, total gross margin, product gross margin, and services gross margin were 63.7%, 61.8%, and 70.9%, respectively, as compared with 65.5%, 64.5%, and 68.4%, respectively, in the first quarter of fiscal 2026."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line gives GAAP total gross margin of 63.7% for the current quarter.",
+   "correction": "",
+   "real": "",
+   "line_found": "On a GAAP basis, total gross margin, product gross margin, and services gross margin were 63.7%, 61.8%, and 70.9%, respectively, as compared with 65.5%, 64.5%, and 68.4%, respectively, in the first quarter of fiscal 2026.",
+   "document": "release"
+  },
+  {
+   "line": "171",
+   "number": "65.5%",
+   "what": "Prior-year GAAP total gross margin",
+   "period": "a year earlier",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "On a GAAP basis, total gross margin, product gross margin, and services gross margin were 63.7%, 61.8%, and 70.9%, respectively, as compared with 65.5%, 64.5%, and 68.4%, respectively, in the first quarter of fiscal 2026."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line gives GAAP total gross margin of 65.5% for the year-earlier first quarter.",
+   "correction": "",
+   "real": "",
+   "line_found": "On a GAAP basis, total gross margin, product gross margin, and services gross margin were 63.7%, 61.8%, and 70.9%, respectively, as compared with 65.5%, 64.5%, and 68.4%, respectively, in the first quarter of fiscal 2026.",
+   "document": "release"
+  },
+  {
+   "line": "171",
+   "number": "61.8%",
+   "what": "GAAP product gross margin",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "On a GAAP basis, total gross margin, product gross margin, and services gross margin were 63.7%, 61.8%, and 70.9%, respectively, as compared with 65.5%, 64.5%, and 68.4%, respectively, in the first quarter of fiscal 2026."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line gives GAAP product gross margin of 61.8% for the current quarter.",
+   "correction": "",
+   "real": "",
+   "line_found": "On a GAAP basis, total gross margin, product gross margin, and services gross margin were 63.7%, 61.8%, and 70.9%, respectively, as compared with 65.5%, 64.5%, and 68.4%, respectively, in the first quarter of fiscal 2026.",
+   "document": "release"
+  },
+  {
+   "line": "171",
+   "number": "64.5%",
+   "what": "Prior-year GAAP product gross margin",
+   "period": "a year earlier",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "line": "On a GAAP basis, total gross margin, product gross margin, and services gross margin were 63.7%, 61.8%, and 70.9%, respectively, as compared with 65.5%, 64.5%, and 68.4%, respectively, in the first quarter of fiscal 2026."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The line gives GAAP product gross margin of 64.5% for the year-earlier first quarter.",
+   "correction": "",
+   "real": "",
+   "line_found": "On a GAAP basis, total gross margin, product gross margin, and services gross margin were 63.7%, 61.8%, and 70.9%, respectively, as compared with 65.5%, 64.5%, and 68.4%, respectively, in the first quarter of fiscal 2026.",
+   "document": "release"
+  },
+  {
+   "line": "172",
+   "number": "$5.7 billion",
+   "what": "Inventories",
+   "scale": "billions",
+   "source": {
+    "type": "line",
+    "document": "10-K",
+    "line": "Inventories were $5.7 billion as of July 25, 2026 compared with $3.2 billion as of July 26, 2025, reflecting increased demand for our Cisco Silicon One and the impact of higher memory prices."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the 10-K text",
+   "model": "states it: The line states inventories of $5.7 billion as of July 25, 2026.",
+   "correction": "",
+   "real": "",
+   "line_found": "Inventories were $5.7 billion as of July 25, 2026 compared with $3.2 billion as of July 26, 2025, reflecting increased demand for our Cisco Silicon One and the impact of higher memory prices.",
+   "document": "10-K"
+  },
+  {
+   "line": "172",
+   "number": "$3.2 billion",
+   "what": "Prior inventories",
+   "scale": "billions",
+   "source": {
+    "type": "line",
+    "document": "10-K",
+    "line": "Inventories were $5.7 billion as of July 25, 2026 compared with $3.2 billion as of July 26, 2025, reflecting increased demand for our Cisco Silicon One and the impact of higher memory prices."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the 10-K text",
+   "model": "states it: The line states inventories of $3.2 billion as of July 26, 2025.",
+   "correction": "",
+   "real": "",
+   "line_found": "Inventories were $5.7 billion as of July 25, 2026 compared with $3.2 billion as of July 26, 2025, reflecting increased demand for our Cisco Silicon One and the impact of higher memory prices.",
+   "document": "10-K"
+  },
+  {
+   "line": "184",
+   "number": "-3.92%",
+   "what": "Free cash flow growth",
+   "period": "FY2026 vs FY2025",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "(14,177.0 - 1,410.0) / (14,193.0 - 905.0) - 1"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: (14,177.0 - 1,410.0) / (14,193.0 - 905.0) - 1",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "190",
+   "number": "80%",
+   "what": "Inventory increase",
+   "period": "end of FY2026",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "10-K",
+    "line": "Inventory as of July 25, 2026 increased by 80% and inventory purchase commitments with contract manufacturers and suppliers increased by 126% from our balances at the end of fiscal 2025."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the 10-K text",
+   "model": "states it: The line says inventory as of the end of FY2026 increased by 80%.",
+   "correction": "",
+   "real": "",
+   "line_found": "Inventory as of July 25, 2026 increased by 80% and inventory purchase commitments with contract manufacturers and suppliers increased by 126% from our balances at the end of fiscal 2025.",
+   "document": "10-K"
+  },
+  {
+   "line": "190",
+   "number": "126%",
+   "what": "Inventory purchase commitments increase",
+   "period": "end of FY2026",
+   "scale": "percent",
+   "source": {
+    "type": "line",
+    "document": "10-K",
+    "line": "Inventory as of July 25, 2026 increased by 80% and inventory purchase commitments with contract manufacturers and suppliers increased by 126% from our balances at the end of fiscal 2025."
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the 10-K text",
+   "model": "states it: The line says inventory purchase commitments increased by 126% at the end of FY2026.",
+   "correction": "",
+   "real": "",
+   "line_found": "Inventory as of July 25, 2026 increased by 80% and inventory purchase commitments with contract manufacturers and suppliers increased by 126% from our balances at the end of fiscal 2025.",
+   "document": "10-K"
+  },
+  {
+   "line": "197",
+   "number": "27.32%",
+   "what": "Return on average equity",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "13,267.0 / ((50,285.0 + 46,843.0) / 2)"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 13,267.0 / ((50,285.0 + 46,843.0) / 2)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "197",
+   "number": "26.38%",
+   "what": "Return on year-end equity",
+   "scale": "percent",
+   "source": {
+    "type": "ratio",
+    "arithmetic": "13,267.0 / 50,285.0"
+   },
+   "kind": "ratio",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "recomputed: 13,267.0 / 50,285.0",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "198",
+   "number": "$1.40",
+   "what": "Release non-GAAP EPS",
+   "scale": "per_share",
+   "source": {
+    "type": "line",
+    "document": "release",
+    "label": "non-GAAP EPS"
+   },
+   "kind": "line",
+   "fact_key": null,
+   "mark": "correct",
+   "code": "the line is in the release text",
+   "model": "states it: The current-quarter column of the Non-GAAP EPS row is $1.40.",
+   "correction": "",
+   "real": "",
+   "line_found": "Non-GAAP EPS | $1.40 | $1.00",
+   "document": "release"
+  },
+  {
+   "line": "202",
+   "number": "$102.01",
+   "what": "Share price close",
+   "period": "2026-11-12",
+   "scale": "per_share",
+   "source": {
+    "type": "price"
+   },
+   "kind": "price",
+   "fact_key": null,
+   "mark": "not checked",
+   "code": "a share price; the filings hold no prices",
+   "model": "",
+   "correction": "",
+   "real": ""
+  },
+  {
+   "line": "202",
+   "number": "$3.33",
+   "what": "FY2026 GAAP diluted EPS",
+   "period": "FY2026",
+   "scale": "per_share",
+   "fact": "diluted_eps",
+   "source": {
+    "type": "none"
+   },
+   "kind": "none",
+   "fact_key": "diluted_eps",
+   "mark": "correct",
+   "code": "restates line 31, where the report sources it (xbrl)",
+   "model": "",
+   "correction": "",
+   "real": ""
+  }
+ ]
+}

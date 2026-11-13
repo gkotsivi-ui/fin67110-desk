@@ -1,0 +1,20 @@
+{
+ "node": "Strategy Manager",
+ "input": {
+  "problems": {
+   "research_analyst": [],
+   "financial_analyst": [],
+   "investment_advisor": []
+  },
+  "runs": {
+   "research_analyst": 1,
+   "financial_analyst": 2,
+   "investment_advisor": 1
+  }
+ },
+ "output": {
+  "next": "Verifier",
+  "report": "output\\CSCO_20261113_093231\\report.md",
+  "parts_missing": []
+ }
+}

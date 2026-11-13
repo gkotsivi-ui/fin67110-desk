@@ -1,0 +1,197 @@
+{
+ "node": "The steps",
+ "input": {
+  "ticker": "CSCO",
+  "peers": [],
+  "price": null,
+  "filed": null
+ },
+ "output": {
+  "company": "CISCO SYSTEMS, INC.",
+  "cik": "0000858877",
+  "filings": {
+   "10-K": {
+    "accessionNumber": "0000858877-26-000132",
+    "filingDate": "2026-09-02",
+    "reportDate": "2026-07-25",
+    "accepted_index": "2026-09-02 16:36:56",
+    "exhibit99_1": null,
+    "exhibit_label": null,
+    "saved_text": "output\\CSCO_20261113_093231\\10K_2026-09-02_csco-20260725.txt"
+   },
+   "10-Q": {
+    "accessionNumber": "0000858877-26-000078",
+    "filingDate": "2026-05-19",
+    "reportDate": "2026-04-25",
+    "accepted_index": "2026-05-19 16:36:11",
+    "exhibit99_1": null,
+    "exhibit_label": null,
+    "saved_text": "output\\CSCO_20261113_093231\\10Q_2026-05-19_csco-20260425.txt"
+   },
+   "8-K": {
+    "accessionNumber": "0000858877-26-000170",
+    "filingDate": "2026-11-12",
+    "reportDate": "2026-11-12",
+    "accepted_index": "2026-11-12 16:06:24",
+    "exhibit99_1": "exhibit991pressrelease-q1f.htm",
+    "exhibit_label": "99.1",
+    "saved_text": "output\\CSCO_20261113_093231\\8K_2026-11-12_exhibit991pressrelease-q1f.txt"
+   }
+  },
+  "facts": "facts.json and peer_facts.json in this folder",
+  "ratios": [
+   {
+    "name": "Revenue growth",
+    "value": 0.1177498499664631,
+    "shown": "11.77%",
+    "arithmetic": "63,325.0 / 56,654.0 - 1"
+   },
+   {
+    "name": "Operating margin",
+    "value": 0.24268456375838926,
+    "shown": "24.27%",
+    "arithmetic": "15,368.0 / 63,325.0"
+   },
+   {
+    "name": "Return on average equity",
+    "value": 0.2731858990198501,
+    "shown": "27.32%",
+    "arithmetic": "13,267.0 / ((50,285.0 + 46,843.0) / 2)"
+   },
+   {
+    "name": "Debt to equity",
+    "value": 0.454847369991051,
+    "shown": "0.455",
+    "arithmetic": "(19,372.0 + 3,500.0) / 50,285.0"
+   },
+   {
+    "name": "Free cash flow",
+    "value": 12767000000.0,
+    "shown": "$12,767.0M",
+    "arithmetic": "14,177.0 - 1,410.0"
+   },
+   {
+    "name": "P/E",
+    "value": 30.633633633633636,
+    "shown": "30.6",
+    "arithmetic": "102.01 / 3.33 (price / diluted EPS)"
+   }
+  ],
+  "more_ratios": [
+   {
+    "name": "Operating income growth",
+    "value": 0.3068027210884354,
+    "shown": "30.68%",
+    "arithmetic": "15,368.0 / 11,760.0 - 1"
+   },
+   {
+    "name": "Net income growth",
+    "value": 0.3032416502946955,
+    "shown": "30.32%",
+    "arithmetic": "13,267.0 / 10,180.0 - 1"
+   },
+   {
+    "name": "Cash from operations growth",
+    "value": -0.0011273162826745953,
+    "shown": "-0.11%",
+    "arithmetic": "14,177.0 / 14,193.0 - 1"
+   },
+   {
+    "name": "Additions to property and equipment growth",
+    "value": 0.5580110497237569,
+    "shown": "55.80%",
+    "arithmetic": "1,410.0 / 905.0 - 1"
+   },
+   {
+    "name": "Diluted EPS growth",
+    "value": 0.3058823529411765,
+    "shown": "30.59%",
+    "arithmetic": "3.33 / 2.55 - 1"
+   },
+   {
+    "name": "Net margin, latest year",
+    "value": 0.20950651401500198,
+    "shown": "20.95%",
+    "arithmetic": "13,267.0 / 63,325.0"
+   },
+   {
+    "name": "Operating margin, prior year",
+    "value": 0.20757581106364953,
+    "shown": "20.76%",
+    "arithmetic": "11,760.0 / 56,654.0"
+   },
+   {
+    "name": "Net margin, prior year",
+    "value": 0.17968722420305716,
+    "shown": "17.97%",
+    "arithmetic": "10,180.0 / 56,654.0"
+   },
+   {
+    "name": "Free cash flow, prior year",
+    "value": 13288000000.0,
+    "shown": "$13,288.0M",
+    "arithmetic": "14,193.0 - 905.0"
+   },
+   {
+    "name": "Free cash flow growth",
+    "value": -0.03920830824804333,
+    "shown": "-3.92%",
+    "arithmetic": "(14,177.0 - 1,410.0) / (14,193.0 - 905.0) - 1"
+   },
+   {
+    "name": "Free cash flow margin",
+    "value": 0.20161073825503356,
+    "shown": "20.16%",
+    "arithmetic": "(14,177.0 - 1,410.0) / 63,325.0"
+   },
+   {
+    "name": "Free cash flow / net income",
+    "value": 0.9623125047109369,
+    "shown": "0.96",
+    "arithmetic": "(14,177.0 - 1,410.0) / 13,267.0"
+   },
+   {
+    "name": "Debt to equity, prior year",
+    "value": 0.5253933351834853,
+    "shown": "0.525",
+    "arithmetic": "(22,861.0 + 1,750.0) / 46,843.0"
+   },
+   {
+    "name": "Quarter diluted EPS growth on the same quarter last year",
+    "value": 0.5833333333333333,
+    "shown": "58.33%",
+    "arithmetic": "1.14 / 0.72 - 1 (the release's column for this quarter over its column for the same quarter last year)"
+   }
+  ],
+  "quarter": {
+   "statement": "CONSOLIDATED STATEMENTS OF OPERATIONS",
+   "units": "millions",
+   "revenue_headers": [
+    "CONSOLIDATED STATEMENTS OF OPERATIONS",
+    "(In millions, except per-share amounts)",
+    "(Unaudited)",
+    "Three Months Ended",
+    "October 24, 2026 | October 25, 2025",
+    "REVENUE:"
+   ],
+   "revenue_line": "Total revenue | 18,517 | 14,883",
+   "eps_heading": "Net income per share:",
+   "eps_line": "Diluted | $1.14 | $0.72",
+   "period": "October 24, 2026",
+   "prior_period": "October 25, 2025",
+   "why": {},
+   "revenue": 18517.0,
+   "revenue_shown": "18,517",
+   "revenue_prior": 14883.0,
+   "revenue_prior_shown": "14,883",
+   "revenue_growth": 0.244171202042599,
+   "eps": 1.14,
+   "eps_shown": "$1.14",
+   "eps_prior": 0.72,
+   "eps_prior_shown": "$0.72",
+   "sentence": "Diluted Earnings per Share (EPS) | $1.14 | $0.72 | 58%"
+  },
+  "price": "$102.01, the close of 2026-11-12, the last close before 2026-11-12 16:06:24 ET, when the release was accepted, from financialdatasets.ai",
+  "annual_facts_not_stated": null
+ }
+}

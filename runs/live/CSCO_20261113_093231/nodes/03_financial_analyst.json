@@ -1,0 +1,306 @@
+{
+ "node": "Financial Analyst",
+ "input": {
+  "task": "Write the statement analysis of CISCO SYSTEMS, INC. (CSCO) for its fiscal year ended 2026-07-25: growth, margins, returns, leverage and cash flow; then the latest quarter from the release; then the peers; then valuation.",
+  "context": {
+   "company": "CISCO SYSTEMS, INC.",
+   "ticker": "CSCO",
+   "fiscal_year_end": "2026-07-25",
+   "facts": [
+    {
+     "concept": "Total revenue",
+     "calculator_name": "revenue",
+     "value": "$63,325.0 million",
+     "period": "2025-07-27 to 2026-07-25",
+     "tag": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax (Revenue from Contract with Customer, Excluding Assessed Tax)",
+     "filing": "10-K 0000858877-26-000132, filed 2026-09-02",
+     "prior_year_value": "$56,654.0 million",
+     "prior_period": "2024-07-28 to 2025-07-26",
+     "prior_filing": "10-K 0000858877-26-000132"
+    },
+    {
+     "concept": "Operating income",
+     "calculator_name": "operating_income",
+     "value": "$15,368.0 million",
+     "period": "2025-07-27 to 2026-07-25",
+     "tag": "us-gaap:OperatingIncomeLoss (Operating Income (Loss))",
+     "filing": "10-K 0000858877-26-000132, filed 2026-09-02",
+     "prior_year_value": "$11,760.0 million",
+     "prior_period": "2024-07-28 to 2025-07-26",
+     "prior_filing": "10-K 0000858877-26-000132"
+    },
+    {
+     "concept": "Net income attributable to the company",
+     "calculator_name": "net_income",
+     "value": "$13,267.0 million",
+     "period": "2025-07-27 to 2026-07-25",
+     "tag": "us-gaap:NetIncomeLoss (Net Income (Loss) Attributable to Parent)",
+     "filing": "10-K 0000858877-26-000132, filed 2026-09-02",
+     "prior_year_value": "$10,180.0 million",
+     "prior_period": "2024-07-28 to 2025-07-26",
+     "prior_filing": "10-K 0000858877-26-000132"
+    },
+    {
+     "concept": "Diluted EPS (GAAP)",
+     "calculator_name": "diluted_eps",
+     "value": "$3.33",
+     "period": "2025-07-27 to 2026-07-25",
+     "tag": "us-gaap:EarningsPerShareDiluted (Earnings Per Share, Diluted)",
+     "filing": "10-K 0000858877-26-000132, filed 2026-09-02",
+     "prior_year_value": "$2.55",
+     "prior_period": "2024-07-28 to 2025-07-26",
+     "prior_filing": "10-K 0000858877-26-000132"
+    },
+    {
+     "concept": "Stockholders' equity",
+     "calculator_name": "equity",
+     "value": "$50,285.0 million",
+     "period": "at 2026-07-25",
+     "tag": "us-gaap:StockholdersEquity (Stockholders' Equity Attributable to Parent)",
+     "filing": "10-K 0000858877-26-000132, filed 2026-09-02",
+     "prior_year_value": "$46,843.0 million",
+     "prior_period": "at 2025-07-26",
+     "prior_filing": "10-K 0000858877-26-000132"
+    },
+    {
+     "concept": "Long-term debt",
+     "calculator_name": "long_term_debt",
+     "value": "$19,372.0 million",
+     "period": "at 2026-07-25",
+     "tag": "us-gaap:LongTermDebtNoncurrent (Long-term Debt, Excluding Current Maturities)",
+     "filing": "10-K 0000858877-26-000132, filed 2026-09-02",
+     "prior_year_value": "$22,861.0 million",
+     "prior_period": "at 2025-07-26",
+     "prior_filing": "10-K 0000858877-26-000132"
+    },
+    {
+     "concept": "Current portion of long-term debt",
+     "calculator_name": "current_debt",
+     "value": "$3,500.0 million",
+     "period": "at 2026-07-25",
+     "tag": "us-gaap:LongTermDebtCurrent (Long-term Debt, Current Maturities)",
+     "filing": "10-K 0000858877-26-000132, filed 2026-09-02",
+     "prior_year_value": "$1,750.0 million",
+     "prior_period": "at 2025-07-26",
+     "prior_filing": "10-K 0000858877-26-000132"
+    },
+    {
+     "concept": "Cash from operations",
+     "calculator_name": "cash_from_operations",
+     "value": "$14,177.0 million",
+     "period": "2025-07-27 to 2026-07-25",
+     "tag": "us-gaap:NetCashProvidedByUsedInOperatingActivities (Net Cash Provided by (Used in) Operating Activities)",
+     "filing": "10-K 0000858877-26-000132, filed 2026-09-02",
+     "prior_year_value": "$14,193.0 million",
+     "prior_period": "2024-07-28 to 2025-07-26",
+     "prior_filing": "10-K 0000858877-26-000132"
+    },
+    {
+     "concept": "Additions to property and equipment",
+     "calculator_name": "capex",
+     "value": "$1,410.0 million",
+     "period": "2025-07-27 to 2026-07-25",
+     "tag": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment (Payments to Acquire Property, Plant, and Equipment)",
+     "filing": "10-K 0000858877-26-000132, filed 2026-09-02",
+     "prior_year_value": "$905.0 million",
+     "prior_period": "2024-07-28 to 2025-07-26",
+     "prior_filing": "10-K 0000858877-26-000132"
+    }
+   ],
+   "ratios_computed_in_code": [
+    {
+     "name": "Revenue growth",
+     "value": "11.77%",
+     "arithmetic": "63,325.0 / 56,654.0 - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Operating margin",
+     "value": "24.27%",
+     "arithmetic": "15,368.0 / 63,325.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Return on average equity",
+     "value": "27.32%",
+     "arithmetic": "13,267.0 / ((50,285.0 + 46,843.0) / 2) ($ millions, except per share)"
+    },
+    {
+     "name": "Debt to equity",
+     "value": "0.455",
+     "arithmetic": "(19,372.0 + 3,500.0) / 50,285.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Free cash flow",
+     "value": "$12,767.0M",
+     "arithmetic": "14,177.0 - 1,410.0 ($ millions, except per share)"
+    },
+    {
+     "name": "P/E",
+     "value": "30.6",
+     "arithmetic": "102.01 / 3.33 (price / diluted EPS) ($ millions, except per share)"
+    },
+    {
+     "name": "Operating income growth",
+     "value": "30.68%",
+     "arithmetic": "15,368.0 / 11,760.0 - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Net income growth",
+     "value": "30.32%",
+     "arithmetic": "13,267.0 / 10,180.0 - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Cash from operations growth",
+     "value": "-0.11%",
+     "arithmetic": "14,177.0 / 14,193.0 - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Additions to property and equipment growth",
+     "value": "55.80%",
+     "arithmetic": "1,410.0 / 905.0 - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Diluted EPS growth",
+     "value": "30.59%",
+     "arithmetic": "3.33 / 2.55 - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Net margin, latest year",
+     "value": "20.95%",
+     "arithmetic": "13,267.0 / 63,325.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Operating margin, prior year",
+     "value": "20.76%",
+     "arithmetic": "11,760.0 / 56,654.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Net margin, prior year",
+     "value": "17.97%",
+     "arithmetic": "10,180.0 / 56,654.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Free cash flow, prior year",
+     "value": "$13,288.0M",
+     "arithmetic": "14,193.0 - 905.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Free cash flow growth",
+     "value": "-3.92%",
+     "arithmetic": "(14,177.0 - 1,410.0) / (14,193.0 - 905.0) - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Free cash flow margin",
+     "value": "20.16%",
+     "arithmetic": "(14,177.0 - 1,410.0) / 63,325.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Free cash flow / net income",
+     "value": "0.96",
+     "arithmetic": "(14,177.0 - 1,410.0) / 13,267.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Debt to equity, prior year",
+     "value": "0.525",
+     "arithmetic": "(22,861.0 + 1,750.0) / 46,843.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Quarter diluted EPS growth on the same quarter last year",
+     "value": "58.33%",
+     "arithmetic": "1.14 / 0.72 - 1 (the release's column for this quarter over its column for the same quarter last year) ($ millions, except per share)"
+    }
+   ],
+   "latest_quarter": {
+    "release": "8-K accession 0000858877-26-000170, Item 2.02, Exhibit 99.1, accepted 2026-11-12 16:06:24 ET",
+    "units": "the release's income statement is in millions, except per share; copy its numbers as written",
+    "this_quarter_is_the_column_for": "October 24, 2026",
+    "the_same_quarter_last_year_is_the_column_for": "October 25, 2025",
+    "header_lines": [
+     "CONSOLIDATED STATEMENTS OF OPERATIONS",
+     "(In millions, except per-share amounts)",
+     "(Unaudited)",
+     "Three Months Ended",
+     "October 24, 2026 | October 25, 2025",
+     "REVENUE:"
+    ],
+    "revenue_line": "Total revenue | 18,517 | 14,883",
+    "eps_heading": "Net income per share:",
+    "eps_line": "Diluted | $1.14 | $0.72",
+    "release_sentence": "Diluted Earnings per Share (EPS) | $1.14 | $0.72 | 58%",
+    "computed_in_code": [
+     {
+      "name": "Quarter revenue growth on the same quarter last year",
+      "value": "24.42%",
+      "arithmetic": "18,517 / 14,883 - 1 (the revenue line's column for this quarter over its column for the same quarter last year)"
+     }
+    ]
+   },
+   "release_first_paragraph": "Press Contact: | Investor Relations Contact:\nBritt Stagnaro | Sami Badri\nCisco | Cisco\n1 (408) 761-1821 | 1 (469) 420-4834\nmedia_pr@external.cisco.com | sambadri@cisco.com\nCISCO REPORTS FIRST QUARTER EARNINGS\nNews Summary:\n•Record revenue of $18.5 billion, up 24% year over year, record GAAP earnings per share of $1.14, up 58% year over year, and record non-GAAP earnings per share of $1.40, up 40% year over year – Cisco’s strongest revenue and non-GAAP earnings per share growth rates in over 15 years\n•Record non-GAAP operating margin, reflecting focused execution and operating efficiency\n•Broad-based high demand for Cisco technology with double-digit growth across all geographies and customer markets\n•Raised FY27 revenue and non-GAAP EPS guidance\n•Raised expectation for AI infrastructure revenue from hyperscalers to $9B in FY27, more than double the total for FY26\n•Q1 FY 2027 Results:\n◦Revenue: $18.5 billion\n▪Increase of 24% year over year\n◦Operating Margin: GAAP: 30.2%; Non-GAAP: 37.8%\n◦Earnings per Share: GAAP: $1.14; Non-GAAP: $1.40",
+   "peers": [],
+   "price": "$102.01, the close of 2026-11-12, the last close before 2026-11-12 16:06:24 ET, when the release was accepted, from financialdatasets.ai",
+   "calculator_variables": {
+    "revenue": "63,325.0 ($ millions)",
+    "revenue_prior": "56,654.0 ($ millions)",
+    "operating_income": "15,368.0 ($ millions)",
+    "operating_income_prior": "11,760.0 ($ millions)",
+    "net_income": "13,267.0 ($ millions)",
+    "net_income_prior": "10,180.0 ($ millions)",
+    "diluted_eps": "3.33",
+    "diluted_eps_prior": "2.55",
+    "equity": "50,285.0 ($ millions)",
+    "equity_prior": "46,843.0 ($ millions)",
+    "long_term_debt": "19,372.0 ($ millions)",
+    "long_term_debt_prior": "22,861.0 ($ millions)",
+    "current_debt": "3,500.0 ($ millions)",
+    "current_debt_prior": "1,750.0 ($ millions)",
+    "cash_from_operations": "14,177.0 ($ millions)",
+    "cash_from_operations_prior": "14,193.0 ($ millions)",
+    "capex": "1,410.0 ($ millions)",
+    "capex_prior": "905.0 ($ millions)",
+    "quarter_revenue": "18,517.00",
+    "quarter_revenue_prior": "14,883.00",
+    "quarter_eps": "1.14",
+    "quarter_eps_prior": "0.72",
+    "price": "102.01"
+   }
+  },
+  "expected_output": {
+   "calculator_requests": "a list, possibly empty, of {\"name\": \"what it is\", \"expression\": \"arithmetic over context.calculator_variables, for example net_income / revenue\"}",
+   "statement_analysis": "Markdown: growth, margins, returns on equity, leverage and free cash flow, each number with its source",
+   "latest_quarter": "Markdown: the quarter's revenue, its growth on the same quarter last year and its GAAP diluted EPS, quoting the release lines",
+   "peer_comparison": "Markdown table: company, fiscal year end, total revenue, operating income, operating margin, and the source of each",
+   "valuation": "Markdown: P/E with its price, date and arithmetic, and what the ratios say about value; say so when there is no price",
+   "definitions": "a list of sentences, one for each definition you chose",
+   "insight": {
+    "claim": "one sentence with at least one number: a claim the filings support that context.release_first_paragraph does not state",
+    "source": "the filing it comes from (10-K, 10-Q or Earnings release) and where in it",
+    "line": "the release line from the context that states the claim's number, word for word, or the XBRL tag and period of the fact in context.facts that states it"
+   }
+  }
+ },
+ "output": {
+  "calculator_requests": [
+   {
+    "name": "Return on year-end equity, FY2026 (alternative to the average-equity ROE in context)",
+    "expression": "net_income / equity"
+   }
+  ],
+  "statement_analysis": "### Cisco Systems, Inc. (CSCO), fiscal year ended 2026-07-25 (FY2026)\nAll FY2026 and FY2025 facts come from 10-K 0000858877-26-000132, filed 2026-09-02. Amounts are in $ millions, except per share. Every ratio below was computed in code.\n\n**Growth (FY2026 vs FY2025)**\n- Total revenue was **$63,325.0 million**, against **$56,654.0 million** a year earlier.\n  - Source: us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax, periods 2025-07-27 to 2026-07-25 and 2024-07-28 to 2025-07-26.\n  - Revenue growth was **11.77%** = 63,325.0 / 56,654.0 - 1.\n- Operating income was **$15,368.0 million**, against **$11,760.0 million**.\n  - Source: us-gaap:OperatingIncomeLoss, same periods.\n  - Operating income growth was **30.68%** = 15,368.0 / 11,760.0 - 1.\n- Net income attributable to Cisco was **$13,267.0 million**, against **$10,180.0 million**.\n  - Source: us-gaap:NetIncomeLoss, same periods.\n  - Net income growth was **30.32%** = 13,267.0 / 10,180.0 - 1.\n- GAAP diluted EPS was **$3.33**, against **$2.55**.\n  - Source: us-gaap:EarningsPerShareDiluted, same periods.\n  - Diluted EPS growth was **30.59%** = 3.33 / 2.55 - 1.\n- Profits grew much faster than revenue.\n\n**Margins**\n- Operating margin was **24.27%** = 15,368.0 / 63,325.0. The prior year was **20.76%** = 11,760.0 / 56,654.0.\n- Net margin was **20.95%** = 13,267.0 / 63,325.0. The prior year was **17.97%** = 10,180.0 / 56,654.0.\n- Both margins widened year over year.\n\n**Returns on equity**\n- Stockholders' equity was **$50,285.0 million** at 2026-07-25 and **$46,843.0 million** at 2025-07-26.\n  - Source: us-gaap:StockholdersEquity.\n- Return on average equity was **27.32%** = 13,267.0 / ((50,285.0 + 46,843.0) / 2).\n- ROE on year-end equity has been requested from the calculator. It is not computed here.\n\n**Leverage**\n- At 2026-07-25:\n  - Long-term debt (noncurrent) was **$19,372.0 million** (us-gaap:LongTermDebtNoncurrent).\n  - The current portion of long-term debt was **$3,500.0 million** (us-gaap:LongTermDebtCurrent).\n- At 2025-07-26, the same two lines were **$22,861.0 million** and **$1,750.0 million**.\n- Debt to equity was **0.455** = (19,372.0 + 3,500.0) / 50,285.0.\n- The prior year was **0.525** = (22,861.0 + 1,750.0) / 46,843.0.\n- Leverage fell.\n\n**Cash flow**\n- Cash from operations was **$14,177.0 million**, against **$14,193.0 million**.\n  - Source: us-gaap:NetCashProvidedByUsedInOperatingActivities.\n  - Growth was **-0.11%** = 14,177.0 / 14,193.0 - 1.\n- Additions to property and equipment were **$1,410.0 million**, against **$905.0 million**.\n  - Source: us-gaap:PaymentsToAcquirePropertyPlantAndEquipment.\n  - Growth was **55.80%** = 1,410.0 / 905.0 - 1.\n- Free cash flow was **$12,767.0M** = 14,177.0 - 1,410.0.\n  - The prior year was **$13,288.0M** = 14,193.0 - 905.0.\n  - Free cash flow growth was **-3.92%** = (14,177.0 - 1,410.0) / (14,193.0 - 905.0) - 1.\n- Free cash flow margin was **20.16%** = (14,177.0 - 1,410.0) / 63,325.0.\n- Free cash flow / net income was **0.96** = (14,177.0 - 1,410.0) / 13,267.0.\n- Cash generation was flat while earnings rose about 30%. Free cash flow fell slightly as capital spending stepped up.",
+  "latest_quarter": "### Q1 FY2027: three months ended October 24, 2026\n**Source:** 8-K accession 0000858877-26-000170, Item 2.02, Exhibit 99.1, accepted 2026-11-12 16:06:24 ET. The figures are in millions, except per-share amounts.\n\n**Revenue**\n- Release line: `Total revenue | 18,517 | 14,883`. The columns are October 24, 2026 and October 25, 2025.\n- Revenue growth on the same quarter last year was **24.42%** = 18,517 / 14,883 - 1, computed in code.\n- The release rounds this to \"Increase of 24% year over year\".\n\n**GAAP diluted EPS**\n- Under the heading \"Net income per share:\", the release line is `Diluted | $1.14 | $0.72`.\n- Diluted EPS growth on the same quarter last year was **58.33%** = 1.14 / 0.72 - 1, computed in code.\n- The release states: `Diluted Earnings per Share (EPS) | $1.14 | $0.72 | 58%`.\n\n**Other release figures**\n- The release summary gives operating margin as \"GAAP: 30.2%; Non-GAAP: 37.8%\".\n- It gives non-GAAP EPS of $1.40. That figure is reported here only for reference; this analysis uses GAAP.\n- The GAAP operating margin is above the FY2026 level of 24.27%. The two periods differ: one is a quarter and one is a full year.",
+  "peer_comparison": "The context holds no peer data (`peers` is empty). No peer comparison can be made on a like-for-like definition.\n\n| Company | Fiscal year end | Total revenue | Operating income | Operating margin | Source |\n|---|---|---|---|---|---|\n| Cisco Systems, Inc. (CSCO) | 2026-07-25 (FY2026) | $63,325.0 million | $15,368.0 million | 24.27% (15,368.0 / 63,325.0) | 10-K 0000858877-26-000132; us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax and us-gaap:OperatingIncomeLoss, 2025-07-27 to 2026-07-25 |\n| Peers | n/a | not in context | not in context | not in context | none provided |",
+  "valuation": "**P/E: 30.6** = 102.01 / 3.33 (price / GAAP diluted EPS).\n\n**Inputs**\n- **Price:** $102.01, the close of 2026-11-12. This was the last close before the release was accepted at 2026-11-12 16:06:24 ET. Source: financialdatasets.ai.\n- **EPS:** $3.33, FY2026 GAAP diluted EPS. Source: us-gaap:EarningsPerShareDiluted, 2025-07-27 to 2026-07-25, 10-K 0000858877-26-000132.\n- This P/E is on fiscal-year GAAP EPS. It is not on trailing twelve months that include Q1 FY2027.\n\n**What the ratios say about value**\n- The multiple of 30.6 sits against:\n  - FY2026 diluted EPS growth of 30.59%.\n  - Q1 FY2027 GAAP diluted EPS growth of 58.33% (release: $1.14 vs $0.72).\n  - Return on average equity of 27.32%.\n  - Debt to equity falling to 0.455.\n- Free cash flow did not keep pace with earnings:\n  - Free cash flow was $12,767.0M, down 3.92%.\n  - Free cash flow / net income was 0.96.\n- No peer multiples are in context, so no relative valuation can be stated.",
+  "definitions": [
+   "Revenue is total revenue as tagged us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax in the 10-K, and the release's 'Total revenue' line for the quarter.",
+   "Return on equity uses average stockholders' equity of the FY2026 and FY2025 year-ends, (50,285.0 + 46,843.0) / 2; year-end ROE was requested from the calculator, not computed.",
+   "EPS is GAAP diluted EPS (us-gaap:EarningsPerShareDiluted; the release's 'Diluted' line), not the release's non-GAAP EPS of $1.40.",
+   "Net income is net income attributable to the parent (us-gaap:NetIncomeLoss).",
+   "Debt is long-term debt noncurrent plus current maturities of long-term debt; debt to equity uses year-end stockholders' equity.",
+   "Free cash flow is cash from operations minus additions to property and equipment (us-gaap:PaymentsToAcquirePropertyPlantAndEquipment).",
+   "P/E uses the 2026-11-12 close of $102.01 over FY2026 GAAP diluted EPS of $3.33."
+  ],
+  "insight": {
+   "claim": "Free cash flow did not keep up with earnings in FY2026. Additions to property and equipment rose 55.80% to $1,410.0 million while cash from operations was essentially flat at $14,177.0 million (-0.11%), so free cash flow fell 3.92% to $12,767.0M even as net income grew 30.32%.",
+   "source": "10-K 0000858877-26-000132, filed 2026-09-02, consolidated statements of cash flows",
+   "line": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment, 2025-07-27 to 2026-07-25 ($1,410.0 million; prior $905.0 million), and us-gaap:NetCashProvidedByUsedInOperatingActivities, 2025-07-27 to 2026-07-25 ($14,177.0 million; prior $14,193.0 million)"
+  }
+ }
+}
