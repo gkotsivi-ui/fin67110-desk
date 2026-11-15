@@ -168,6 +168,26 @@ class RoleError(RuntimeError):
     pass
 
 
+class ConnectionLost(RoleError):
+    """The connection to the model's API was cut. It is not the model's answer, so the call can be tried again."""
+
+
+def lost_connection(exc: BaseException | None) -> bool:
+    """True when a network failure is behind the error.
+
+    When the connection is cut while a reply is being read, the Anthropic library passes on the error of the HTTP
+    library beneath it. The desk does not import that library, so it knows such an error in two ways: by the family
+    name the HTTP library gives its connection errors, TransportError, or by an operating-system network error or a
+    timeout among the error's causes."""
+    seen: list[BaseException] = []
+    while exc is not None and exc not in seen:
+        seen.append(exc)
+        if isinstance(exc, (ConnectionError, TimeoutError)) or any(cls.__name__ == "TransportError" for cls in type(exc).__mro__):
+            return True
+        exc = exc.__cause__ or exc.__context__
+    return False
+
+
 def section(text: str, start: str, end: str) -> str:
     """The longest span from a heading that matches start to the next heading that matches end."""
     ends = [m.start() for m in re.finditer(end, text, re.I | re.M)]
@@ -287,12 +307,12 @@ class Model:
 
     def ask(self, role: str, instructions: str, packet: dict[str, Any]) -> dict[str, Any]:
         print(f"[{role}] working ({self.model})")
-        text, message = self.send(instructions, packet)
+        text, message = self.send_with_one_more_try(instructions, packet)
         data = parse_json(text)
         if data is None:
             # A reply that is not JSON gets one more try, with the reason.
             retry = dict(packet, manager_feedback=["Your last reply was not one valid JSON object. Reply with the JSON object only."])
-            text, message = self.send(instructions, retry)
+            text, message = self.send_with_one_more_try(instructions, retry)
             data = parse_json(text)
         usage = message.usage
         self.exchanges.append({
@@ -306,6 +326,15 @@ class Model:
             raise RoleError(f"{role} did not return JSON (stop reason {message.stop_reason}).")
         print(f"[{role}] done: {usage.input_tokens:,} input and {usage.output_tokens:,} output tokens")
         return data
+
+    def send_with_one_more_try(self, instructions: str, packet: dict[str, Any]) -> tuple[str, Any]:
+        """send(), and one more try when the connection is cut. One cut should not stop a run that has taken
+        minutes. A second cut stops the role, with the reason."""
+        try:
+            return self.send(instructions, packet)
+        except ConnectionLost as exc:
+            print(f"    the connection was lost ({type(exc.__cause__).__name__}); trying this call once more")
+            return self.send(instructions, packet)
 
     def send(self, instructions: str, packet: dict[str, Any]) -> tuple[str, Any]:
         if self.provider == "google":
@@ -333,7 +362,15 @@ class Model:
         except anthropic.APIStatusError as exc:
             raise RoleError(f"The Anthropic API refused the request ({exc.status_code}): {exc.message}") from exc
         except anthropic.APIConnectionError as exc:
+            # The library has tried again by itself before it says this, so the desk does not try once more.
             raise RoleError("Could not reach the Anthropic API. Check the network and run again.") from exc
+        except Exception as exc:
+            # A connection cut while the reply is being read arrives as the HTTP library's own error, which the
+            # clauses above do not name. Any other error is not the desk's to rename, so it goes on as it is.
+            if not lost_connection(exc):
+                raise
+            raise ConnectionLost(f"The connection to the Anthropic API was lost while the reply was being read ({type(exc).__name__}). "
+                                 "Check the network and run again.") from exc
         if message.stop_reason == "refusal":
             details = getattr(message, "stop_details", None)
             raise RoleError(f"The model declined the request (category: {getattr(details, 'category', None)}).")
@@ -353,7 +390,7 @@ class Model:
             response = requests.post(f"{GEMINI_API}/models/{self.model}:generateContent", json=body,
                                      headers={"x-goog-api-key": self.api_key}, timeout=600)
         except requests.RequestException as exc:
-            raise RoleError("Could not reach the Gemini API. Check the network and run again.") from exc
+            raise ConnectionLost("Could not reach the Gemini API. Check the network and run again.") from exc
         if response.status_code != 200:
             raise RoleError(gemini_error(response, self.model))
         try:

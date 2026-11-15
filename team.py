@@ -12,7 +12,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
+import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Any, TypedDict
@@ -36,6 +38,7 @@ from lab03_app import (
 )
 from verifier import verify_run
 
+HERE = Path(__file__).resolve().parent  # the desk's folder
 ANALYSTS = ["research_analyst", "financial_analyst", "investment_advisor"]
 ORDER = ["steps", *ANALYSTS, "strategy_manager", "verifier"]
 NAMES = {
@@ -130,9 +133,10 @@ class Team:
         self.settings = settings
         self.model = model
         self.count = 0
+        self.current = ""  # the node that is running; a stop names it
 
-    @staticmethod
-    def starting(node: str) -> None:
+    def starting(self, node: str) -> None:
+        self.current = node
         print(f"\n=== {NAMES[node]} ===")
 
     def save(self, state: TeamState, node: str, given: Any, returned: Any) -> None:
@@ -142,6 +146,31 @@ class Team:
         folder.mkdir(parents=True, exist_ok=True)
         record = {"node": NAMES[node], "input": given, "output": returned}
         (folder / f"{self.count:02d}_{node}.json").write_text(json.dumps(record, indent=1, ensure_ascii=False, default=str), encoding="utf-8")
+
+    def record_stop(self, run_dir: Path, exc: BaseException, expected: bool) -> Path:
+        """A node that fails saves no record of its own, so the stop is saved here: the node, the time, the error
+        with its causes, and the lines of the desk's code it passed through. It takes the next number in nodes/."""
+        self.count += 1
+        node = self.current or "run"  # "run": the stop came before the first node started
+        folder = run_dir / "nodes"
+        folder.mkdir(parents=True, exist_ok=True)
+        now = datetime.now().astimezone()
+        chain = error_chain(exc)
+        stop: dict[str, Any] = {
+            "time": f"{now:%Y-%m-%d %H:%M:%S} {now.tzname()} (UTC{now:%z})",
+            "error": chain[0],
+            "causes": chain[1:],
+            # Only the desk's own files, by name: the record names no folder.
+            "where": [f"{Path(frame.filename).name}:{frame.lineno} in {frame.name}"
+                      for frame in traceback.extract_tb(exc.__traceback__) if Path(frame.filename).resolve().parent == HERE],
+            "files_saved": sorted(p.name for p in run_dir.iterdir() if p.is_file()),
+        }
+        if not expected:
+            # The whole traceback of an error the desk did not expect is kept here and not printed.
+            stop["traceback"] = without_user_folders("".join(traceback.format_exception(exc))).splitlines()
+        path = folder / f"{self.count:02d}_{node}_stopped.json"
+        path.write_text(json.dumps({"node": NAMES.get(node, "The run"), "stopped": stop}, indent=1, ensure_ascii=False), encoding="utf-8")
+        return path
 
     # ----- the nodes -----
 
@@ -286,6 +315,45 @@ class Team:
         return g.compile()
 
 
+def without_user_folders(text: str) -> str:
+    """The text with the desk's folder written as '.' and the user's home folder as '~'. What a run saves may be
+    committed, so it names no folder of the person who ran the desk."""
+    for folder, short in ((HERE, "."), (Path.home(), "~")):
+        for written in (str(folder), str(folder).replace("\\", "\\\\"), folder.as_posix()):
+            text = re.sub(re.escape(written), lambda _: short, text, flags=re.IGNORECASE)
+    return text
+
+
+def error_chain(exc: BaseException) -> list[str]:
+    """The error and then each error that caused it, one line for each, as 'Name: message'."""
+    lines: list[str] = []
+    seen: list[BaseException] = []
+    while exc is not None and exc not in seen:
+        seen.append(exc)
+        lines.append(without_user_folders(f"{type(exc).__name__}: {exc}"))
+        exc = exc.__cause__ or exc.__context__
+    return lines
+
+
+def stopped(team: Team, run_dir: Path, exc: Exception) -> int:
+    """What the program does when a part fails: it names the part and the reason in plain words, keeps the run
+    folder, and records the stop in it. It prints no traceback; an unexpected error's traceback is in the record."""
+    part = NAMES.get(team.current, "The run")
+    expected = isinstance(exc, (RoleError, requests.RequestException, RuntimeError, ValueError, KeyError))
+    if isinstance(exc, requests.RequestException):
+        reason = f"SEC request failed: {exc}"
+    elif expected:
+        reason = str(exc)
+    else:
+        reason = f"an error the desk did not expect, {type(exc).__name__}: {exc}"
+    record = team.record_stop(run_dir, exc, expected)
+    print(f"{part} stopped: {reason}", file=sys.stderr)
+    print(f"The run folder is kept: {run_dir}. The stop is recorded in {record.relative_to(run_dir)}.", file=sys.stderr)
+    if team.current == "verifier" and (run_dir / "report.md").exists():
+        print(f"The report is saved. To run the Verifier again on it: python team.py --verify-only {run_dir}", file=sys.stderr)
+    return 1
+
+
 def new_run_dir(ticker: str, when: datetime) -> Path:
     """A folder named by company, date and time; never one that holds an earlier run."""
     base = Path("output") / f"{ticker}_{when:%Y%m%d_%H%M%S}"
@@ -350,16 +418,8 @@ def main() -> int:
              "filed": args.filed.isoformat() if args.filed else None, "run_dir": str(run_dir)}
     try:
         final = team.graph().invoke(state, {"recursion_limit": 40})
-    except requests.RequestException as exc:
-        print(f"SEC request failed: {exc}", file=sys.stderr)
-        return 1
-    except RoleError as exc:
-        print(f"Agent team stopped: {exc}", file=sys.stderr)
-        print(f"Everything this run saved is in {run_dir}. If the model cannot run, the fallback on the Week 2 page still produces a report.", file=sys.stderr)
-        return 1
-    except (RuntimeError, ValueError, KeyError) as exc:
-        print(f"Agent team stopped: {exc}", file=sys.stderr)
-        return 1
+    except Exception as exc:  # noqa: BLE001 - whatever the error, the run says which part stopped and records it
+        return stopped(team, run_dir, exc)
     print(f"\nRun folder: {run_dir}\nReport: {final['report_path']}\nVerified report: {final['verified_path']}")
     return 0
 

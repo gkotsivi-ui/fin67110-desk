@@ -146,7 +146,7 @@ Each run writes one folder, `output/<TICKER>_<date>_<time>/`, and never writes o
 | `report.md` | the report before the Verifier marked it |
 | `10K_*.txt`, `10Q_*.txt`, `8K_*.txt` | the three documents as plain text; the 8-K file is Exhibit 99.1 |
 | `facts.json`, `ratios.json`, `peer_facts.json` | each fact with its tag, period and filing; each ratio with its arithmetic |
-| `nodes/` | what each part received and returned, numbered in the order the parts ran |
+| `nodes/` | what each part received and returned, numbered in the order the parts ran. A part that stopped leaves a file whose name ends in `_stopped.json`, with the time, the error and its causes |
 | `audit.md` | a blank audit table for a person to fill in against the filings |
 
 The report's first line names every filing the desk read, with each accession number and "Accepted"
@@ -193,6 +193,8 @@ Run `check_env.py` first. It checks Python, the packages, `.env`, SEC EDGAR and 
 | `credit balance is too low` | Add credit to the Anthropic account, or use a Google AI Studio key. |
 | `The Gemini API is limiting this key` | Wait a minute and run again. |
 | `Could not locate an Exhibit 99 with the earnings release` | The 8-K has no Exhibit 99 that the desk can read. Choose another company. |
+| A line that ends a run, such as `Verifier stopped: ...` | The line names the part that stopped and the reason. The run folder is kept, and its `nodes/` folder holds a record of the stop. When the Verifier stopped, the report is already saved: run the command that the message gives, `team.py --verify-only` with the run folder. |
+| `the connection was lost (...); trying this call once more` | Nothing to do. The connection to the model was cut, and the desk sends that one call again. A second cut stops the run. |
 
 Known limits, as of 2026-11-11. The details are in [docs/decision-log.md](docs/decision-log.md).
 

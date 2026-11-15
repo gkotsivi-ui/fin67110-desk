@@ -104,6 +104,19 @@ No wrong number was observed. Four errors were observed in the process.
 4. **Why it happened:** Confirmed from the code: the line is a fixed text in `lab03_app.py`, and no step
    fills it. The two rules do not fit together: fill it in by hand, and never edit a filed run.
 
+## Fixes made later
+
+A team member asked for errors 1 and 2 to be fixed. On 2026-11-13 the fix is on the branch
+`stopped-run-record`, and it is not merged. The filed run is not touched.
+
+- **Error 1:** a connection that is cut while a reply is being read is tried once more. A second cut stops
+  the role with the desk's own message.
+- **Error 2:** a run that stops writes a file in its `nodes/` folder whose name ends in `_stopped.json`. It
+  holds the part, the time, the error and its causes.
+- **Error 3:** not fixed. A run that stops no longer prints a traceback, so the message that showed the
+  color codes does not appear at a stop. The page still shows what a run prints as plain text.
+- **Error 4:** not fixed.
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code. I verified the sources myself; the judgments are mine.

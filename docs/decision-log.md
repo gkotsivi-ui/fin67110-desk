@@ -240,6 +240,38 @@ November 9. Then we ran the full agent team on one of them. Entries 1 to 4 came 
   Open: the desk should say so in one clear line.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-13: the first live run
+
+### 17. The Week 4 run stopped once, and three things nearly went wrong
+
+Entry 16 is in pull request 5, which is not merged as this is written.
+
+- **What happened.** The live run on the release in 8-K 0000858877-26-000170 stopped in its last part. The
+  Verifier's model call lost its connection. The report was already saved. The Verifier ran again on the
+  saved run with `--verify-only`, and the run was committed 21.2 hours after the release was accepted. The
+  run's errors are in `docs/live-record-errors/`.
+- **What the desk got wrong.** It ended with a Python traceback and not with its own message, and the run
+  folder held no record of the stop. `Model.send` named five errors of the Anthropic library. A connection
+  cut while a reply is being read arrives as an error of the HTTP library beneath it, which is none of the
+  five.
+- **What the coding agent got wrong: it did not save the evidence at once.** The traceback was on the page
+  only. The agent read it and went on. The page was closed during a pause, and the traceback went with it.
+  The error file can quote only the lines the agent had copied into its session.
+- **What the coding agent got wrong: a check that compared the wrong lines.** To confirm that the Verifier
+  had not changed the core table, the agent compared every table row of the two report files. The verified
+  report also holds the Verifier's own table, so the check said the files differed. We caught it by
+  comparing only the block of the core table, which is the same in both. Reported as it first came out,
+  it would have said that a filed report had been changed.
+- **What nearly went wrong: the window.** The release was accepted on Thursday at 16:06 Eastern. The run
+  was planned for that evening and was not made then. On Friday morning the agent was asked to look at
+  another change, and found that no report was filed. The report was committed with 2 hours 49 minutes
+  left. Nothing in the repository says that a window is open.
+- **What we changed.** A connection that is cut during a reply is tried once more. A second cut stops the
+  role with a plain message. Every stop now names its part, prints no traceback, and leaves a file in the
+  run's `nodes/` folder with the time, the error and its causes. The tests use made-up errors. One real
+  run with the network blocked stopped as the tests say.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code. I verified the sources myself; the judgments are mine.
