@@ -1,5 +1,47 @@
 # FIN 67110 research desk
 
+## Hit-rate table
+
+Run `.venv/bin/python hit_rate.py runs/live` on Mac (Windows:
+`.venv\Scripts\python hit_rate.py runs/live`). Replace `runs/live` with a practice folder to score
+practice runs separately. Each immediate subfolder is one run, including incomplete runs. The command
+prints one row per run and a final agreement count. Errors are reported on stderr, leave an error row,
+and produce exit status 1; other runs are still read.
+
+The reaction is the percentage change from the last official close at or before the filing's acceptance
+time to the first official close strictly after it. The XNYS calendar supplies US equity holidays and
+early closes. Prices come from the existing closes reader: LSEG Workspace or `CLOSES_FILE` in `.env`.
+Keep exports outside the repo and do not use WRDS exports with this command. Both exact session prices
+must be available; another day's price is never substituted. A reaction is unavailable until the
+post-filing session has closed and its prices are available from the source.
+
+A completed worksheet should save `view.json` in its run folder when the view is actually produced:
+
+```json
+{
+  "ticker": "EXAMPLE",
+  "filing_time": "2026-11-25T17:00:00-05:00",
+  "time": "2026-11-27T12:00:00-05:00",
+  "direction": "up"
+}
+```
+
+Directions are `up`, `down`, `flat`, or `not computed`; timestamps must include a UTC offset.
+This is an input contract, not an implemented worksheet integration. Do not backdate or reconstruct a
+missing view from a recommendation or run start time. Existing reports without a saved view display
+`not computed`. When `filing_time` is absent, the command reads the earnings 8-K acceptance time from
+the saved report's first line; ticker can also come from `facts.json`.
+
+The command creates only a new `reaction.json` in each run once the reaction becomes available,
+recording both closes, session times, filing time, ticker, price source, and retrieval time. It never
+overwrites an existing reaction, view, report, or timestamp. `--offline` reads saved reactions and
+writes nothing. The saved price pair is recomputed in code for the table on every invocation.
+
+Agreement means the view's direction matches the sign of the reaction (zero means `flat`). The
+`after` flag means the view's timestamp is strictly later than the first post-filing close. The final
+line counts agreements over runs with a reaction, excluding `after` rows and views `not computed`.
+Missing or invalid evidence is excluded and never counted as a correct prediction.
+
 An AI research desk for one client: an investor who seeks absolute return. You give it the ticker of a
 U.S. company that files with SEC EDGAR. It finds the company's latest 10-K, latest 10-Q and latest
 earnings release (the 8-K's Exhibit 99.1), reads the statements as XBRL data, computes eleven core
@@ -19,6 +61,7 @@ Checked on 2026-11-11 and 2026-11-12.
 | The page: run the desk and read the report without a terminal | ran one company end to end from the page on 2026-11-12, and showed the verified report |
 | The closes reader, for one price | built; tested on made-up files. On 2026-11-12 LSEG Workspace was not running, and the price came from financialdatasets.ai |
 | The live record table | built and tested on a made-up repository; no live report yet |
+| The hit-rate table | built; tested on synthetic runs; existing live report has no timestamped directional view |
 | The spinoff seeker, the worksheet with its view, the hook, and one command for all of them | not built yet |
 
 Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them before you trust a number.

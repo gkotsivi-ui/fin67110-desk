@@ -1,5 +1,21 @@
 # Decision log
 
+## 2026-11-16: hit-rate command and missing view evidence
+
+- The existing saved live report has a run timestamp and an advisor recommendation, but no explicit
+  timestamped directional worksheet view. Neither field establishes when a directional view existed.
+  `hit_rate.py` reports that view as `not computed`; it does not reconstruct or backdate it.
+- The initial environment check used system Python rather than a project virtual environment. Six test
+  modules could not import because anthropic, markdown, and langgraph were absent there. Creating `.venv`
+  and installing the pinned requirements made all original 160 tests pass. This was an environment
+  selection error, not evidence of a live desk calculation failure.
+- During implementation, checked that a fixed 4 PM cutoff would misclassify a holiday-week early close.
+  The hit-rate command uses an exchange calendar instead. Synthetic tests cover the holiday, early
+  close, exact cutoff, future close, missing prices, exclusion rules, and unchanged saved view/reaction.
+- Reaction definition used: percentage change from the last official close at or before acceptance to
+  the first official close strictly after it. No live report or existing desk error was corrected.
+- **What we will not delegate again.** (the team writes this)
+
 What our AI agents got wrong, how we caught it, and what we changed. The product manual's decision log is
 written from this file. Add an entry on the day you catch something. Name the filing, so a reader can open it.
 
