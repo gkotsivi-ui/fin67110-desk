@@ -1,5 +1,10 @@
 # Live-record error documentation
 
+The review command is `desk_error_review.py`. It creates a human report here, an AI prompt under
+`docs/ai-error-prompts`, and shared findings under `docs/error-review-findings`. Group both reports into
+**Confirmed errors** and **Unconfirmed errors**. Keep unknown causes separate from error status.
+Preserve existing files and save numbered revisions. A prompt does not authorize a repair.
+
 Keep one error documentation file per live record in this folder, separate from the saved run artifacts.
 Name it `Error Documentation [Company name, live record number].md`, replacing the bracketed contents
 with the actual company name and live record number. Use the same wording as the document title.

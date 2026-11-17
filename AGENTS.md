@@ -48,6 +48,13 @@ the hook, numerical evidence, and runtime errors. These are examples, not an exh
 For each error record its type, where it happened, a description, and why it happened. Cite saved
 evidence, distinguish confirmed causes from hypotheses, and say when the cause is unknown.
 
+The `desk-error-review` skill and `desk_error_review.py` implement this review. Produce both a human
+report and one AI prompt from the same findings JSON. Use the exact groups "Confirmed errors" and
+"Unconfirmed errors" in both reports. Do not create a separate investigation prompt. Keep error
+certainty separate from cause certainty. Model confidence alone never confirms an error. Unconfirmed
+entries carry evidence and uncertainty, not prescribed corrections. Existing reports get numbered
+revisions; the original reports remain unchanged. See `skills/desk-error-review/SKILL.md` for the workflow.
+
 ## Required checks for changes
 
 ```
