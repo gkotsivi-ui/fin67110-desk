@@ -4,13 +4,15 @@ An AI research desk for one client: an investor who seeks absolute return. You g
 U.S. company that files with SEC EDGAR. It finds the company's latest 10-K, latest 10-Q and latest
 earnings release (the 8-K's Exhibit 99.1), reads the statements as XBRL data, computes eleven core
 claims in code, and has four roles write a five-part report. A Verifier then marks every sourced number
-against the saved filings. Nothing in the code names a company: the ticker is an argument.
+against the saved filings. A worksheet then puts a value range against the price and states a view, and a
+hook refuses any number that has no source. One command runs all of it. Nothing in the code names a
+company: the ticker is an argument.
 
-Team: to be added. The thing we own: not decided yet. The joins: not built yet.
+Team: to be added. The thing we own: not decided yet. The joins: the team writes this line (Lab 09).
 
 ## What works today, and what does not
 
-Checked on 2026-11-11 and 2026-11-12.
+Checked on 2026-11-11, 2026-11-12 and 2026-11-16.
 
 | Part | State |
 |---|---|
@@ -19,7 +21,12 @@ Checked on 2026-11-11 and 2026-11-12.
 | The page: run the desk and read the report without a terminal | ran one company end to end from the page on 2026-11-12, and showed the verified report |
 | The closes reader, for one price | built; tested on made-up files. On 2026-11-12 LSEG Workspace was not running, and the price came from financialdatasets.ai |
 | The live record table | built and tested on a made-up repository; no live report yet |
-| The spinoff seeker, the worksheet with its view, the hook, and one command for all of them | not built yet |
+| The one command: the agent team, the worksheet and the hook in a fixed order, through one run folder | ran end to end on one company on 2026-11-16: 292 seconds for the agent team and 9 for the worksheet. It ended "Not done": the Verifier had marked three numbers of the report unsupported, and the hook refused it for that |
+| The worksheet, with its value range and its view | ran on that company with a teammate's hand-written files kept outside this repository; the hook passed it. The team's own files are not in `client/` yet, so the command stops at the worksheet until a member adds them |
+| The hook | refused one amount changed by one in a copy of that run's final report, and named the line, in the team's part and in the worksheet's part |
+| The replay | gave the same final report for that run with every connection refused |
+| The page behind the one command | changed and tested; not yet run on a company from the page |
+| The spinoff seeker | not built yet. [seeker/README.md](seeker/README.md) says what the desk reads from it |
 
 Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them before you trust a number.
 
@@ -97,37 +104,57 @@ Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them
 
 ## Run the desk
 
+Before the first run, a team member adds the client's hand-written files: [client/README.md](client/README.md)
+says which, and what each holds. Without them the agent team still writes its verified report, and the
+command stops at the worksheet and names the file it needs.
+
 **From the page, without a terminal.** On Windows, double-click `start_page.bat`. On a Mac,
 double-click `start_page.command` (the first time, right-click it and choose Open). The page opens in
 your browser at http://127.0.0.1:8765. Type a ticker and press Run. Each part's name appears as it
-runs. When the run ends, the verified report shows on the page.
+runs. When the run ends, the final report shows on the page.
 
-**From a terminal.** Give the ticker. `CSCO` is an example; use any ticker.
+**From a terminal: the one command.** Give the ticker. `CSCO` is an example; use any ticker.
 
 Windows:
 
 ```
-.venv\Scripts\python team.py CSCO
+.venv\Scripts\python desk.py CSCO
 ```
 
 Mac:
 
 ```
-.venv/bin/python team.py CSCO
+.venv/bin/python desk.py CSCO
 ```
 
-The names of the parts print in their fixed order: the steps, the Research Analyst, the Financial
-Analyst, the Investment Advisor, the Strategy Manager, the Verifier. The last lines give the run folder
-and the path of the verified report.
+The parts run in an order that code fixes, and no model chooses it: the pick, the agent team (the steps,
+the Research Analyst, the Financial Analyst, the Investment Advisor, the Strategy Manager, the Verifier),
+the hook on the team's report, the worksheet, the hook on the worksheet, the final report, and the hook
+on the final report. Each part prints the seconds it took on its last line. The last lines give the run
+folder and the path of the final report, and then "Done" or "Not done".
 
-More options, after the ticker:
+| Command, after `python` | What it does |
+|---|---|
+| `desk.py TICKER` | runs the whole desk on a ticker |
+| `desk.py screen` | runs it on the top name of the seeker's latest report (the seeker is not built yet) |
+| `desk.py --replay output/<run folder>` | rebuilds a saved run's final report from its saved outputs, and runs the hook on them again. It fetches nothing, calls no model and writes nothing; try it with the network off |
+| `hook.py output/<run folder>/final_report.md` | checks every number in a saved output. It prints nothing when all have their source, and `refused: line N, ...` when one does not |
+| `hook.py a_copy.md --run output/<run folder>` | the same on a copy kept elsewhere: change one amount by one in a copy, and the hook names the line |
+| `worksheet.py output/<run folder>` | writes the worksheet alone, on a saved run of the agent team |
+| `team.py TICKER` | runs the agent team alone, as before |
+| `team.py --verify-only output/<run folder>` | runs the Verifier alone on a saved run |
+
+Options after the ticker, for `desk.py` and `team.py`:
 
 | Option | What it does |
 |---|---|
 | `--peers AAA,BBB` | adds peer companies to the comparison |
-| `--price 123.45` | gives the close for P/E by hand |
+| `--price 123.45` | gives the close by hand |
 | `--filed 2026-11-12T16:07:06` | gives the release's filing time, Eastern, when you do not want the 8-K's own |
-| `--verify-only output/<run folder>` | in place of the ticker: runs the Verifier on a saved run and nothing else |
+
+When a part fails, the command stops, prints which part failed and the error, and keeps the run folder.
+When the hook refuses a line, the parts after it still run, so that you have every output, and the
+command ends "Not done" with exit code 2.
 
 The data steps alone need no model key and cost nothing. They print every fact with its XBRL tag, its
 period and its filing. On a Mac, type `.venv/bin/python` in place of `.venv\Scripts\python`:
@@ -142,8 +169,13 @@ Each run writes one folder, `output/<TICKER>_<date>_<time>/`, and never writes o
 
 | File | What it holds |
 |---|---|
-| `verified_report.md` | the report, with the Verifier's table of marks under its first line. Read this one. |
+| `final_report.md` | the verified report with the worksheet's view under it. Read this one. |
+| `verified_report.md` | the agent team's report, with the Verifier's table of marks under its first line |
 | `report.md` | the report before the Verifier marked it |
+| `worksheet.md` | the worksheet: the facts, owner cash flow with its arithmetic, the low and mid cases, the price against the low case, the persona's judgment, the liquidity line, the view and what is not known. Each number has its source in square brackets |
+| `view.json` | the view as the hit-rate table reads it: the ticker, the release's filing time, the view's own time and its direction |
+| `pick.json`, `price.json`, `worksheet_file.json`, `liquidity.json` | the ticker and where it came from; the one close; the worksheet file as this run read it; the median dollar volume. The series of closes and volumes is not saved |
+| `desk.json` | the order of the parts, the seconds each took, and every line the hook refused |
 | `10K_*.txt`, `10Q_*.txt`, `8K_*.txt` | the three documents as plain text; the 8-K file is Exhibit 99.1 |
 | `facts.json`, `ratios.json`, `peer_facts.json` | each fact with its tag, period and filing; each ratio with its arithmetic |
 | `nodes/` | what each part received and returned, numbered in the order the parts ran. A part that stopped leaves a file whose name ends in `_stopped.json`, with the time, the error and its causes |
@@ -153,6 +185,12 @@ The report's first line names every filing the desk read, with each accession nu
 time. The table "Core figures from the desk's steps" holds the eleven core claims of the course's
 report audit. Code reads and computes them; no model writes them. The roles write the text around
 them, and the Verifier marks each number in that text correct, wrong or unsupported.
+
+The join is the pipeline: each part reads the files that the part before it saved in the run folder, and
+no part fetches a filing that another part saved. The hook reads the saved outputs themselves. In the
+worksheet it checks each number against the source in its square brackets. In the agent team's report it
+does not judge the numbers again: it requires that the Verifier marked none wrong and none unsupported,
+and that the text is the text the Verifier marked. It makes no model call.
 
 ## Prices and licensed data
 
@@ -195,6 +233,9 @@ Run `check_env.py` first. It checks Python, the packages, `.env`, SEC EDGAR and 
 | `Could not locate an Exhibit 99 with the earnings release` | The 8-K has no Exhibit 99 that the desk can read. Choose another company. |
 | A line that ends a run, such as `Verifier stopped: ...` | The line names the part that stopped and the reason. The run folder is kept, and its `nodes/` folder holds a record of the stop. When the Verifier stopped, the report is already saved: run the command that the message gives, `team.py --verify-only` with the run folder. |
 | `the connection was lost (...); trying this call once more` | Nothing to do. The connection to the model was cut, and the desk sends that one call again. A second cut stops the run. |
+| `The worksheet file is missing`, or `The persona file is missing` | A team member writes these two files by hand: [client/README.md](client/README.md) gives their shape. The agent team's verified report is already in the run folder. |
+| `refused: line N, ...` and then `Not done` | The hook found a number with no support in that line of a saved output. Open the output at that line. The reason says what the number claims and what the saved file holds. |
+| `View: not computed` in the worksheet | The reason is on the same line: no close, or the persona wrote a number that the worksheet does not print, or it named no deciding line. The hit-rate table leaves that run out. |
 
 Known limits, as of 2026-11-11. The details are in [docs/decision-log.md](docs/decision-log.md).
 
@@ -206,6 +247,13 @@ Known limits, as of 2026-11-11. The details are in [docs/decision-log.md](docs/d
 3. When SEC EDGAR's company facts are not yet the facts of the 10-K the desk read, the report states no
    annual figure and says why. The quarter's claims and the rest of the report are still written.
 4. The desk needs all three filings. A company with no 10-K yet, or one that files 20-F and 6-K, stops the run.
+5. The worksheet knows one method: owner cash flow divided by a rate, per diluted share, with no debt
+   subtracted and no cash added. It reads volumes from financialdatasets.ai only, not yet from LSEG.
+6. The seeker is not built. Every name is "not applicable" in the worksheet's spinoff part, and `desk.py
+   screen` stops at the pick. For a name in a registry, the worksheet would state the parent, the ratio and
+   the dates, and "not known" for what the parent left in it.
+7. In the agent team's report the hook relies on the Verifier's marks. It does not check those numbers a
+   second time.
 
 ## Tests
 
@@ -226,7 +274,10 @@ Mac:
 They cover the XBRL tag choice, the full-year filter, the release's table text, the quote and number
 checks, the calculator, the fixed order of the parts, the single send-back, and the Verifier's marks on
 a seeded EPS, an invented growth rate, a price and an unsourced number. They also cover the setup, the
-page, the closes reader on made-up files, and the live record on a made-up repository.
+page, the closes reader on made-up files, and the live record on a made-up repository. For the one desk
+they cover the worksheet's arithmetic and its "not computed" cases, the hook's refusal of one amount
+changed by one for each kind of source, the fixed order of the parts, the stop at a failing part, and
+the replay with every connection refused.
 
 ## The live record
 

@@ -18,15 +18,29 @@ from unittest import mock
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+import desk  # noqa: E402
 import page  # noqa: E402
 import team  # noqa: E402
 
 
 class FormTests(unittest.TestCase):
-    def test_the_page_lists_the_graphs_nodes_in_order(self) -> None:
-        self.assertEqual(page.NODES, [team.NAMES[node] for node in team.ORDER])
+    def test_the_page_lists_the_parts_of_the_one_command_in_order(self) -> None:
+        # The desk's parts as it prints them, with the agent team's own nodes in the place of the part "Agent team".
+        nodes = [team.NAMES[node] for node in team.ORDER]
+        expected = [name for part in desk.ORDER[1:] for name in (nodes if part == desk.TEAM else [part])]
+        self.assertEqual(page.NODES, expected)
+        self.assertTrue((ROOT / page.COMMAND).is_file())  # the page runs the one command
 
-    def test_the_form_becomes_team_py_arguments(self) -> None:
+    def test_the_last_report_path_the_command_prints_is_the_one_shown(self) -> None:
+        run = page.Run.__new__(page.Run)  # no process: only the reading of the lines
+        run.lines, run.verified, run.lock = [], "", __import__("threading").Lock()
+        run.process = mock.Mock(stdout=["Verified report: output\\EXM_1\\verified_report.md\n", "=== Final report ===\n",
+                                        "Final report: 0.0 seconds\n", "Final report: output\\EXM_1\\final_report.md\n"])
+        run.process.wait.return_value = 0
+        run.read()
+        self.assertEqual(run.verified, "output\\EXM_1\\final_report.md")  # the seconds line is not a path
+
+    def test_the_form_becomes_the_commands_arguments(self) -> None:
         args, problem = page.arguments({"ticker": " exm ", "peers": "peer, oth", "price": "$1,004.75", "filed": "2026-10-06T21:13:15"})
         self.assertEqual((args, problem), (["EXM", "--peers", "PEER,OTH", "--price", "1004.75", "--filed", "2026-10-06T21:13:15"], ""))
         self.assertEqual(page.arguments({"ticker": "EXM"}), (["EXM"], ""))
@@ -73,7 +87,7 @@ class ServerTests(unittest.TestCase):
     def test_the_page_and_its_saved_runs(self) -> None:
         status, text = self.ask("GET", "/")
         self.assertEqual(status, 200)
-        self.assertIn("Run the agent team", text)
+        self.assertIn("Run the desk", text)
         self.assertIn(json.dumps(page.NODES), text)
         status, text = self.ask("GET", "/runs")
         self.assertEqual(status, 200)

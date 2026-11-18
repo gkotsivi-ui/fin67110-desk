@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""The agent team's page (Lab 05). Type a ticker, optional peers and a price, and press Run. The page shows each
-node's name as it runs, then the verified report with its marks. The page runs team.py, so every command still works.
+"""The desk's page (Lab 05, and Lab 08). Type a ticker, optional peers and a price, and press Run. The page shows each
+part's name as it runs, then the final report: the verified report with its marks, and the worksheet's view under it.
+The page runs the one command, desk.py, so every command still works from a terminal.
 
 Start it:  python page.py
 Or double-click start_page.bat (Windows) or start_page.command (Mac). The page opens in your browser.
@@ -29,15 +30,19 @@ import markdown
 
 ROOT = Path(__file__).resolve().parent
 OUTPUT = ROOT / "output"
-# The graph's nodes in their fixed order, as team.py prints them; a test keeps the two the same.
-NODES = ["The steps", "Research Analyst", "Financial Analyst", "Investment Advisor", "Strategy Manager", "Verifier"]
+# The parts of the one command in their fixed order, as desk.py prints them, with the agent team's own nodes in the
+# place of the part "Agent team". A test keeps this list and the code the same. The seeker is not here: the page
+# runs the desk on a ticker.
+NODES = ["Pick", "The steps", "Research Analyst", "Financial Analyst", "Investment Advisor", "Strategy Manager", "Verifier",
+         "Hook on the team's report", "Worksheet", "Hook on the worksheet", "Final report", "Hook on the final report"]
+COMMAND = "desk.py"
 TICKER = re.compile(r"[A-Za-z][A-Za-z0-9.\-]{0,9}")
 FILED = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
 PORT = 8765
 
 
 class Run:
-    """One run of team.py. Its output is kept line by line for the page."""
+    """One run of the one command. Its output is kept line by line for the page."""
 
     def __init__(self, args: list[str]) -> None:
         self.args = args
@@ -46,7 +51,7 @@ class Run:
         self.verified = ""
         self.lock = threading.Lock()
         env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUNBUFFERED="1")
-        self.process = subprocess.Popen([sys.executable, "-u", str(ROOT / "team.py"), *args], cwd=ROOT, env=env,
+        self.process = subprocess.Popen([sys.executable, "-u", str(ROOT / COMMAND), *args], cwd=ROOT, env=env,
                                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
         threading.Thread(target=self.read, daemon=True).start()
 
@@ -54,7 +59,8 @@ class Run:
         assert self.process.stdout is not None
         for raw in self.process.stdout:
             line = raw.rstrip("\r\n")
-            found = re.match(r"Verified report: (.+)$", line)
+            # The command prints the verified report's path, and at its end the final report's. The last one is shown.
+            found = re.match(r"(?:Final|Verified) report: (.+\.md)$", line)
             if found:
                 self.verified = found.group(1).strip()
             with self.lock:
@@ -198,7 +204,7 @@ class Page(BaseHTTPRequestHandler):
 
     def route_status(self, query: dict[str, list[str]]) -> None:
         run = RUN
-        self.send_json({"running": bool(run and not run.done), "command": " ".join(["team.py", *run.args]) if run else ""})
+        self.send_json({"running": bool(run and not run.done), "command": " ".join([COMMAND, *run.args]) if run else ""})
 
     def route_start(self) -> None:
         global RUN
@@ -216,7 +222,7 @@ class Page(BaseHTTPRequestHandler):
                 self.send_json({"error": "A run is still going. Wait for it to end, or stop it."}, HTTPStatus.CONFLICT)
                 return
             RUN = Run(args)
-        self.send_json({"command": " ".join(["team.py", *args])})
+        self.send_json({"command": " ".join([COMMAND, *args])})
 
     def route_stop(self) -> None:
         run = RUN
@@ -267,12 +273,13 @@ class Page(BaseHTTPRequestHandler):
         self.send_html(render(path))
 
     def route_runs(self, query: dict[str, list[str]]) -> None:
-        """The saved runs that have a verified report, newest first, each with its newest verified report."""
+        """The saved runs that have a report, newest first: each with its final report, or, for a run of the agent
+        team alone, its newest verified report."""
         found = []
         for folder in sorted(OUTPUT.iterdir()) if OUTPUT.is_dir() else []:
             reports = sorted(folder.glob("verified_report*.md"), key=lambda p: p.stat().st_mtime) if folder.is_dir() else []
             if reports:
-                newest = reports[-1]
+                newest = folder / "final_report.md" if (folder / "final_report.md").is_file() else reports[-1]
                 found.append({"name": folder.name, "path": newest.relative_to(ROOT).as_posix(), "time": newest.stat().st_mtime})
         found.sort(key=lambda r: r["time"], reverse=True)
         self.send_json(found[:60])
@@ -353,7 +360,7 @@ pre.log { max-height: 320px; overflow: auto; background: var(--bg); border: 1px 
 <div id="setup" class="setup" hidden></div>
 
 <section class="card">
-<h2>Run the agent team</h2>
+<h2>Run the desk</h2>
 <form id="form" autocomplete="off">
 <div class="row">
 <div><label for="ticker">Ticker</label><input id="ticker" required maxlength="10" placeholder="the company's ticker"></div>
@@ -371,17 +378,17 @@ pre.log { max-height: 320px; overflow: auto; background: var(--bg); border: 1px 
 </section>
 
 <section class="card">
-<h2>The graph, in its fixed order</h2>
+<h2>The parts, in their fixed order</h2>
 <p id="command" class="command"></p>
 <ol id="graph" class="graph"></ol>
 <ol id="timeline" class="timeline"></ol>
-<p id="idle" class="empty">No run yet. Each node's name appears here as it runs.</p>
+<p id="idle" class="empty">No run yet. Each part's name appears here as it runs.</p>
 <details><summary>Everything the run prints</summary><pre id="log" class="log"></pre></details>
 </section>
 
 <section class="card">
-<div class="report-head"><h2>Verified report</h2><select id="saved"><option value="">Open a saved report</option></select></div>
-<div id="report"><p class="empty">The verified report, with the Verifier's marks under its first line, appears here when a run ends.</p></div>
+<div class="report-head"><h2>Final report</h2><select id="saved"><option value="">Open a saved report</option></select></div>
+<div id="report"><p class="empty">The final report appears here when a run ends: the verified report, with the Verifier's marks under its first line, and the worksheet's view under it.</p></div>
 </section>
 </main>
 <script>
@@ -425,7 +432,13 @@ function listen() {
     source.close(); source = null; busy(false);
     document.querySelectorAll('#graph li.now').forEach((li) => { li.classList.remove('now'); li.classList.add('ran'); });
     const end = JSON.parse(e.data);
-    if (end.code === 0 && end.verified) { say('The run ended. The verified report is below.', 'ok'); await saved(); showReport(end.verified); }
+    if (end.code === 0 && end.verified) { say('The run ended. The final report is below.', 'ok'); await saved(); showReport(end.verified); }
+    else if (end.code === 2 && end.verified) {
+      // The hook refused a number: the report exists, and the run is not done. Show both.
+      const refused = $('#log').textContent.split('\\n').filter((l) => l.startsWith('refused:') || l.startsWith('Not done:')).slice(0, 12).join('\\n');
+      say(`The hook refused: the run is not done.\\n${refused}`, 'bad'); $('#message').style.whiteSpace = 'pre-wrap';
+      await saved(); showReport(end.verified);
+    }
     else {
       const last = $('#log').textContent.trim().split('\\n').slice(-6).join('\\n');
       say(`The run stopped (exit code ${end.code}). Its last lines:\\n${last}`, 'bad');
@@ -472,7 +485,7 @@ $('#form').addEventListener('submit', async (e) => {
   if (!r.ok) { say(answer.error, 'bad'); return; }
   graph(); $('#timeline').innerHTML = ''; $('#log').textContent = '';
   $('#command').textContent = 'python ' + answer.command;
-  $('#report').innerHTML = '<p class="empty">The verified report appears here when the run ends.</p>';
+  $('#report').innerHTML = '<p class="empty">The final report appears here when the run ends.</p>';
   listen();
 });
 

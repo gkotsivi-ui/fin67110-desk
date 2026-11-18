@@ -272,6 +272,46 @@ Entry 16 is in pull request 5, which is not merged as this is written.
   run with the network blocked stopped as the tests say.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-16: one desk (Lab 08)
+
+### 18. The worksheet, the hook and the one command, and what a practice run showed
+
+- **What we built.** `worksheet.py`, `hook.py`, `desk.py` with its replay, the page behind the one command,
+  and `three_columns.py` for Lab 09. Every part is joined as a pipeline: a part reads the files that the
+  part before it saved. The seeker is not built.
+- **What the coding agent chose, for the team to review.** In the agent team's report the hook does not
+  check the numbers again: it requires the Verifier's marks, and the text the Verifier marked. A refusal
+  of the hook does not stop the parts after it; the command ends "Not done". The worksheet knows one
+  method. The series of closes and volumes is not saved with a run, only its median, because a live run's
+  folder is committed and a raw pull stays out of the repository. Step 4 now saves the parts of owner
+  cash flow apart from the core facts, so the roles and the Verifier receive what they received before.
+- **What the coding agent did not write.** The worksheet file, the persona and the factors are a team
+  member's, by hand. `client/` holds a page on their shape and nothing else. For the practice run the
+  agent copied a teammate's rates into a file outside the repository, and said so in that file.
+- **What the coding agent got wrong: it planned a part that a teammate had built.** It planned its own
+  hit-rate table and its own form for the saved view. jcleeper65 had pushed a hit-rate table that
+  morning, with a form for `view.json`. The agent found it when it fetched `main` after a pause, dropped
+  its own, and saved the view in that form. Without the fetch the repository would hold two of each.
+- **What the coding agent got wrong: an edit script that changed nothing.** To change several lines at
+  once it ran a short script. The shell removed the backslashes in it, the script's own check failed, and
+  no file changed. The tests still passed, because nothing had changed. The agent read the error and made
+  the edits one at a time.
+- **What the practice run showed: a label that the hook refused.** The release of the company in the
+  practice run splits each column's date over two header lines. The reader named the quarter's column
+  by its year alone. The worksheet printed that year beside the revenue, and the hook read it as a second
+  number with no source. The reader now joins the two lines into one date, with a test, and a year alone
+  names a period and claims nothing.
+- **What the practice run showed: a persona that scores in digits.** The persona scores six criteria. It
+  wrote the scores as digits, the worksheet prints no such numbers, and by the rule the judgment was left
+  out and the view was "not computed". The worksheet's rules now tell the persona to write a score as a
+  word. On a second run of the worksheet the judgment was written and the hook passed it.
+- **What the practice run showed: three numbers the Verifier marked unsupported.** We read each line
+  before we called it an error (entry 5). One is a benchmark with no source: "below 1.0x". Two are true:
+  the six-month diluted EPS of this year and of last year stand on the release's EPS line, but the role
+  stated them without quoting that line. The hook refused the report, as it must. The plan's fix F7, not
+  built, removes such a sentence in code. Until then a run can end "Not done" over a true number.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code. I verified the sources myself; the judgments are mine.

@@ -105,6 +105,14 @@ class TheColumns(unittest.TestCase):
         q = self.read(header, "Revenue | $646 | $512 | $1,817 | $1,410", "Diluted | $3.83 | $1.05 | $20.44 | $14.62")
         self.assertEqual((q["revenue"], q["revenue_prior"], q["eps"], q["eps_prior"]), (646.0, 512.0, 3.83, 1.05))
 
+    def test_a_date_split_over_two_lines_the_month_and_day_then_the_year(self) -> None:
+        # Each column's date can stand on two header lines. The column is then named by its whole date, not by its
+        # year alone: the quarter and the year to date end on the same day, and "2026" would name both.
+        header = ["Three Months Ended | Six Months Ended", "July 26, | July 27, | July 26, | July 27,", "2026 | 2025 | 2026 | 2025"]
+        q = self.read(header, "Revenue | $1,115 | $902 | $2,037 | $1,668", "Diluted | $1.46 | $1.08 | $2.85 | $1.84")
+        self.assertEqual((q["revenue"], q["revenue_prior"], q["eps"], q["eps_prior"]), (1115.0, 902.0, 1.46, 1.08))
+        self.assertEqual((q["period"], q["prior_period"]), ("July 26, 2026", "July 27, 2025"))
+
     def test_the_years_beside_the_period_on_one_line(self) -> None:
         q = self.read(["Three Months Ended September 30, | 2026 | 2025"], "Total revenue | 92,279 | 77,673", "Diluted | $4.92 | $3.72")
         self.assertEqual((q["revenue"], q["revenue_prior"]), (92279.0, 77673.0))

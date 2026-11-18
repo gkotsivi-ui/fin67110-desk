@@ -232,6 +232,31 @@ DEBT_PAIRS = (
 # never takes it as the amount; it only shows that there is no current portion.
 DEBT_TOTAL = "LongTermDebt"
 DEBT_TAGS = [tag for pair in DEBT_PAIRS for tag in pair] + [DEBT_TOTAL]
+# What the worksheet reads beside the core facts: the parts of owner cash flow for up to three fiscal years, and the
+# diluted share count. Step 4 saves them apart from the core facts, under "worksheet" in facts.json, so the roles
+# and the Verifier receive what they received before.
+WORKSHEET_YEARS = 3
+WORKSHEET_TAGS = {
+    "depreciation": ["DepreciationDepletionAndAmortization", "DepreciationAndAmortization", "DepreciationAmortizationAndAccretionNet"],
+    "diluted_shares": ["WeightedAverageNumberOfDilutedSharesOutstanding"],
+}
+
+
+def fiscal_years(vals: list[dict[str, Any]], latest_end: str, count: int) -> list[dict[str, Any]]:
+    """The full-year facts for the fiscal year that ends on latest_end and the years before it, newest first,
+    count at most. A year is found by its end date, about a year before the next one; a gap ends the list."""
+    years: list[dict[str, Any]] = []
+    end = latest_end
+    while len(years) < count:
+        matching = [v for v in vals if v.get("end") == end and v.get("start")]
+        if not matching:
+            break
+        years.append(max(matching, key=lambda v: (v.get("filed", ""), v.get("accn", ""))))
+        earlier = [v["end"] for v in vals if v.get("start") and 350 <= (date.fromisoformat(end) - date.fromisoformat(v["end"])).days <= 380]
+        if not earlier:
+            break
+        end = max(earlier)
+    return years
 
 
 def debt_at(values: dict[str, float]) -> dict[str, Any]:
@@ -512,8 +537,21 @@ class Desk:
         }
         if self.annual_problem:
             out["not_stated"] = self.annual_problem
+        else:
+            out["worksheet"] = self.worksheet_inputs(facts, chosen, current_end)
         (self.outdir / "facts.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
         print(f"Saved XBRL facts: {self.outdir / 'facts.json'}")
+
+    def worksheet_inputs(self, facts: dict[str, Any], chosen: dict[str, dict[str, Any] | None], current_end: str) -> dict[str, Any]:
+        """The worksheet's inputs, each with its tag and its full-year facts, newest first. A part the 10-K does not
+        tag is None: the worksheet says "not known" and never fills it."""
+        items = {name: chosen.get(name) for name in ("net_income", "capex")}
+        items.update({name: self.choose_fact(facts, tags, name, quiet=True) for name, tags in WORKSHEET_TAGS.items()})
+        saved: dict[str, Any] = {}
+        for name, item in items.items():
+            years = fiscal_years(item["all"], current_end, WORKSHEET_YEARS) if item else []
+            saved[name] = {"tag": item["tag"], "unit": item["unit"], "years": years} if years else None
+        return saved
 
     def at_year_ends(self, item: dict[str, Any], current_end: str, prior_end: str | None) -> None:
         """Set a balance-sheet fact's values at the two fiscal year ends."""

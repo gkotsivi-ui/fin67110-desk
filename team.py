@@ -187,6 +187,8 @@ class Team:
         desk.step5(price)
         desk.step6()
         desk.step7(state.get("peers", []))
+        # The one market number, saved with the run: the worksheet and the hook read it from this file.
+        (Path(state["run_dir"]) / "price.json").write_text(json.dumps({"price": price, "note": note}, indent=1), encoding="utf-8")
         manager = StrategyManager(desk, self.model, price, note, self.settings["run_time"], self.settings["tools"])
         more = more_ratios(desk)
         keys = ("accessionNumber", "filingDate", "reportDate", "accepted_index", "exhibit99_1", "exhibit_label", "saved_text")
@@ -354,6 +356,16 @@ def stopped(team: Team, run_dir: Path, exc: Exception) -> int:
     return 1
 
 
+def run_graph(team: Team, state: dict[str, Any], run_dir: Path) -> dict[str, Any] | None:
+    """Run the graph on one ticker. The final state, or None when a part stopped: the stop is then printed and
+    recorded in the run folder (stopped)."""
+    try:
+        return team.graph().invoke(state, {"recursion_limit": 40})
+    except Exception as exc:  # noqa: BLE001 - whatever the error, the run says which part stopped and records it
+        stopped(team, run_dir, exc)
+        return None
+
+
 def new_run_dir(ticker: str, when: datetime) -> Path:
     """A folder named by company, date and time; never one that holds an earlier run."""
     base = Path("output") / f"{ticker}_{when:%Y%m%d_%H%M%S}"
@@ -416,10 +428,9 @@ def main() -> int:
     print("Graph: " + " -> ".join(NAMES[n] for n in ORDER))
     state = {"ticker": ticker, "peers": [p.strip().upper() for p in args.peers.split(",") if p.strip()], "price": args.price,
              "filed": args.filed.isoformat() if args.filed else None, "run_dir": str(run_dir)}
-    try:
-        final = team.graph().invoke(state, {"recursion_limit": 40})
-    except Exception as exc:  # noqa: BLE001 - whatever the error, the run says which part stopped and records it
-        return stopped(team, run_dir, exc)
+    final = run_graph(team, state, run_dir)
+    if final is None:
+        return 1
     print(f"\nRun folder: {run_dir}\nReport: {final['report_path']}\nVerified report: {final['verified_path']}")
     return 0
 

@@ -33,6 +33,8 @@ MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", 
 MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 FULL_DATE = re.compile(r"\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2}),?\s+((?:19|20)\d\d)\b", re.I)
 BARE_YEAR = re.compile(r"(?<![\w,.$/-])((?:19|20)\d\d)(?![\w,./-])")
+# A month and a day with no year after them: one half of a date that a header splits over two lines.
+MONTH_DAY = re.compile(r"\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})\b(?!\s*,?\s*(?:19|20)\d\d)", re.I)
 # A period in a header: "three months", "13 weeks", "three and nine months", "quarter", "year".
 NUMBER_WORDS = {"three": 3, "six": 6, "nine": 9, "twelve": 12, "thirteen": 13, "fourteen": 14, "sixteen": 16, "seventeen": 17}
 SPAN = re.compile(r"\b(three|six|nine|twelve|thirteen|fourteen|sixteen|seventeen|\d+)(?:\s+and\s+(?:three|six|nine|twelve|\d+))?\s+(months?|weeks?)\b"
@@ -156,10 +158,16 @@ def dates_in(line: str) -> list[tuple[int, int, int]]:
 
 
 def column_dates(header: list[str], count: int) -> list[tuple[int, int, int]] | None:
-    """The date of each column of figures: the header line nearest the rows that holds one date for each column."""
-    for line in reversed(header):
-        dates = dates_in(line)
+    """The date of each column of figures: the header line nearest the rows that holds one date for each column.
+    A header can split each date over two lines, the month and day on one and the year on the next. The two are
+    then joined, so that a column is named by its whole date."""
+    for index in range(len(header) - 1, -1, -1):
+        dates = dates_in(header[index])
         if len(dates) == count:
+            if index and not any(month for _, month, _ in dates):
+                days = [(MONTHS.index(m.group(1)[:3].lower()) + 1, int(m.group(2))) for m in MONTH_DAY.finditer(header[index - 1])]
+                if len(days) == count:
+                    return [(year, month, day) for (year, _, _), (month, day) in zip(dates, days)]
             return dates
     return None
 
