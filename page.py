@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""The agent team's page (Lab 05). Type a ticker, optional peers and a price, and press Run. The page shows each
-node's name as it runs, then the verified report with its marks. The page runs team.py, so every command still works.
+"""The agent team's page (Lab 05). Enter a ticker or screen and press Run. The page calls the joined desk command
+and shows its progress and final report.
 
 Start it:  python page.py
 Or double-click start_page.bat (Windows) or start_page.command (Mac). The page opens in your browser.
@@ -10,7 +10,9 @@ It listens on this computer only (127.0.0.1), and runs one job at a time.
 from __future__ import annotations
 
 import argparse
+from datetime import date
 import html
+from importlib.util import find_spec
 import json
 import os
 import re
@@ -29,24 +31,28 @@ import markdown
 
 ROOT = Path(__file__).resolve().parent
 OUTPUT = ROOT / "output"
-# The graph's nodes in their fixed order, as team.py prints them; a test keeps the two the same.
-NODES = ["The steps", "Research Analyst", "Financial Analyst", "Investment Advisor", "Strategy Manager", "Verifier"]
-TICKER = re.compile(r"[A-Za-z][A-Za-z0-9.\-]{0,9}")
+DESK_COMMAND = ROOT.parent / "Analyst" / "desk.py"
+NODES = ["inputs", "seeker", "pick", "team", "worksheet", "final report"]
+
+
+def joined_runs() -> Path:
+    return DESK_COMMAND.parent / "runs"
+TICKER = re.compile(r"[A-Za-z][A-Za-z0-9.\-]{0,15}")
 FILED = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
 PORT = 8765
 
 
 class Run:
-    """One run of team.py. Its output is kept line by line for the page."""
+    """One run of the joined desk. Its output is kept line by line for the page."""
 
     def __init__(self, args: list[str]) -> None:
         self.args = args
         self.lines: list[str] = []
         self.code: int | None = None
-        self.verified = ""
+        self.final_report = ""
         self.lock = threading.Lock()
         env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUNBUFFERED="1")
-        self.process = subprocess.Popen([sys.executable, "-u", str(ROOT / "team.py"), *args], cwd=ROOT, env=env,
+        self.process = subprocess.Popen([sys.executable, "-u", str(DESK_COMMAND), *args], cwd=DESK_COMMAND.parent, env=env,
                                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
         threading.Thread(target=self.read, daemon=True).start()
 
@@ -54,9 +60,9 @@ class Run:
         assert self.process.stdout is not None
         for raw in self.process.stdout:
             line = raw.rstrip("\r\n")
-            found = re.match(r"Verified report: (.+)$", line)
+            found = re.match(r"Final report: (.+)$", line)
             if found:
-                self.verified = found.group(1).strip()
+                self.final_report = found.group(1).strip()
             with self.lock:
                 self.lines.append(line)
         self.code = self.process.wait()  # set after the last line, so a finished run has all its lines
@@ -74,7 +80,8 @@ REVIEW_JOB = None
 def review_folder(value: str) -> Path:
     """Review only saved runs under this repository, never arbitrary filesystem folders."""
     path = (ROOT / value).resolve()
-    allowed = [(ROOT / "runs/live").resolve(), (ROOT / "runs/practice").resolve(), OUTPUT.resolve()]
+    allowed = [(ROOT / "runs/live").resolve(), (ROOT / "runs/practice").resolve(), OUTPUT.resolve(),
+               (joined_runs() / "live").resolve(), (joined_runs() / "practice").resolve()]
     if not path.is_dir() or not any(base in path.parents for base in allowed):
         raise ValueError("Choose a run folder inside runs/live, runs/practice, or output.")
     return path
@@ -96,7 +103,8 @@ class ReviewJob:
             from desk_error_review import configured_model, review_run
             model = configured_model() if self.use_model else None
             self.result = review_run(self.folder, ROOT / "docs/live-record-errors", self.number,
-                                     (ROOT / "runs/live").resolve() not in self.folder.parents,
+                                     not any(base.resolve() in self.folder.parents
+                                             for base in (ROOT / "runs/live", joined_runs() / "live")),
                                      ROOT, model=model)
         except Exception as exc:
             # Do not send provider errors or credentials to the browser.
@@ -106,25 +114,24 @@ class ReviewJob:
 
 
 def arguments(body: dict[str, Any]) -> tuple[list[str], str]:
-    """team.py's arguments from the form, or what is wrong with the form."""
+    """Build the joined command's arguments from the form."""
     ticker = str(body.get("ticker", "")).strip().upper()
     if not TICKER.fullmatch(ticker):
-        return [], "Type a ticker, for example the one your partner picked."
-    args = [ticker]
+        return [], "Type a ticker or screen."
+    args = ["screen" if ticker == "SCREEN" else ticker]
     peers = [p.strip().upper() for p in str(body.get("peers", "")).split(",") if p.strip()]
     if len(peers) > 10 or any(not TICKER.fullmatch(p) for p in peers):
         return [], "Peers are tickers with commas between them, ten at most."
     if peers:
-        args += ["--peers", ",".join(peers)]
-    price = str(body.get("price", "")).strip().replace("$", "").replace(",", "")
-    if price:
+        args += ["--peers", *peers]
+    refresh = str(body.get("refresh_screen", "")).strip()
+    if refresh:
         try:
-            value = float(price)
+            if date.fromisoformat(refresh).isoformat() != refresh:
+                raise ValueError
         except ValueError:
-            return [], "The price is a number, for example 992.13."
-        if not 0 < value < 1e7:
-            return [], "The price is a number above zero."
-        args += ["--price", f"{value:g}"]
+            return [], "The seeker start date is YYYY-MM-DD."
+        args += ["--refresh-screen", refresh]
     filed = str(body.get("filed", "")).strip()
     if filed:
         if not FILED.fullmatch(filed):
@@ -134,22 +141,32 @@ def arguments(body: dict[str, Any]) -> tuple[list[str], str]:
 
 
 def safe_report(relative: str) -> Path | None:
-    """The report file, when it is a Markdown file inside the output folder; None for any other path."""
+    """Allow legacy Markdown reports and sealed joined desk final reports."""
     try:
         path = (ROOT / relative).resolve()
     except (OSError, ValueError):
         return None
-    if OUTPUT.resolve() not in path.parents or path.suffix.lower() != ".md" or not path.is_file():
+    if path.suffix.lower() != ".md" or not path.is_file():
         return None
-    return path
+    if OUTPUT.resolve() in path.parents:
+        return path
+    allowed = [(joined_runs() / kind).resolve() for kind in ("live", "practice")]
+    if path.name == "final_report.md" and path.parent.parent in allowed:
+        try:
+            state = json.loads((path.parent / "desk_run.json").read_text(encoding="utf-8"))
+            if state.get("status") == "complete" and state.get("final_report") == path.name:
+                return path
+        except (OSError, ValueError, AttributeError):
+            pass
+    return None
 
 
 def report_link(printed: str) -> str:
-    """The verified report's path as team.py printed it, made relative to this folder for the page."""
+    """Convert the printed final report path to a link for the page."""
     if not printed:
         return ""
     path = safe_report(printed)
-    return path.relative_to(ROOT.resolve()).as_posix() if path else ""
+    return Path(os.path.relpath(path, ROOT)).as_posix() if path else ""
 
 
 def render(path: Path) -> str:
@@ -236,7 +253,7 @@ class Page(BaseHTTPRequestHandler):
 
     def route_status(self, query: dict[str, list[str]]) -> None:
         run = RUN
-        self.send_json({"running": bool(run and not run.done), "command": " ".join(["team.py", *run.args]) if run else ""})
+        self.send_json({"running": bool(run and not run.done), "command": " ".join(["desk.py", *run.args]) if run else ""})
 
     def route_start(self) -> None:
         global RUN
@@ -256,8 +273,12 @@ class Page(BaseHTTPRequestHandler):
             if RUN and not RUN.done:
                 self.send_json({"error": "A run is still going. Wait for it to end, or stop it."}, HTTPStatus.CONFLICT)
                 return
-            RUN = Run(args)
-        self.send_json({"command": " ".join(["team.py", *args])})
+            try:
+                RUN = Run(args)
+            except OSError as exc:
+                self.send_json({"error": f"Could not start the desk ({exc.strerror})."}, HTTPStatus.INTERNAL_SERVER_ERROR)
+                return
+        self.send_json({"command": " ".join(["desk.py", *args])})
 
     def route_stop(self) -> None:
         run = RUN
@@ -346,7 +367,7 @@ class Page(BaseHTTPRequestHandler):
                     with run.lock:
                         finished = sent >= len(run.lines)
                     if finished:
-                        end = {"code": run.code, "verified": report_link(run.verified)}
+                        end = {"code": run.code, "final_report": report_link(run.final_report) if run.code == 0 else ""}
                         self.wfile.write(f"id: {sent}\nevent: done\ndata: {json.dumps(end)}\n\n".encode("utf-8"))
                         self.wfile.flush()
                         return
@@ -357,7 +378,7 @@ class Page(BaseHTTPRequestHandler):
     def route_report(self, query: dict[str, list[str]]) -> None:
         path = safe_report(query.get("path", [""])[0])
         if path is None:
-            self.send_json({"error": "That is not a report in the output folder."}, HTTPStatus.NOT_FOUND)
+            self.send_json({"error": "That report is unavailable."}, HTTPStatus.NOT_FOUND)
             return
         self.send_html(render(path))
 
@@ -369,17 +390,30 @@ class Page(BaseHTTPRequestHandler):
             if reports:
                 newest = reports[-1]
                 found.append({"name": folder.name, "path": newest.relative_to(ROOT).as_posix(), "time": newest.stat().st_mtime})
+        for kind in ("live", "practice"):
+            for report in (joined_runs() / kind).glob("*/final_report.md"):
+                link = report_link(str(report))
+                if link:
+                    found.append({"name": report.parent.name, "path": link, "time": report.stat().st_mtime})
         found.sort(key=lambda r: r["time"], reverse=True)
         self.send_json(found[:60])
 
     def route_setup(self, query: dict[str, list[str]]) -> None:
-        """check_env.py without its network checks, so the page can say what to fix before a run."""
-        try:
-            done = subprocess.run([sys.executable, str(ROOT / "check_env.py"), "--offline"], cwd=ROOT, capture_output=True, text=True,
-                                  encoding="utf-8", errors="replace", timeout=60, env=dict(os.environ, PYTHONIOENCODING="utf-8"))
-            self.send_json({"ok": done.returncode == 0, "lines": [line for line in done.stdout.splitlines() if line.strip()]})
-        except (OSError, subprocess.TimeoutExpired) as exc:
-            self.send_json({"ok": False, "lines": [f"FIX   check_env.py did not run: {exc}"]})
+        """Check the joined desk's local setup without contacting providers."""
+        lines = []
+        if not DESK_COMMAND.is_file():
+            lines.append("FIX   Put the Analyst and fin67110-desk repositories side by side.")
+        missing = [name for name in ("dotenv", "crewai", "bs4", "requests") if find_spec(name) is None]
+        if missing:
+            lines.append("FIX   Install Analyst/requirements.txt in the Python environment that starts this page.")
+        elif DESK_COMMAND.is_file():
+            from dotenv import dotenv_values
+
+            config = dotenv_values(DESK_COMMAND.parent / ".env")
+            for key in ("SEC_USER_AGENT", "API_KEY"):
+                if not str(config.get(key) or "").strip():
+                    lines.append(f"FIX   Set {key} in Analyst/.env.")
+        self.send_json({"ok": not lines, "lines": lines})
 
 
 PAGE = """<!doctype html>
@@ -444,16 +478,16 @@ pre.log { max-height: 320px; overflow: auto; background: var(--bg); border: 1px 
 <body>
 <main>
 <h1>Equity research desk</h1>
-<p class="sub">The agent team: the steps read the filings, three analysts write, the Strategy Manager checks, and the Verifier marks every sourced number.</p>
+<p class="sub">Enter screen to use the top ticker from the latest saved seeker report. A start date refreshes that report first.</p>
 <div id="setup" class="setup" hidden></div>
 
 <section class="card">
-<h2>Run the agent team</h2>
+<h2>Run the joined desk</h2>
 <form id="form" autocomplete="off">
 <div class="row">
-<div><label for="ticker">Ticker</label><input id="ticker" required maxlength="10" placeholder="the company's ticker"></div>
-<div><label for="peers">Peers <span>optional, with commas</span></label><input id="peers" maxlength="120" placeholder="for example WMT,TGT,BJ"></div>
-<div><label for="price">Price <span>optional</span></label><input id="price" inputmode="decimal" maxlength="12" placeholder="blank: the closes reader finds it"></div>
+<div><label for="ticker">Ticker or screen</label><input id="ticker" required maxlength="16" placeholder="Ticker or screen"></div>
+<div><label for="peers">Peers <span>optional, with commas</span></label><input id="peers" maxlength="120" placeholder="Separate tickers with commas"></div>
+<div><label for="refresh-screen">Refresh seeker <span>optional start date</span></label><input id="refresh-screen" type="date"></div>
 <div><label for="filed">Filing time <span>optional, Eastern</span></label><input id="filed" maxlength="19" placeholder="YYYY-MM-DDTHH:MM:SS"></div>
 </div>
 <div class="buttons">
@@ -466,17 +500,17 @@ pre.log { max-height: 320px; overflow: auto; background: var(--bg); border: 1px 
 </section>
 
 <section class="card">
-<h2>The graph, in its fixed order</h2>
+<h2>Desk execution order</h2>
 <p id="command" class="command"></p>
 <ol id="graph" class="graph"></ol>
 <ol id="timeline" class="timeline"></ol>
-<p id="idle" class="empty">No run yet. Each node's name appears here as it runs.</p>
+<p id="idle" class="empty">Each desk part appears here when it starts.</p>
 <details><summary>Everything the run prints</summary><pre id="log" class="log"></pre></details>
 </section>
 
 <section class="card">
-<div class="report-head"><h2>Verified report</h2><select id="saved"><option value="">Open a saved report</option></select></div>
-<div id="report"><p class="empty">The verified report, with the Verifier's marks under its first line, appears here when a run ends.</p></div>
+<div class="report-head"><h2>Final report</h2><select id="saved"><option value="">Open a saved report</option></select></div>
+<div id="report"><p class="empty">The verified team report and worksheet view appear here after the final output check passes.</p></div>
 </section>
 <section class="card">
 <h2>Review a saved run</h2>
@@ -533,13 +567,13 @@ function listen() {
   source.addEventListener('line', (e) => {
     const line = JSON.parse(e.data);
     const log = $('#log'); log.textContent += line + '\\n'; log.scrollTop = log.scrollHeight;
-    const node = line.match(/^=== (.+) ===$/); if (node) reached(node[1]);
+    const part = line.match(/^Part starting: (.+)$/); if (part) reached(part[1]);
   });
   source.addEventListener('done', async (e) => {
     source.close(); source = null; busy(false);
     document.querySelectorAll('#graph li.now').forEach((li) => { li.classList.remove('now'); li.classList.add('ran'); });
     const end = JSON.parse(e.data);
-    if (end.code === 0 && end.verified) { say('The run ended. The verified report is below.', 'ok'); await saved(); showReport(end.verified); }
+    if (end.code === 0 && end.final_report) { say('The run completed. The final report is below.', 'ok'); await saved(); showReport(end.final_report); }
     else {
       const last = $('#log').textContent.trim().split('\\n').slice(-6).join('\\n');
       say(`The run stopped (exit code ${end.code}). Its last lines:\\n${last}`, 'bad');
@@ -570,7 +604,7 @@ async function setup() {
   const s = await (await fetch('/setup')).json();
   const box = $('#setup'); box.hidden = false; box.innerHTML = '';
   const fixes = s.lines.filter((l) => l.startsWith('FIX'));
-  if (!fixes.length) { box.className = 'setup good'; box.textContent = 'Setup: ready (python check_env.py found nothing to fix).'; return; }
+  if (!fixes.length) { box.className = 'setup good'; box.textContent = 'Desk setup passed the local checks.'; return; }
   box.className = 'setup bad';
   const head = document.createElement('strong'); head.textContent = 'Fix the setup before a run:'; box.append(head);
   const ul = document.createElement('ul');
@@ -580,7 +614,7 @@ async function setup() {
 
 $('#form').addEventListener('submit', async (e) => {
   e.preventDefault(); say('', ''); $('#message').style.whiteSpace = '';
-  const body = { ticker: $('#ticker').value, peers: $('#peers').value, price: $('#price').value, filed: $('#filed').value };
+  const body = { ticker: $('#ticker').value, peers: $('#peers').value, refresh_screen: $('#refresh-screen').value, filed: $('#filed').value };
   const r = await fetch('/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   const answer = await r.json();
   if (!r.ok) { say(answer.error, 'bad'); return; }
@@ -661,7 +695,7 @@ $('#review-form').addEventListener('submit', async (e) => {
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="The agent team's page: run it and read the verified report in a browser")
+    parser = argparse.ArgumentParser(description="Lab 05: run the joined desk and read the final report")
     parser.add_argument("--port", type=int, default=PORT, help=f"The port to listen on (default {PORT}; the next free one if it is taken)")
     parser.add_argument("--no-browser", action="store_true", help="Do not open the browser")
     args = parser.parse_args()

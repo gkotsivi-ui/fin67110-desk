@@ -195,12 +195,30 @@ Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them
 
 ## Run the desk
 
-**From the page, without a terminal.** On Windows, double-click `start_page.bat`. On a Mac,
-double-click `start_page.command` (the first time, right-click it and choose Open). The page opens in
-your browser at http://127.0.0.1:8765. Type a ticker and press Run. Each part's name appears as it
-runs. When the run ends, the verified report shows on the page.
+**From Lab 05.** Keep `Analyst` next to this repository in the course workspace. Install
+`../Analyst/requirements.txt` and this repository's `markdown` dependency in the Python
+environment that starts the page. Configure the joined desk in `../Analyst/.env`. Start
+`python page.py` in that environment, or use the double-click launcher if you set up
+this repository's `.venv` with both sets of page and desk dependencies.
 
-**From a terminal.** Give the ticker. `CSCO` is an example; use any ticker.
+Open http://127.0.0.1:8765. Enter a ticker or `screen`. A seeker start date refreshes
+the screen before ticker selection. A blank date uses the latest saved screen for
+`screen`. The page shows each part and displays the final report after it passes the
+hook. The joined desk uses the sourced pre-filing close for the team's valuation.
+Joined page runs are saved in `../Analyst/runs/practice`.
+
+From `../Analyst`, run the same command in the terminal:
+
+```bash
+python desk.py TICKER
+python desk.py screen
+python desk.py --replay 'runs/practice/SAVED_RUN_FOLDER'
+```
+
+Replace `TICKER` and `SAVED_RUN_FOLDER` with your inputs.
+See [joined desk options](../Analyst/docs/desk-command.md) for screen refreshes and live runs.
+
+**Run the original team alone.** Give the ticker. `CSCO` is an example; use any ticker.
 
 Windows:
 

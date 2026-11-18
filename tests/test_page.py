@@ -19,21 +19,31 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import page  # noqa: E402
-import team  # noqa: E402
 
 
 class FormTests(unittest.TestCase):
-    def test_the_page_lists_the_graphs_nodes_in_order(self) -> None:
-        self.assertEqual(page.NODES, [team.NAMES[node] for node in team.ORDER])
-
-    def test_the_form_becomes_team_py_arguments(self) -> None:
-        args, problem = page.arguments({"ticker": " exm ", "peers": "peer, oth", "price": "$1,004.75", "filed": "2026-10-06T21:13:15"})
-        self.assertEqual((args, problem), (["EXM", "--peers", "PEER,OTH", "--price", "1004.75", "--filed", "2026-10-06T21:13:15"], ""))
+    def test_the_form_becomes_desk_arguments(self) -> None:
+        args, problem = page.arguments({"ticker": " screen ", "peers": "peer, oth",
+                                        "refresh_screen": "2026-01-01", "filed": "2026-10-06T21:13:15"})
+        self.assertEqual((args, problem), (["screen", "--peers", "PEER", "OTH", "--refresh-screen",
+                                            "2026-01-01", "--filed", "2026-10-06T21:13:15"], ""))
         self.assertEqual(page.arguments({"ticker": "EXM"}), (["EXM"], ""))
+
+    def test_run_invokes_joined_command_and_reads_final_path(self) -> None:
+        process = mock.Mock(stdout=iter(["Verified report: intermediate.md\n", "Final report: final_report.md\n"]))
+        process.wait.return_value = 0
+        with mock.patch.object(page.subprocess, "Popen", return_value=process) as popen, \
+             mock.patch.object(page.threading, "Thread"):
+            run = page.Run(["screen"])
+            run.read()
+        self.assertEqual(popen.call_args.args[0], [sys.executable, "-u", str(page.DESK_COMMAND), "screen"])
+        self.assertEqual(popen.call_args.kwargs["cwd"], page.DESK_COMMAND.parent)
+        self.assertEqual(run.final_report, "final_report.md")
+        self.assertEqual(run.code, 0)
 
     def test_a_bad_form_says_what_is_wrong(self) -> None:
         for body, words in (({"ticker": ""}, "Type a ticker"), ({"ticker": "EXM; rm"}, "Type a ticker"),
-                            ({"ticker": "EXM", "peers": "A,B C"}, "Peers are tickers"), ({"ticker": "EXM", "price": "ten"}, "a number"),
+                            ({"ticker": "EXM", "peers": "A,B C"}, "Peers are tickers"), ({"ticker": "screen", "refresh_screen": "2026-02-30"}, "YYYY-MM-DD"),
                             ({"ticker": "EXM", "filed": "2026-10-06 21:13"}, "YYYY-MM-DDTHH:MM:SS")):
             args, problem = page.arguments(body)
             self.assertEqual(args, [])
@@ -73,7 +83,7 @@ class ServerTests(unittest.TestCase):
     def test_the_page_and_its_saved_runs(self) -> None:
         status, text = self.ask("GET", "/")
         self.assertEqual(status, 200)
-        self.assertIn("Run the agent team", text)
+        self.assertIn("Run the joined desk", text)
         self.assertIn(json.dumps(page.NODES), text)
         status, text = self.ask("GET", "/runs")
         self.assertEqual(status, 200)
@@ -94,6 +104,22 @@ class ServerTests(unittest.TestCase):
         self.assertIn("<td><strong>wrong</strong></td>", text)
         self.assertNotIn("<script>", text)
         self.assertIn("&lt;script&gt;", text)
+
+    def test_joined_final_report_is_served_only_after_completion(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            desk = Path(tmp) / "desk.py"
+            folder = desk.parent / "runs/practice/EXM_example"
+            folder.mkdir(parents=True)
+            report = folder / "final_report.md"
+            report.write_text("Filings read: example\n\n## Worksheet view and evidence")
+            with mock.patch.object(page, "DESK_COMMAND", desk):
+                self.assertEqual(self.ask("GET", f"/report?path={report}")[0], 404)
+                (folder / "desk_run.json").write_text(json.dumps({
+                    "status": "complete", "final_report": report.name,
+                }))
+                status, rendered = self.ask("GET", f"/report?path={report}")
+                self.assertEqual(status, 200)
+                self.assertIn("<h2>Worksheet view and evidence</h2>", rendered)
 
     def test_another_website_cannot_start_a_run(self) -> None:
         body = json.dumps({"ticker": "EXM"})

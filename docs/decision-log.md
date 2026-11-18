@@ -276,6 +276,13 @@ November 9. Then we ran the full agent team on one of them. Entries 1 to 4 came 
   Open: the desk should say so in one clear line.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-17: connect Lab 05 to the joined desk
+
+The workspace has two desk pages. The Analyst page already used the joined command.
+The Lab 05 page still launched the team alone and read its intermediate report.
+The page test now checks the subprocess arguments and the final report path.
+A server test checks that the page serves the joined report only after completion.
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code. I verified the sources myself; the judgments are mine.
