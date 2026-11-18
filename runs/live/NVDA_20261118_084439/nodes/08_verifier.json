@@ -1,0 +1,24 @@
+{
+ "node": "Verifier",
+ "input": {
+  "report": "report.md",
+  "filing_texts": [
+   "10K_2026-02-25_nvda-20260125.txt",
+   "10Q_2026-08-26_nvda-20260726.txt",
+   "8K_2026-11-17_q3fy27pr.txt"
+  ],
+  "facts": [
+   "facts.json",
+   "peer_facts.json"
+  ]
+ },
+ "output": {
+  "verified_report": "output\\NVDA_20261118_084439\\verified_report.md",
+  "counts": {
+   "correct": 142,
+   "wrong": 0,
+   "unsupported": 2,
+   "not checked": 2
+  }
+ }
+}

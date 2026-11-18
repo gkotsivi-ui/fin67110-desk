@@ -1,5 +1,101 @@
 # FIN 67110 research desk
 
+## Intelligent error review
+
+The extra application is `desk-error-review`: a saved-run reviewer that connects prior error patterns
+with current evidence. It creates a human report and one AI prompt, each grouped into **Confirmed
+errors** and **Unconfirmed errors**. It does not repair the desk, rerun it, or edit saved live records.
+It uses code for calculations and the desk's configured model for semantic review. Model confidence
+alone never confirms an error. A missing optional component is a review limit, not an automatic failure.
+
+Review a saved run with the configured provider:
+
+```bash
+.venv/bin/python desk_error_review.py runs/live/CSCO_20261113_093231 --history docs/live-record-errors --model
+```
+
+Use `--offline` instead of `--model` for code checks without network access. This leaves model checks
+of conclusions and repeated patterns incomplete. For a coding-agent review without a separate API call,
+use `--proposals FILE --model-name ACTUAL_MODEL_NAME`; the proposal contract is in
+`skills/desk-error-review/references/proposals.md`. The review key and model settings are the desk's
+existing settings in `.env`; `--model` can incur provider charges. Unknown artifacts, raw exports, and
+secrets are excluded. Long model inputs are clipped with explicit review limits. No SEC requests are made.
+
+Use `--record-number N` for a new record without an existing error report. Existing records keep their
+number. For practice, use a folder under `runs/practice` or `output` and add `--practice`.
+Save nothing inside the selected run. Reports live in `docs/live-record-errors` and
+`docs/ai-error-prompts`; shared evidence and findings live in `docs/error-review-findings`.
+The command saves a new numbered revision when a report already exists. It checks that original file
+hashes did not change during the review. Review a completed, stable snapshot of an active run later.
+
+The Cisco review used this coding-agent session with saved evidence and no provider call. It found
+one confirmed error (an empty saved partner-check field) and two unconfirmed errors (a valuation
+assertion and the earlier runtime failure without its raw traceback). It does not establish that the
+investment recommendation is wrong. The existing original error report and saved Cisco run were preserved.
+
+Run the checks and the labelled synthetic evaluation:
+
+```bash
+.venv/bin/python -m unittest discover -s tests
+.venv/bin/python live_record.py --offline --no-save
+.venv/bin/python error_review_evaluation.py
+```
+
+The evaluation prints detected errors, false alarms, missed errors, and citation validity. Confirmed
+and unconfirmed findings are counted separately. Its temporary practice runs never enter `runs/live`.
+Results are saved to `docs/error-review-evaluation.json`. These results measure synthetic rules, not
+live accuracy or model semantic accuracy. Full ASD-STE100 vocabulary compliance is not certified.
+
+Start `.venv/bin/python page.py`, then use **Review a saved run**. Enter the run folder and its record
+number if necessary. Enable the model option to review patterns and conclusions. The page shows both
+error groups and their cited evidence, with separate downloads for the human report and AI prompt.
+It waits for an active desk job and has no repair execution action.
+
+The skill source is versioned in `skills/desk-error-review`. This computer's discoverable copy is
+installed at `~/.codex/skills/desk-error-review`. Invoke it as `$desk-error-review`.
+
+## Hit-rate table
+
+Run `.venv/bin/python hit_rate.py runs/live` on Mac (Windows:
+`.venv\Scripts\python hit_rate.py runs/live`). Replace `runs/live` with a practice folder to score
+practice runs separately. Each immediate subfolder is one run, including incomplete runs. The command
+prints one row per run and a final agreement count. Errors are reported on stderr, leave an error row,
+and produce exit status 1; other runs are still read.
+
+The reaction is the percentage change from the last official close at or before the filing's acceptance
+time to the first official close strictly after it. The XNYS calendar supplies US equity holidays and
+early closes. Prices come from the existing closes reader: LSEG Workspace or `CLOSES_FILE` in `.env`.
+Keep exports outside the repo and do not use WRDS exports with this command. Both exact session prices
+must be available; another day's price is never substituted. A reaction is unavailable until the
+post-filing session has closed and its prices are available from the source.
+
+A completed worksheet should save `view.json` in its run folder when the view is actually produced:
+
+```json
+{
+  "ticker": "EXAMPLE",
+  "filing_time": "2026-11-25T17:00:00-05:00",
+  "time": "2026-11-27T12:00:00-05:00",
+  "direction": "up"
+}
+```
+
+Directions are `up`, `down`, `flat`, or `not computed`; timestamps must include a UTC offset.
+This is an input contract, not an implemented worksheet integration. Do not backdate or reconstruct a
+missing view from a recommendation or run start time. Existing reports without a saved view display
+`not computed`. When `filing_time` is absent, the command reads the earnings 8-K acceptance time from
+the saved report's first line; ticker can also come from `facts.json`.
+
+The command creates only a new `reaction.json` in each run once the reaction becomes available,
+recording both closes, session times, filing time, ticker, price source, and retrieval time. It never
+overwrites an existing reaction, view, report, or timestamp. `--offline` reads saved reactions and
+writes nothing. The saved price pair is recomputed in code for the table on every invocation.
+
+Agreement means the view's direction matches the sign of the reaction (zero means `flat`). The
+`after` flag means the view's timestamp is strictly later than the first post-filing close. The final
+line counts agreements over runs with a reaction, excluding `after` rows and views `not computed`.
+Missing or invalid evidence is excluded and never counted as a correct prediction.
+
 An AI research desk for one client: an investor who seeks absolute return. You give it the ticker of a
 U.S. company that files with SEC EDGAR. It finds the company's latest 10-K, latest 10-Q and latest
 earnings release (the 8-K's Exhibit 99.1), reads the statements as XBRL data, computes eleven core
@@ -8,7 +104,7 @@ against the saved filings. A worksheet then puts a value range against the price
 hook refuses any number that has no source. One command runs all of it. Nothing in the code names a
 company: the ticker is an argument.
 
-Team: to be added. The thing we own: not decided yet. The joins: the team writes this line (Lab 09).
+Team: to be added. The thing we own: the intelligent error review application. The joins: the team writes this line (Lab 09).
 
 ## What works today, and what does not
 
@@ -27,6 +123,8 @@ Checked on 2026-11-11, 2026-11-12 and 2026-11-16.
 | The replay | gave the same final report for that run with every connection refused |
 | The page behind the one command | changed and tested; not yet run on a company from the page |
 | The spinoff seeker | not built yet. [seeker/README.md](seeker/README.md) says what the desk reads from it |
+| The hit-rate table | built; tested on synthetic runs; existing live report has no timestamped directional view |
+| The intelligent error review | built; code and HTTP tests; one saved-run review; synthetic evaluation only |
 
 Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them before you trust a number.
 

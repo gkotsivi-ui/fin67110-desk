@@ -17,7 +17,7 @@ Measured on 2026-11-11. The details are in [docs/decision-log.md](docs/decision-
 | A stranger's install | A clean virtual environment with the pinned packages installs, and the tests pass there |
 | The data steps on six companies | 1 clean; 1 with wrong quarter revenue and growth; 1 with a wrong debt to equity; 1 with an unsupported debt to equity; 1 that stopped; 1 that ran with awkward ratios |
 | The Verifier | It marked 9 correct numbers wrong or unsupported on the clean company. Fixed (F4): 150 of 150 correct on the same report |
-| Not built | The seeker, the worksheet with its view, the hook, the one command, the replay, the hit-rate table, the audits, the manual |
+| Not built | The seeker, the worksheet with its view, the hook, the one command, the replay, the audits, the manual |
 
 ## 2. What the grade rewards, in the order we protect it
 
@@ -73,7 +73,7 @@ Size: S is half a day or less, M is one to two days, L is three days or more.
 | One command, in a fixed order, through one run folder; each part prints its seconds; a failing part stops the run and names itself | Lab 08 | M |
 | Replay of a saved run with the network off | Lab 08 | S, after the one command |
 | The page runs the one command | Lab 08 | S |
-| The hit-rate table | Lab 07 | S |
+| The hit-rate table: built as `hit_rate.py`; worksheet view producer still pending | Lab 07 | S |
 | `audits.md`: four tables, by hand | Project page | by hand |
 | `manual.md` | Project page | by hand, with tables from code |
 
@@ -208,9 +208,11 @@ its price.
 | The desk as a plugin, with an evaluation | It helps another team run the desk. Its evaluation is the three-column table for every name. | Each coding agent packages a plugin in its own way. The desk already runs with one command and no agent. |
 | A mandate skill for an institution | A second client. | It needs quarterly data, positions and a benchmark return: more licensed data and more numbers to audit. |
 
-**Recommendation: the second seeker.** It is the one extra that needs no new data source and no model,
-and one member can build and defend it in the time we have. Take the plugin only if the exchange goes
-well and time is left. Leave the factor check and the mandate.
+**Chosen on 2026-11-17: intelligent error review.** It compares saved runs with prior error patterns,
+creates a human report and an AI prompt, and preserves the original evidence. Code establishes
+confirmed findings; model-only proposals remain unconfirmed. The first implementation includes the
+command, a coding-agent skill, page integration, synthetic evaluation, and a Cisco review. It does not
+execute repairs. The prior second-seeker recommendation is superseded by the user's choice.
 
 **The decision we serve: the company's stock,** for the investor who seeks absolute return. The view
 says worth more or less than the price, with one number that decides it. The labs, the closes reader

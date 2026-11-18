@@ -1,0 +1,217 @@
+{
+  "scope": "Synthetic rule evaluation only. This does not measure live accuracy or model semantic accuracy.",
+  "cases": [
+    {
+      "run": "correct",
+      "confirmed_detected": [],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 0,
+      "references": 0,
+      "original_unchanged": true
+    },
+    {
+      "run": "bad-calculation",
+      "confirmed_detected": [
+        "ratio"
+      ],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 2,
+      "references": 2,
+      "original_unchanged": true
+    },
+    {
+      "run": "forecast-selection",
+      "confirmed_detected": [
+        "forecast-selection"
+      ],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 1,
+      "references": 1,
+      "original_unchanged": true
+    },
+    {
+      "run": "wrong-period",
+      "confirmed_detected": [],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [
+        "selection"
+      ],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 2,
+      "references": 2,
+      "original_unchanged": true
+    },
+    {
+      "run": "wrong-units",
+      "confirmed_detected": [],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [
+        "selection"
+      ],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 2,
+      "references": 2,
+      "original_unchanged": true
+    },
+    {
+      "run": "wrong-value",
+      "confirmed_detected": [],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [
+        "selection"
+      ],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 2,
+      "references": 2,
+      "original_unchanged": true
+    },
+    {
+      "run": "type-error",
+      "confirmed_detected": [
+        "runtime"
+      ],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 1,
+      "references": 1,
+      "original_unchanged": true
+    },
+    {
+      "run": "value-error",
+      "confirmed_detected": [
+        "runtime"
+      ],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 1,
+      "references": 1,
+      "original_unchanged": true
+    },
+    {
+      "run": "json-error",
+      "confirmed_detected": [
+        "json-parse"
+      ],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 1,
+      "references": 1,
+      "original_unchanged": true
+    },
+    {
+      "run": "hook-reported-failure",
+      "confirmed_detected": [
+        "component-failure"
+      ],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 1,
+      "references": 1,
+      "original_unchanged": true
+    },
+    {
+      "run": "skill-reported-failure",
+      "confirmed_detected": [
+        "component-failure"
+      ],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 1,
+      "references": 1,
+      "original_unchanged": true
+    },
+    {
+      "run": "unsupported",
+      "confirmed_detected": [],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [
+        "unsupported"
+      ],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 2,
+      "references": 2,
+      "original_unchanged": true
+    },
+    {
+      "run": "incomplete-no-log",
+      "confirmed_detected": [],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 0,
+      "references": 0,
+      "original_unchanged": true
+    },
+    {
+      "run": "intentional-omission",
+      "confirmed_detected": [],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 0,
+      "references": 0,
+      "original_unchanged": true
+    },
+    {
+      "run": "resolved-previous-pattern",
+      "confirmed_detected": [],
+      "false_alarms": [],
+      "missed": [],
+      "unconfirmed_detected": [],
+      "unconfirmed_false_alarms": [],
+      "unconfirmed_missed": [],
+      "valid_references": 0,
+      "references": 0,
+      "original_unchanged": true
+    }
+  ],
+  "totals": {
+    "confirmed_detected": 7,
+    "false_alarms": 0,
+    "missed": 0,
+    "unconfirmed_detected": 4,
+    "unconfirmed_false_alarms": 0,
+    "unconfirmed_missed": 0,
+    "valid_references": 16,
+    "references": 16
+  }
+}

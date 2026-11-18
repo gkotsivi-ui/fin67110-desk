@@ -74,6 +74,41 @@ class Run:
 
 RUN: Run | None = None
 RUN_LOCK = threading.Lock()
+REVIEW_JOB = None
+
+
+def review_folder(value: str) -> Path:
+    """Review only saved runs under this repository, never arbitrary filesystem folders."""
+    path = (ROOT / value).resolve()
+    allowed = [(ROOT / "runs/live").resolve(), (ROOT / "runs/practice").resolve(), OUTPUT.resolve()]
+    if not path.is_dir() or not any(base in path.parents for base in allowed):
+        raise ValueError("Choose a run folder inside runs/live, runs/practice, or output.")
+    return path
+
+
+class ReviewJob:
+    """A separate read-only review job. It cannot stop or repair a desk run."""
+    def __init__(self, folder, number, use_model):
+        self.done = False
+        self.result = None
+        self.error = ""
+        self.folder = folder
+        self.number = number
+        self.use_model = use_model
+        threading.Thread(target=self.work, daemon=True).start()
+
+    def work(self):
+        try:
+            from desk_error_review import configured_model, review_run
+            model = configured_model() if self.use_model else None
+            self.result = review_run(self.folder, ROOT / "docs/live-record-errors", self.number,
+                                     (ROOT / "runs/live").resolve() not in self.folder.parents,
+                                     ROOT, model=model)
+        except Exception as exc:
+            # Do not send provider errors or credentials to the browser.
+            self.error = f"Review stopped ({type(exc).__name__}). Check saved evidence and review configuration."
+        finally:
+            self.done = True
 
 
 def arguments(body: dict[str, Any]) -> tuple[list[str], str]:
@@ -161,7 +196,8 @@ class Page(BaseHTTPRequestHandler):
         if not self.from_here():
             return
         url = urlparse(self.path)
-        routes = {"/": self.route_page, "/status": self.route_status, "/events": self.route_events, "/report": self.route_report, "/runs": self.route_runs, "/setup": self.route_setup}
+        routes = {"/": self.route_page, "/status": self.route_status, "/events": self.route_events, "/report": self.route_report, "/runs": self.route_runs, "/setup": self.route_setup,
+                  "/review/status": self.route_review_status, "/review/download": self.route_review_download}
         handler = routes.get(url.path)
         if handler is None:
             self.send_json({"error": "Not found."}, HTTPStatus.NOT_FOUND)
@@ -176,6 +212,8 @@ class Page(BaseHTTPRequestHandler):
             self.route_start()
         elif path == "/stop":
             self.route_stop()
+        elif path == "/review":
+            self.route_review_start()
         else:
             self.send_json({"error": "Not found."}, HTTPStatus.NOT_FOUND)
 
@@ -218,6 +256,9 @@ class Page(BaseHTTPRequestHandler):
             self.send_json({"error": problem}, HTTPStatus.BAD_REQUEST)
             return
         with RUN_LOCK:
+            if REVIEW_JOB and not REVIEW_JOB.done:
+                self.send_json({"error": "A saved-run review is active. Wait for it to finish."}, HTTPStatus.CONFLICT)
+                return
             if RUN and not RUN.done:
                 self.send_json({"error": "A run is still going. Wait for it to end, or stop it."}, HTTPStatus.CONFLICT)
                 return
@@ -229,6 +270,60 @@ class Page(BaseHTTPRequestHandler):
         if run and not run.done:
             run.process.terminate()
         self.send_json({"stopped": bool(run)})
+
+    def route_review_start(self):
+        global REVIEW_JOB
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+            if not 0 < length <= 16384:
+                raise ValueError("invalid request length")
+            body = json.loads(self.rfile.read(length))
+            folder = review_folder(str(body.get("folder", "")))
+            number = body.get("record_number")
+            if number not in (None, ""):
+                if isinstance(number, bool) or not str(number).isdigit() or int(number) < 1:
+                    raise ValueError("Record number must be a positive integer.")
+                number = int(number)
+            else:
+                number = None
+            use_model = body.get("model", False)
+            if not isinstance(use_model, bool):
+                raise ValueError("Model selection must be true or false.")
+        except (ValueError, TypeError, AttributeError, OSError):
+            self.send_json({"error": "Choose a valid saved run folder and positive record number."}, HTTPStatus.BAD_REQUEST)
+            return
+        with RUN_LOCK:
+            if (RUN and not RUN.done) or (REVIEW_JOB and not REVIEW_JOB.done):
+                self.send_json({"error": "A desk run or review is active. Wait for it to finish."}, HTTPStatus.CONFLICT)
+                return
+            REVIEW_JOB = ReviewJob(folder, number, use_model)
+        self.send_json({"started": True}, HTTPStatus.ACCEPTED)
+
+    def route_review_status(self, query):
+        job = REVIEW_JOB
+        self.send_json({"done": job.done if job else True, "error": job.error if job else "",
+                        "result": job.result if job and job.done else None})
+
+    def route_review_download(self, query):
+        job = REVIEW_JOB
+        key = query.get("kind", [""])[0]
+        if not job or not job.done or not job.result or key not in {"human", "ai"}:
+            self.send_json({"error": "No review document is available."}, HTTPStatus.NOT_FOUND)
+            return
+        path = Path(job.result["outputs"][key])
+        # Serve only the exact output of the current review, not a user-supplied path.
+        folder = (ROOT / ("docs/live-record-errors" if key == "human" else "docs/ai-error-prompts")).resolve()
+        if path.resolve().parent != folder or path.suffix != ".md":
+            self.send_json({"error": "Invalid review output."}, HTTPStatus.NOT_FOUND)
+            return
+        body = path.read_bytes()
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", "text/markdown; charset=utf-8")
+        self.send_header("Content-Disposition", f'attachment; filename="{key}-error-report.md"')
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(body)
 
     def route_events(self, query: dict[str, list[str]]) -> None:
         """The run's output as server-sent events, one per line, then one event when the run ends."""
@@ -390,6 +485,25 @@ pre.log { max-height: 320px; overflow: auto; background: var(--bg); border: 1px 
 <div class="report-head"><h2>Final report</h2><select id="saved"><option value="">Open a saved report</option></select></div>
 <div id="report"><p class="empty">The final report appears here when a run ends: the verified report, with the Verifier's marks under its first line, and the worksheet's view under it.</p></div>
 </section>
+<section class="card">
+<h2>Review a saved run</h2>
+<p class="hint">Review evidence without changing the run. Findings do not authorize repairs.</p>
+<form id="review-form">
+<div class="row">
+<div><label for="review-folder">Saved run folder</label><input id="review-folder" required placeholder="runs/live/TICKER_timestamp"></div>
+<div><label for="review-number">Record number <span>blank: use the established number</span></label><input id="review-number" type="number" min="1"></div>
+</div>
+<p><label><input id="review-model" type="checkbox" style="width:auto"> Use the configured model to review patterns and conclusions</label></p>
+<p class="hint">Model review sends saved SEC evidence to your configured provider and uses your API key. Code checks work offline.</p>
+<button id="review-start" type="submit">Review saved run</button>
+</form>
+<p id="review-message" role="status"></p>
+<div id="review-downloads" hidden>
+<a href="/review/download?kind=human" download>Download human report</a> ·
+<a href="/review/download?kind=ai" download>Download AI prompt</a>
+</div>
+<div id="review-results"></div>
+</section>
 </main>
 <script>
 const NODES = __NODES__;
@@ -494,6 +608,59 @@ $('#stop').addEventListener('click', async () => {
 });
 
 $('#saved').addEventListener('change', (e) => { if (e.target.value) showReport(e.target.value); });
+
+function showReview(result) {
+  const box = $('#review-results'); box.replaceChildren();
+  for (const [status, title] of [['confirmed', 'Confirmed errors'], ['unconfirmed', 'Unconfirmed errors']]) {
+    const heading = document.createElement('h3'); heading.textContent = title; box.append(heading);
+    const findings = result.findings.filter((f) => f.status === status);
+    if (!findings.length) { const p = document.createElement('p'); p.textContent = 'None observed in completed checks.'; box.append(p); }
+    for (const f of findings) {
+      const article = document.createElement('article');
+      const h = document.createElement('h4'); h.textContent = f.id + ': ' + f.type; article.append(h);
+      for (const [label, value] of [['Where in the process', f.stage], ['Description', f.description],
+          ['Observed', f.observed], ['Expected', f.expected], ['Why it happened', f.cause],
+          ['Effect', f.effect], ['Uncertainty', f.uncertainty], ['Previous pattern', f.prior_pattern]]) {
+        const p = document.createElement('p'); p.textContent = label + ': ' + value; article.append(p);
+      }
+      for (const ref of f.evidence) {
+        const p = document.createElement('pre'); p.className = 'log';
+        p.textContent = ref.path + ':' + ref.line + '\\n' + ref.quote; article.append(p);
+      }
+      box.append(article);
+    }
+  }
+  const heading = document.createElement('h3'); heading.textContent = 'Review limits'; box.append(heading);
+  const ul = document.createElement('ul');
+  result.limits.forEach((text) => { const li = document.createElement('li'); li.textContent = text; ul.append(li); });
+  box.append(ul);
+  const footer = document.createElement('p');
+  footer.textContent = 'This is a learning exercise, not financial advice. AI assistance: OpenAI Codex; ' + result.metadata.model + '. Any remaining errors are my own.';
+  box.append(footer);
+}
+
+async function pollReview() {
+  try {
+    const r = await fetch('/review/status'); const state = await r.json();
+    if (!state.done) { setTimeout(pollReview, 1000); return; }
+    $('#review-start').disabled = false;
+    $('#review-message').textContent = state.error || 'Review complete. Original run files were preserved.';
+    if (state.result) { showReview(state.result); $('#review-downloads').hidden = false; }
+  } catch (error) { $('#review-message').textContent = 'Cannot read review status.'; $('#review-start').disabled = false; }
+}
+
+$('#review-form').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('#review-downloads').hidden = true; $('#review-results').replaceChildren();
+  $('#review-start').disabled = true;
+  try {
+    const r = await fetch('/review', { method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({folder: $('#review-folder').value, record_number: $('#review-number').value, model: $('#review-model').checked}) });
+    const response = await r.json();
+    if (!r.ok) { $('#review-message').textContent = response.error; $('#review-start').disabled = false; return; }
+    $('#review-message').textContent = 'Review in progress. The saved run will remain unchanged.';
+    pollReview();
+  } catch (error) { $('#review-message').textContent = 'Cannot start the review.'; $('#review-start').disabled = false; }
+});
 
 (async () => {
   graph(); saved(); setup();

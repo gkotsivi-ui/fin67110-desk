@@ -17,12 +17,12 @@ We own: [the team names the one thing it owns.]
 Roles: [each member's role in one line, written by the team: each member beside a part that exists in the
 repository.]
 
-Live record so far: https://github.com/gkotsivi-ui/fin67110-desk/tree/9532b45/runs/live
+Live record so far: https://github.com/gkotsivi-ui/fin67110-desk/tree/1511680/runs/live
 
 | Week | Ticker | Release the report read | Filing time, "Accepted" on EDGAR (ET) | Commit, and its time (ET) | Inside the 24-hour window |
 |---|---|---|---|---|---|
 | Week 4 | CSCO | 8-K 0000858877-26-000170, Exhibit 99.1 | 2026-11-12 16:06:24 | `88015f7`, 2026-11-13 13:17:26 | yes, 21.2 hours after the release |
-| Week 5 | [not yet filed] | | | | |
+| Week 5 | NVDA | 8-K 0001045810-26-000088, Exhibit 99.1 | 2026-11-17 16:20:51 | `f55b170`, 2026-11-18 08:52:43 | yes, 16.5 hours after the release |
 
 The table is made by `python live_record.py`, from each report's first line, the 8-K's "Accepted" time on SEC
 EDGAR and the time of the commit that first added the report. It is in
@@ -72,10 +72,11 @@ the final report. The persona in the worksheet receives the worksheet's lines as
 sentence that lets it quote and forbids it to recompute is in `worksheet.py`, in the rules that code adds to
 the persona.
 
-**For "We own".** The team has not decided. `PLAN.md`, section 8, lists four options and recommends the second
-seeker, for stocks below net current asset value.
+**For "We own".** On 2026-11-17 jcleeper65 wrote in the README: "The thing we own: the intelligent error review
+application" (`desk_error_review.py`, `skills/desk-error-review/`). The team confirms it here in its own words.
 
 **For the roles.** What the repository shows on 2026-11-16, for the team to check against what each member
 did: commits on `main` by gkotsivi-ui (the desk's data steps and their fixes, the Verifier's fixes, the Week 4
-live run) and by jcleeper65 (the error documentation for live records, the hit-rate table); none yet by
-lee4276. The lab checks that every member is named beside a part that exists in the repository.
+and Week 5 live runs) and by jcleeper65 (the error documentation for live records, the hit-rate table, the
+error review application); none yet by lee4276. The worksheet, the hook and the one command are in pull request
+for the branch `one-desk`. The lab checks that every member is named beside a part that exists in the repository.

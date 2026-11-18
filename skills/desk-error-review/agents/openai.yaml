@@ -1,0 +1,4 @@
+interface:
+  display_name: "Desk Error Review"
+  short_description: "Review saved desk errors without changing live runs"
+  default_prompt: "Use $desk-error-review to review a saved research run and produce the human report and AI prompt."

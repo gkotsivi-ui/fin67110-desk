@@ -6,3 +6,5 @@ langgraph==1.2.19
 markdown==3.11.3
 # The time-zone database for Python's zoneinfo. Windows has none of its own.
 tzdata==2026.6
+# US equity session dates and early closing times for the hit-rate table.
+exchange-calendars==4.13.3

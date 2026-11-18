@@ -1,0 +1,258 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "company": "Cisco Systems",
+    "ticker": "CSCO",
+    "record_number": 1,
+    "run_folder": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live/CSCO_20261113_093231",
+    "run_time": "Run time: 2026-11-13 09:32:31 US Eastern Standard Time (UTC-0500); model claude-opus-5-5; price: $102.01, the close of 2026-11-12, the last close before 2026-11-12 16:06:24 ET, when the release was accepted, from financialdatasets.ai",
+    "outcome": "completed",
+    "outcome_limit": "Artifact state only; historical stops need a saved log or separate attestation.",
+    "record_type": "live",
+    "review_time": "2026-11-17T20:10:08.316415+00:00",
+    "model": "OpenAI Codex (session model identifier unavailable)"
+  },
+  "revision": 2,
+  "previous": {
+    "human": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/docs/live-record-errors/Error Documentation Cisco Systems, 1.md"
+  },
+  "human_title": "Error Documentation Cisco Systems, 1 - revision 2",
+  "ai_title": "AI Error Prompt Cisco Systems, 1 - revision 2",
+  "findings": [
+    {
+      "id": "E-34a893034fdd",
+      "rule": "blank-hand-check",
+      "status": "confirmed",
+      "type": "Missing evidence",
+      "stage": "Human audit record",
+      "description": "The saved partner check field is empty. This does not prove that no person checked the report.",
+      "observed": "Partner's check (two core claims, marked by hand against the filings): ",
+      "expected": "Preserve an external dated check record without editing the original live run.",
+      "cause": "Unknown",
+      "effect": "The saved field cannot establish the human check.",
+      "uncertainty": "",
+      "evidence": [
+        {
+          "path": "run/report.md",
+          "line": 3,
+          "quote": "Partner's check (two core claims, marked by hand against the filings): "
+        },
+        {
+          "path": "history/Error Documentation Cisco Systems, 1.md",
+          "line": 101,
+          "quote": "3. **Description:** The desk prints the \"Partner's check\" line with nothing after it, and writes a blank"
+        }
+      ],
+      "code_location": "Unknown",
+      "prior_pattern": "history/Error Documentation Cisco Systems, 1.md",
+      "test": "Create made-up evidence that reproduces missing evidence in human audit record.",
+      "completion": "The reproducing test and required repository checks pass.",
+      "model_note": "A previous report recorded an empty partner-check field. The same saved field is independently still empty."
+    },
+    {
+      "id": "E-6d978d570aba",
+      "rule": "model",
+      "status": "unconfirmed",
+      "type": "Unconfirmed valuation conclusion",
+      "stage": "Investment conclusion",
+      "description": "The thesis says that the share price already reflects annual EPS growth. Numerical similarity between P/E and growth does not establish that valuation conclusion.",
+      "observed": "The thesis connects P/E 30.6 to annual EPS growth 30.59% without an explicit valuation model.",
+      "expected": "A conclusion about the growth reflected in price requires stated valuation assumptions or an explicit heuristic.",
+      "cause": "Unknown",
+      "effect": "The assertion supports Hold rather than Buy. Whether it changes the recommendation is unknown.",
+      "uncertainty": "The report may intend a valuation heuristic. No valuation method, growth duration, discount rate, or independent fair-value calculation establishes the assertion.",
+      "evidence": [
+        {
+          "path": "run/report.md",
+          "line": 186,
+          "quote": "At a **P/E of 30.6**, however, the stock already prices in roughly the FY2026 rate of EPS growth."
+        },
+        {
+          "path": "run/report.md",
+          "line": 154,
+          "quote": "No peer multiples are in context, so no relative valuation can be stated."
+        }
+      ],
+      "code_location": "Unknown",
+      "prior_pattern": "none",
+      "test": "Create made-up evidence that reproduces unconfirmed valuation conclusion in investment conclusion.",
+      "completion": "The reproducing test and required repository checks pass."
+    },
+    {
+      "id": "E-e0512e5f7636",
+      "rule": "model",
+      "status": "unconfirmed",
+      "type": "Unconfirmed historical runtime failure",
+      "stage": "Verifier and page logging",
+      "description": "The earlier error report describes a connection failure followed by a successful verifier-only run. Current artifacts establish completion, but not the original failure trace.",
+      "observed": "The final manager node names the Verifier as the next stage; the earlier narrative describes a connection failure.",
+      "expected": "Unknown",
+      "cause": "Unknown",
+      "effect": "Effect unknown",
+      "uncertainty": "The original traceback, process exit record, and page output are not saved. A final successful report cannot establish the original exception or its cause.",
+      "evidence": [
+        {
+          "path": "run/nodes/07_strategy_manager.json",
+          "line": 16,
+          "quote": "  \"next\": \"Verifier\","
+        },
+        {
+          "path": "history/Error Documentation Cisco Systems, 1.md",
+          "line": 61,
+          "quote": "   printed ended with a Python traceback of three linked errors: `ConnectionResetError: [WinError 10054] An"
+        },
+        {
+          "path": "history/Error Documentation Cisco Systems, 1.md",
+          "line": 82,
+          "quote": "   about 09:50. They are not saved in this repository."
+        }
+      ],
+      "code_location": "Unknown",
+      "prior_pattern": "history/Error Documentation Cisco Systems, 1.md",
+      "test": "Create made-up evidence that reproduces unconfirmed historical runtime failure in verifier and page logging.",
+      "completion": "The reproducing test and required repository checks pass."
+    }
+  ],
+  "checks": [
+    {
+      "stage": "Runtime logs",
+      "result": "not checked",
+      "detail": "No saved run log. Historical failures cannot be independently reconstructed."
+    },
+    {
+      "stage": "Calculations",
+      "result": "checked",
+      "detail": "5 ratios recomputed from saved inputs; omissions preserved."
+    },
+    {
+      "stage": "Annual filing provenance",
+      "result": "partly checked",
+      "detail": "9 current fact accession numbers compared; filing selection not certified."
+    },
+    {
+      "stage": "SEC selection",
+      "result": "partly checked",
+      "detail": "Forecast heading and parser consistency checked; amendments and full EDGAR selection need more evidence."
+    },
+    {
+      "stage": "Verifier and numerical evidence",
+      "result": "partly checked",
+      "detail": "127 record locations checked. Existing Verifier marks are not accepted as independent proof."
+    },
+    {
+      "stage": "Seeker",
+      "result": "not checked",
+      "detail": "No saved output. Absence is not proof of an error."
+    },
+    {
+      "stage": "Worksheet",
+      "result": "not checked",
+      "detail": "No saved output. Absence is not proof of an error."
+    },
+    {
+      "stage": "Hook",
+      "result": "not checked",
+      "detail": "No saved output. Absence is not proof of an error."
+    },
+    {
+      "stage": "Conclusions",
+      "result": "not checked",
+      "detail": "Requires model or agent review of cited evidence; price reactions are not proof."
+    },
+    {
+      "stage": "Previous error patterns",
+      "result": "leads collected",
+      "detail": "11 historical leads. New evidence is required for every repeated error."
+    },
+    {
+      "stage": "Agent-declared scope",
+      "result": "attested",
+      "detail": "Current coding agent reviewed report.md, saved quarter headers and source rows, ratios, annual facts, verification marks, the final manager node, and historical error documentation."
+    },
+    {
+      "stage": "Agent-declared scope",
+      "result": "attested",
+      "detail": "Earlier guidance-table failures motivated a check of the saved quarter selection. The saved heading is CONSOLIDATED STATEMENTS OF OPERATIONS, not Business Outlook. No repeated guidance error was observed."
+    },
+    {
+      "stage": "Agent-declared scope",
+      "result": "attested",
+      "detail": "The reported gross margin categories were compared with the saved release line. Product and total margin values agree. No category mismatch was observed."
+    },
+    {
+      "stage": "Agent-declared scope",
+      "result": "attested",
+      "detail": "The original connection failure and display failure have only historical descriptions; their raw page output is not saved. These cannot be independently reproduced from the current run."
+    },
+    {
+      "stage": "Agent-declared scope",
+      "result": "attested",
+      "detail": "Missing worksheet, seeker, hook, and directional view were treated as unavailable stages, not newly proven desk errors."
+    },
+    {
+      "stage": "Agent-declared scope",
+      "result": "attested",
+      "detail": "No live price source or additional SEC source was fetched. Full model transcript and every claim were not independently audited."
+    },
+    {
+      "stage": "Model review",
+      "result": "completed with limits",
+      "detail": "Proposals have checked citations; semantic claims remain unconfirmed without independent code proof."
+    }
+  ],
+  "limits": [
+    "Ratio P/E: no independent rule in this reviewer.",
+    "Verifier record 81: Share price close was not checked.",
+    "Verifier record 125: Share price close was not checked.",
+    "Saved artifacts only. No SEC network requests were made.",
+    "Closes, exports, credentials, and unknown artifacts are excluded from model input.",
+    "Agreement with saved facts does not independently establish that the original filing selection was correct.",
+    "The report is not certified correct by the absence of findings."
+  ],
+  "original_hashes": {
+    "10K_2026-09-02_csco-20260725.txt": "eace33968d9de0668fe8128fb0b3158eb1a6bedcddad8189c4fc178f8508d72f",
+    "10Q_2026-05-19_csco-20260425.txt": "7de88f2c15a01da0d451bf80140dfbe1a9c77ea7b571efaa41e1560c6aa81c0b",
+    "8K_2026-11-12_exhibit991pressrelease-q1f.txt": "090a792e3ccb812fca9d19e4259c3115c5d6e2d2e006163918766e629966ef29",
+    "audit.md": "910d61476209c9fd7620818367b2ed6981df9bb3d16a99d30347ea53e8dfb6c4",
+    "facts.json": "4aea87ccd919c29988400c81032e2ff375bec9f3763bc9ca8169729350dd94d0",
+    "nodes/01_steps.json": "e20751165676e84acca23e8db84615a4b77e7f6b28760de4291acd0a9c1174bc",
+    "nodes/02_research_analyst.json": "3a0400a039064cdc4e05d13ef497cf0c9490db34a532004badad6d6ea8d20c11",
+    "nodes/03_financial_analyst.json": "0bb6d8a844e9c09ec22a0fe5bc958c0febadabdfc3309036373a61f34c4233a3",
+    "nodes/04_investment_advisor.json": "b892e4c87ca0b2b4bc33cc7a1f1e530f78568327b3cbb7893f0a0ca47cf905b8",
+    "nodes/05_strategy_manager.json": "a5445459529c681df83fa5901736ad550a2cb975b6849eb6cf50860a89f3bd78",
+    "nodes/06_financial_analyst.json": "da080d7e24349866f8d880609e1c5e9ba0ca8864b3fa073a2aaad394255cb356",
+    "nodes/07_strategy_manager.json": "4cc62af4e9cfa865be39a6d4f41492a9442b423ea6668048e1a5ad9af6d55cd5",
+    "peer_facts.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "ratios.json": "26c974ab3de28babe39b4e3a75392f31a223ff97f81ae2bb93172f0e39a2ae3b",
+    "report.md": "e8eff98074fded8a788cccbf6f2af5b02be3c1ce9e94265649a17b2db2296820",
+    "verification.json": "70bbbba08c14af3a9cd7c189bba74c1802a93924b567799b9dcbbc206dd9185b",
+    "verified_report.md": "24df6befea42624b775948de8b76902d331ec0428f7484635af1aae2d4e53137"
+  },
+  "evidence_manifest": {
+    "run/10K_2026-09-02_csco-20260725.txt": 2398,
+    "run/10Q_2026-05-19_csco-20260425.txt": 1877,
+    "run/8K_2026-11-12_exhibit991pressrelease-q1f.txt": 400,
+    "run/audit.md": 22,
+    "run/facts.json": 293,
+    "run/nodes/01_steps.json": 197,
+    "run/nodes/02_research_analyst.json": 145,
+    "run/nodes/03_financial_analyst.json": 306,
+    "run/nodes/04_investment_advisor.json": 177,
+    "run/nodes/05_strategy_manager.json": 18,
+    "run/nodes/06_financial_analyst.json": 343,
+    "run/nodes/07_strategy_manager.json": 20,
+    "run/peer_facts.json": 1,
+    "run/ratios.json": 38,
+    "run/report.md": 214,
+    "run/verification.json": 2376,
+    "run/verified_report.md": 349,
+    "history/Error Documentation Cisco Systems, 1.md": 124,
+    "history/README.md": 43
+  },
+  "history_folder": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/docs/live-record-errors",
+  "outputs": {
+    "human": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/docs/live-record-errors/Error Documentation Cisco Systems, 1 - revision 2.md",
+    "ai": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/docs/ai-error-prompts/AI Error Prompt Cisco Systems, 1 - revision 2.md",
+    "findings": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/docs/error-review-findings/Findings Cisco Systems, 1 - revision 2.json"
+  }
+}

@@ -117,8 +117,21 @@ A team member asked for errors 1 and 2 to be fixed. On 2026-11-13 the fix is on 
   color codes does not appear at a stop. The page still shows what a run prints as plain text.
 - **Error 4:** not fixed.
 
+## Additional observation, 2026-11-16: no timestamped directional view
+
+1. **Type of error:** Missing evidence for hit-rate eligibility (an unimplemented worksheet stage).
+2. **Where in the process:** Saved worksheet view and downstream hit-rate evaluation, in
+   `runs/live/CSCO_20261113_093231/`.
+3. **Description:** No `view.json` exists. The report's second line records run start time and the advisor
+   node records a recommendation, but neither is an explicit timestamped directional worksheet view.
+   The offline hit-rate table therefore displays `not computed` and excludes this run from scoring.
+   No reaction was fetched in this review, and no saved live-run artifact was changed.
+4. **Why it happened:** The worksheet stage is not built, as the earlier review above notes. A historical
+   directional view timestamp cannot be established from the available evidence; it must not be invented.
+
 This is a learning exercise, not financial advice.
 
-AI assistance: Claude Code. I verified the sources myself; the judgments are mine.
+AI assistance: Claude Code; OpenAI Codex (2026-11-16 hit-rate evidence observation). The earlier review
+records its own verification; the additional observation checks saved metadata only.
 
 Any remaining errors are my own.
