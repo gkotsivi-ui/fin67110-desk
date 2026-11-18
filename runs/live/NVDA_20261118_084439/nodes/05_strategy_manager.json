@@ -1,0 +1,18 @@
+{
+ "node": "Strategy Manager",
+ "input": {
+  "problems": {
+   "research_analyst": [],
+   "financial_analyst": [
+    "Use context.calculator_results for the ratios you asked for. Do not request more calculations."
+   ],
+   "investment_advisor": []
+  }
+ },
+ "output": {
+  "next": "Financial Analyst",
+  "manager_feedback": [
+   "Use context.calculator_results for the ratios you asked for. Do not request more calculations."
+  ]
+ }
+}

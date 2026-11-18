@@ -1,0 +1,197 @@
+{
+ "node": "The steps",
+ "input": {
+  "ticker": "NVDA",
+  "peers": [],
+  "price": null,
+  "filed": null
+ },
+ "output": {
+  "company": "NVIDIA CORP",
+  "cik": "0001045810",
+  "filings": {
+   "10-K": {
+    "accessionNumber": "0001045810-26-000021",
+    "filingDate": "2026-02-25",
+    "reportDate": "2026-01-25",
+    "accepted_index": "2026-02-25 16:42:19",
+    "exhibit99_1": null,
+    "exhibit_label": null,
+    "saved_text": "output\\NVDA_20261118_084439\\10K_2026-02-25_nvda-20260125.txt"
+   },
+   "10-Q": {
+    "accessionNumber": "0001045810-26-000075",
+    "filingDate": "2026-08-26",
+    "reportDate": "2026-07-26",
+    "accepted_index": "2026-08-26 16:36:00",
+    "exhibit99_1": null,
+    "exhibit_label": null,
+    "saved_text": "output\\NVDA_20261118_084439\\10Q_2026-08-26_nvda-20260726.txt"
+   },
+   "8-K": {
+    "accessionNumber": "0001045810-26-000088",
+    "filingDate": "2026-11-17",
+    "reportDate": "2026-11-17",
+    "accepted_index": "2026-11-17 16:20:51",
+    "exhibit99_1": "q3fy27pr.htm",
+    "exhibit_label": "99.1",
+    "saved_text": "output\\NVDA_20261118_084439\\8K_2026-11-17_q3fy27pr.txt"
+   }
+  },
+  "facts": "facts.json and peer_facts.json in this folder",
+  "ratios": [
+   {
+    "name": "Revenue growth",
+    "value": 0.6547353579009478,
+    "shown": "65.47%",
+    "arithmetic": "215,938.0 / 130,497.0 - 1"
+   },
+   {
+    "name": "Operating margin",
+    "value": 0.6038168363141272,
+    "shown": "60.38%",
+    "arithmetic": "130,387.0 / 215,938.0"
+   },
+   {
+    "name": "Return on average equity",
+    "value": 1.014850815653791,
+    "shown": "101.49%",
+    "arithmetic": "120,067.0 / ((157,293.0 + 79,327.0) / 2)"
+   },
+   {
+    "name": "Debt to equity",
+    "value": 0.05383583503398117,
+    "shown": "0.054",
+    "arithmetic": "(7,469.0 + 999.0) / 157,293.0"
+   },
+   {
+    "name": "Free cash flow",
+    "value": 96676000000.0,
+    "shown": "$96,676.0M",
+    "arithmetic": "102,718.0 - 6,042.0"
+   },
+   {
+    "name": "P/E",
+    "value": 31.726530612244897,
+    "shown": "31.7",
+    "arithmetic": "155.46 / 4.90 (price / diluted EPS)"
+   }
+  ],
+  "more_ratios": [
+   {
+    "name": "Operating income growth",
+    "value": 0.6007636305599549,
+    "shown": "60.08%",
+    "arithmetic": "130,387.0 / 81,453.0 - 1"
+   },
+   {
+    "name": "Net income growth",
+    "value": 0.6474615806805708,
+    "shown": "64.75%",
+    "arithmetic": "120,067.0 / 72,880.0 - 1"
+   },
+   {
+    "name": "Cash from operations growth",
+    "value": 0.6027399397712556,
+    "shown": "60.27%",
+    "arithmetic": "102,718.0 / 64,089.0 - 1"
+   },
+   {
+    "name": "Additions to property and equipment growth",
+    "value": 0.8671199011124846,
+    "shown": "86.71%",
+    "arithmetic": "6,042.0 / 3,236.0 - 1"
+   },
+   {
+    "name": "Diluted EPS growth",
+    "value": 0.6666666666666667,
+    "shown": "66.67%",
+    "arithmetic": "4.90 / 2.94 - 1"
+   },
+   {
+    "name": "Net margin, latest year",
+    "value": 0.5560253406070261,
+    "shown": "55.60%",
+    "arithmetic": "120,067.0 / 215,938.0"
+   },
+   {
+    "name": "Operating margin, prior year",
+    "value": 0.6241752683969747,
+    "shown": "62.42%",
+    "arithmetic": "81,453.0 / 130,497.0"
+   },
+   {
+    "name": "Net margin, prior year",
+    "value": 0.5584802715771244,
+    "shown": "55.85%",
+    "arithmetic": "72,880.0 / 130,497.0"
+   },
+   {
+    "name": "Free cash flow, prior year",
+    "value": 60853000000.0,
+    "shown": "$60,853.0M",
+    "arithmetic": "64,089.0 - 3,236.0"
+   },
+   {
+    "name": "Free cash flow growth",
+    "value": 0.5886809195931177,
+    "shown": "58.87%",
+    "arithmetic": "(102,718.0 - 6,042.0) / (64,089.0 - 3,236.0) - 1"
+   },
+   {
+    "name": "Free cash flow margin",
+    "value": 0.44770258129648327,
+    "shown": "44.77%",
+    "arithmetic": "(102,718.0 - 6,042.0) / 215,938.0"
+   },
+   {
+    "name": "Free cash flow / net income",
+    "value": 0.8051837723937468,
+    "shown": "0.81",
+    "arithmetic": "(102,718.0 - 6,042.0) / 120,067.0"
+   },
+   {
+    "name": "Debt to equity, prior year",
+    "value": 0.10668498745698186,
+    "shown": "0.107",
+    "arithmetic": "(8,463.0 + 0.0) / 79,327.0"
+   },
+   {
+    "name": "Quarter diluted EPS growth on the same quarter last year",
+    "value": 1.076923076923077,
+    "shown": "107.69%",
+    "arithmetic": "2.70 / 1.30 - 1 (the release's column for this quarter over its column for the same quarter last year)"
+   }
+  ],
+  "quarter": {
+   "statement": "CONDENSED CONSOLIDATED STATEMENTS OF INCOME",
+   "units": "millions",
+   "revenue_headers": [
+    "CONDENSED CONSOLIDATED STATEMENTS OF INCOME",
+    "(In millions, except per share data)",
+    "(Unaudited)",
+    "Three Months Ended | Nine Months Ended",
+    "October 25, | October 26, | October 25, | October 26,",
+    "2026 | 2025 | 2026 | 2025"
+   ],
+   "revenue_line": "Revenue | $115,844 | $57,006 | $293,681 | $147,811",
+   "eps_heading": "Net income per share:",
+   "eps_line": "Diluted | $2.70 | $1.30 | $7.55 | $3.14",
+   "period": "2026",
+   "prior_period": "2025",
+   "why": {},
+   "revenue": 115844.0,
+   "revenue_shown": "115,844",
+   "revenue_prior": 57006.0,
+   "revenue_prior_shown": "57,006",
+   "revenue_growth": 1.032136968038452,
+   "eps": 2.7,
+   "eps_shown": "$2.70",
+   "eps_prior": 1.3,
+   "eps_prior_shown": "$1.30",
+   "sentence": "SANTA CLARA, Calif.—Nov. 17, 2026―NVIDIA (NASDAQ: NVDA) today reported revenue for the third quarter ended October 25, 2026, of $115.8 billion, up 20% from the previous quarter and up 103% from a year ago. For the quarter, GAAP and non-GAAP gross margins were 74.8% and 74.9%, respectively. GAAP and non-GAAP earnings per diluted share were $2.70 and $2.68, respectively."
+  },
+  "price": "$155.46, the close of 2026-11-17, the last close before 2026-11-17 16:20:51 ET, when the release was accepted, from financialdatasets.ai",
+  "annual_facts_not_stated": null
+ }
+}

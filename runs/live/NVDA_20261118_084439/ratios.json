@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Revenue growth",
+    "value": 0.6547353579009478,
+    "shown": "65.47%",
+    "arithmetic": "215,938.0 / 130,497.0 - 1"
+  },
+  {
+    "name": "Operating margin",
+    "value": 0.6038168363141272,
+    "shown": "60.38%",
+    "arithmetic": "130,387.0 / 215,938.0"
+  },
+  {
+    "name": "Return on average equity",
+    "value": 1.014850815653791,
+    "shown": "101.49%",
+    "arithmetic": "120,067.0 / ((157,293.0 + 79,327.0) / 2)"
+  },
+  {
+    "name": "Debt to equity",
+    "value": 0.05383583503398117,
+    "shown": "0.054",
+    "arithmetic": "(7,469.0 + 999.0) / 157,293.0"
+  },
+  {
+    "name": "Free cash flow",
+    "value": 96676000000.0,
+    "shown": "$96,676.0M",
+    "arithmetic": "102,718.0 - 6,042.0"
+  },
+  {
+    "name": "P/E",
+    "value": 31.726530612244897,
+    "shown": "31.7",
+    "arithmetic": "155.46 / 4.90 (price / diluted EPS)"
+  }
+]

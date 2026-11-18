@@ -1,0 +1,375 @@
+{
+ "node": "Financial Analyst",
+ "input": {
+  "task": "Write the statement analysis of NVIDIA CORP (NVDA) for its fiscal year ended 2026-01-25: growth, margins, returns, leverage and cash flow; then the latest quarter from the release; then the peers; then valuation.",
+  "context": {
+   "company": "NVIDIA CORP",
+   "ticker": "NVDA",
+   "fiscal_year_end": "2026-01-25",
+   "facts": [
+    {
+     "concept": "Total revenue",
+     "calculator_name": "revenue",
+     "value": "$215,938.0 million",
+     "period": "2025-01-27 to 2026-01-25",
+     "tag": "us-gaap:Revenues (Revenues)",
+     "filing": "10-K 0001045810-26-000021, filed 2026-02-25",
+     "prior_year_value": "$130,497.0 million",
+     "prior_period": "2024-01-29 to 2025-01-26",
+     "prior_filing": "10-K 0001045810-26-000021"
+    },
+    {
+     "concept": "Operating income",
+     "calculator_name": "operating_income",
+     "value": "$130,387.0 million",
+     "period": "2025-01-27 to 2026-01-25",
+     "tag": "us-gaap:OperatingIncomeLoss (Operating Income (Loss))",
+     "filing": "10-K 0001045810-26-000021, filed 2026-02-25",
+     "prior_year_value": "$81,453.0 million",
+     "prior_period": "2024-01-29 to 2025-01-26",
+     "prior_filing": "10-K 0001045810-26-000021"
+    },
+    {
+     "concept": "Net income attributable to the company",
+     "calculator_name": "net_income",
+     "value": "$120,067.0 million",
+     "period": "2025-01-27 to 2026-01-25",
+     "tag": "us-gaap:NetIncomeLoss (Net Income (Loss) Attributable to Parent)",
+     "filing": "10-K 0001045810-26-000021, filed 2026-02-25",
+     "prior_year_value": "$72,880.0 million",
+     "prior_period": "2024-01-29 to 2025-01-26",
+     "prior_filing": "10-K 0001045810-26-000021"
+    },
+    {
+     "concept": "Diluted EPS (GAAP)",
+     "calculator_name": "diluted_eps",
+     "value": "$4.90",
+     "period": "2025-01-27 to 2026-01-25",
+     "tag": "us-gaap:EarningsPerShareDiluted (Earnings Per Share, Diluted)",
+     "filing": "10-K 0001045810-26-000021, filed 2026-02-25",
+     "prior_year_value": "$2.94",
+     "prior_period": "2024-01-29 to 2025-01-26",
+     "prior_filing": "10-K 0001045810-26-000021"
+    },
+    {
+     "concept": "Stockholders' equity",
+     "calculator_name": "equity",
+     "value": "$157,293.0 million",
+     "period": "at 2026-01-25",
+     "tag": "us-gaap:StockholdersEquity (Stockholders' Equity Attributable to Parent)",
+     "filing": "10-K 0001045810-26-000021, filed 2026-02-25",
+     "prior_year_value": "$79,327.0 million",
+     "prior_period": "at 2025-01-26",
+     "prior_filing": "10-K 0001045810-26-000021"
+    },
+    {
+     "concept": "Long-term debt",
+     "calculator_name": "long_term_debt",
+     "value": "$7,469.0 million",
+     "period": "at 2026-01-25",
+     "tag": "us-gaap:LongTermDebtNoncurrent (Long-term Debt, Excluding Current Maturities)",
+     "filing": "10-K 0001045810-26-000021, filed 2026-02-25",
+     "prior_year_value": "$8,463.0 million",
+     "prior_period": "at 2025-01-26",
+     "prior_filing": "10-K 0001045810-26-000021"
+    },
+    {
+     "concept": "Current portion of long-term debt",
+     "calculator_name": "current_debt",
+     "value": "$999.0 million",
+     "period": "at 2026-01-25",
+     "tag": "us-gaap:LongTermDebtCurrent (Long-term Debt, Current Maturities)",
+     "filing": "10-K 0001045810-26-000021, filed 2026-02-25",
+     "prior_year_value": "$0.0 million",
+     "prior_period": "at 2025-01-26",
+     "prior_filing": "10-K 0001045810-26-000021"
+    },
+    {
+     "concept": "Cash from operations",
+     "calculator_name": "cash_from_operations",
+     "value": "$102,718.0 million",
+     "period": "2025-01-27 to 2026-01-25",
+     "tag": "us-gaap:NetCashProvidedByUsedInOperatingActivities (Net Cash Provided by (Used in) Operating Activities)",
+     "filing": "10-K 0001045810-26-000021, filed 2026-02-25",
+     "prior_year_value": "$64,089.0 million",
+     "prior_period": "2024-01-29 to 2025-01-26",
+     "prior_filing": "10-K 0001045810-26-000021"
+    },
+    {
+     "concept": "Additions to property and equipment",
+     "calculator_name": "capex",
+     "value": "$6,042.0 million",
+     "period": "2025-01-27 to 2026-01-25",
+     "tag": "us-gaap:PaymentsToAcquireProductiveAssets (Payments to Acquire Productive Assets)",
+     "filing": "10-K 0001045810-26-000021, filed 2026-02-25",
+     "prior_year_value": "$3,236.0 million",
+     "prior_period": "2024-01-29 to 2025-01-26",
+     "prior_filing": "10-K 0001045810-26-000021"
+    }
+   ],
+   "ratios_computed_in_code": [
+    {
+     "name": "Revenue growth",
+     "value": "65.47%",
+     "arithmetic": "215,938.0 / 130,497.0 - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Operating margin",
+     "value": "60.38%",
+     "arithmetic": "130,387.0 / 215,938.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Return on average equity",
+     "value": "101.49%",
+     "arithmetic": "120,067.0 / ((157,293.0 + 79,327.0) / 2) ($ millions, except per share)"
+    },
+    {
+     "name": "Debt to equity",
+     "value": "0.054",
+     "arithmetic": "(7,469.0 + 999.0) / 157,293.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Free cash flow",
+     "value": "$96,676.0M",
+     "arithmetic": "102,718.0 - 6,042.0 ($ millions, except per share)"
+    },
+    {
+     "name": "P/E",
+     "value": "31.7",
+     "arithmetic": "155.46 / 4.90 (price / diluted EPS) ($ millions, except per share)"
+    },
+    {
+     "name": "Operating income growth",
+     "value": "60.08%",
+     "arithmetic": "130,387.0 / 81,453.0 - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Net income growth",
+     "value": "64.75%",
+     "arithmetic": "120,067.0 / 72,880.0 - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Cash from operations growth",
+     "value": "60.27%",
+     "arithmetic": "102,718.0 / 64,089.0 - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Additions to property and equipment growth",
+     "value": "86.71%",
+     "arithmetic": "6,042.0 / 3,236.0 - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Diluted EPS growth",
+     "value": "66.67%",
+     "arithmetic": "4.90 / 2.94 - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Net margin, latest year",
+     "value": "55.60%",
+     "arithmetic": "120,067.0 / 215,938.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Operating margin, prior year",
+     "value": "62.42%",
+     "arithmetic": "81,453.0 / 130,497.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Net margin, prior year",
+     "value": "55.85%",
+     "arithmetic": "72,880.0 / 130,497.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Free cash flow, prior year",
+     "value": "$60,853.0M",
+     "arithmetic": "64,089.0 - 3,236.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Free cash flow growth",
+     "value": "58.87%",
+     "arithmetic": "(102,718.0 - 6,042.0) / (64,089.0 - 3,236.0) - 1 ($ millions, except per share)"
+    },
+    {
+     "name": "Free cash flow margin",
+     "value": "44.77%",
+     "arithmetic": "(102,718.0 - 6,042.0) / 215,938.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Free cash flow / net income",
+     "value": "0.81",
+     "arithmetic": "(102,718.0 - 6,042.0) / 120,067.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Debt to equity, prior year",
+     "value": "0.107",
+     "arithmetic": "(8,463.0 + 0.0) / 79,327.0 ($ millions, except per share)"
+    },
+    {
+     "name": "Quarter diluted EPS growth on the same quarter last year",
+     "value": "107.69%",
+     "arithmetic": "2.70 / 1.30 - 1 (the release's column for this quarter over its column for the same quarter last year) ($ millions, except per share)"
+    }
+   ],
+   "latest_quarter": {
+    "release": "8-K accession 0001045810-26-000088, Item 2.02, Exhibit 99.1, accepted 2026-11-17 16:20:51 ET",
+    "units": "the release's income statement is in millions, except per share; copy its numbers as written",
+    "this_quarter_is_the_column_for": "2026",
+    "the_same_quarter_last_year_is_the_column_for": "2025",
+    "header_lines": [
+     "CONDENSED CONSOLIDATED STATEMENTS OF INCOME",
+     "(In millions, except per share data)",
+     "(Unaudited)",
+     "Three Months Ended | Nine Months Ended",
+     "October 25, | October 26, | October 25, | October 26,",
+     "2026 | 2025 | 2026 | 2025"
+    ],
+    "revenue_line": "Revenue | $115,844 | $57,006 | $293,681 | $147,811",
+    "eps_heading": "Net income per share:",
+    "eps_line": "Diluted | $2.70 | $1.30 | $7.55 | $3.14",
+    "release_sentence": "SANTA CLARA, Calif.—Nov. 17, 2026―NVIDIA (NASDAQ: NVDA) today reported revenue for the third quarter ended October 25, 2026, of $115.8 billion, up 20% from the previous quarter and up 103% from a year ago. For the quarter, GAAP and non-GAAP gross margins were 74.8% and 74.9%, respectively. GAAP and non-GAAP earnings per diluted share were $2.70 and $2.68, respectively.",
+    "computed_in_code": [
+     {
+      "name": "Quarter revenue growth on the same quarter last year",
+      "value": "103.21%",
+      "arithmetic": "115,844 / 57,006 - 1 (the revenue line's column for this quarter over its column for the same quarter last year)"
+     }
+    ]
+   },
+   "release_first_paragraph": "NVIDIA Announces Financial Results for Third Quarter Fiscal 2027\n•Revenue of $115.8 billion, up 103% from a year ago\n•Data Center revenue of $107.6 billion, up 110% from a year ago\n•Vera Rubin NVL72, the most versatile and advanced computing platform ever built, has shipped\nSANTA CLARA, Calif.—Nov. 17, 2026―NVIDIA (NASDAQ: NVDA) today reported revenue for the third quarter ended October 25, 2026, of $115.8 billion, up 20% from the previous quarter and up 103% from a year ago. For the quarter, GAAP and non-GAAP gross margins were 74.8% and 74.9%, respectively. GAAP and non-GAAP earnings per diluted share were $2.70 and $2.68, respectively.\n“Our momentum is real. NVIDIA is an exceptional technology leader, powered by the relentless innovation of our people,” said Colette Kress, interim CEO and executive vice president and chief financial officer of NVIDIA. “Vera Rubin is off to an explosive start, our roadmap is on track and our ambition has never been greater.”\nIn September 2026, NVIDIA’s Board of Directors approved an increase of $150 billion to the company’s share repurchase authorization, without expiration. During the third quarter of fiscal 2027, NVIDIA returned $28.1 billion to shareholders in the form of shares repurchased and cash dividends. As of the end of the third quarter, the company had approximately $227.3 billion remaining under its share repurchase authorization.",
+   "peers": [],
+   "price": "$155.46, the close of 2026-11-17, the last close before 2026-11-17 16:20:51 ET, when the release was accepted, from financialdatasets.ai",
+   "calculator_variables": {
+    "revenue": "215,938.0 ($ millions)",
+    "revenue_prior": "130,497.0 ($ millions)",
+    "operating_income": "130,387.0 ($ millions)",
+    "operating_income_prior": "81,453.0 ($ millions)",
+    "net_income": "120,067.0 ($ millions)",
+    "net_income_prior": "72,880.0 ($ millions)",
+    "diluted_eps": "4.90",
+    "diluted_eps_prior": "2.94",
+    "equity": "157,293.0 ($ millions)",
+    "equity_prior": "79,327.0 ($ millions)",
+    "long_term_debt": "7,469.0 ($ millions)",
+    "long_term_debt_prior": "8,463.0 ($ millions)",
+    "current_debt": "999.0 ($ millions)",
+    "current_debt_prior": "0.0 ($ millions)",
+    "cash_from_operations": "102,718.0 ($ millions)",
+    "cash_from_operations_prior": "64,089.0 ($ millions)",
+    "capex": "6,042.0 ($ millions)",
+    "capex_prior": "3,236.0 ($ millions)",
+    "quarter_revenue": "115,844.00",
+    "quarter_revenue_prior": "57,006.00",
+    "quarter_eps": "2.70",
+    "quarter_eps_prior": "1.30",
+    "price": "155.46"
+   },
+   "calculator_results": [
+    {
+     "name": "Earnings yield on fiscal 2026 GAAP diluted EPS at the 2026-11-17 close",
+     "expression": "diluted_eps / price",
+     "inputs": {
+      "diluted_eps": "4.90",
+      "price": "155.46"
+     },
+     "result": "0.0315",
+     "result_in_millions": "0.0",
+     "as_percent": "3.15%"
+    },
+    {
+     "name": "Return on year-end equity, fiscal 2026 (to show beside the average-equity figure)",
+     "expression": "net_income / equity",
+     "inputs": {
+      "net_income": "120,067.0 ($ millions)",
+      "equity": "157,293.0 ($ millions)"
+     },
+     "result": "0.7633",
+     "result_in_millions": "0.0",
+     "as_percent": "76.33%"
+    },
+    {
+     "name": "Total debt, fiscal 2026 year end ($ millions)",
+     "expression": "long_term_debt + current_debt",
+     "inputs": {
+      "long_term_debt": "7,469.0 ($ millions)",
+      "current_debt": "999.0 ($ millions)"
+     },
+     "result": "8,468,000,000.0000",
+     "result_in_millions": "8,468.0",
+     "as_percent": "846800000000.00%"
+    }
+   ]
+  },
+  "expected_output": {
+   "calculator_requests": "a list, possibly empty, of {\"name\": \"what it is\", \"expression\": \"arithmetic over context.calculator_variables, for example net_income / revenue\"}",
+   "statement_analysis": "Markdown: growth, margins, returns on equity, leverage and free cash flow, each number with its source",
+   "latest_quarter": "Markdown: the quarter's revenue, its growth on the same quarter last year and its GAAP diluted EPS, quoting the release lines",
+   "peer_comparison": "Markdown table: company, fiscal year end, total revenue, operating income, operating margin, and the source of each",
+   "valuation": "Markdown: P/E with its price, date and arithmetic, and what the ratios say about value; say so when there is no price",
+   "definitions": "a list of sentences, one for each definition you chose",
+   "insight": {
+    "claim": "one sentence with at least one number: a claim the filings support that context.release_first_paragraph does not state",
+    "source": "the filing it comes from (10-K, 10-Q or Earnings release) and where in it",
+    "line": "the release line from the context that states the claim's number, word for word, or the XBRL tag and period of the fact in context.facts that states it"
+   }
+  },
+  "previous_output": {
+   "calculator_requests": [
+    {
+     "name": "Earnings yield on fiscal 2026 GAAP diluted EPS at the 2026-11-17 close",
+     "expression": "diluted_eps / price"
+    },
+    {
+     "name": "Return on year-end equity, fiscal 2026 (to show beside the average-equity figure)",
+     "expression": "net_income / equity"
+    },
+    {
+     "name": "Total debt, fiscal 2026 year end ($ millions)",
+     "expression": "long_term_debt + current_debt"
+    }
+   ],
+   "statement_analysis": "### NVIDIA CORP (NVDA): fiscal year ended 2026-01-25 (fiscal 2026)\n\nAll fiscal 2026 and fiscal 2025 figures come from 10-K 0001045810-26-000021, filed 2026-02-25. Fiscal 2026 runs 2025-01-27 to 2026-01-25. Fiscal 2025 runs 2024-01-29 to 2025-01-26. Amounts are in $ millions, except per share. The code computed every ratio; I copied each one as given.\n\n#### Growth (fiscal 2026 over fiscal 2025)\n| Line | FY2026 | FY2025 | Growth | Arithmetic | Source (tag) |\n|---|---|---|---|---|---|\n| Total revenue | $215,938.0 million | $130,497.0 million | 65.47% | 215,938.0 / 130,497.0 - 1 | us-gaap:Revenues |\n| Operating income | $130,387.0 million | $81,453.0 million | 60.08% | 130,387.0 / 81,453.0 - 1 | us-gaap:OperatingIncomeLoss |\n| Net income attributable to the company | $120,067.0 million | $72,880.0 million | 64.75% | 120,067.0 / 72,880.0 - 1 | us-gaap:NetIncomeLoss |\n| Diluted EPS (GAAP) | $4.90 | $2.94 | 66.67% | 4.90 / 2.94 - 1 | us-gaap:EarningsPerShareDiluted |\n| Cash from operations | $102,718.0 million | $64,089.0 million | 60.27% | 102,718.0 / 64,089.0 - 1 | us-gaap:NetCashProvidedByUsedInOperatingActivities |\n| Additions to property and equipment | $6,042.0 million | $3,236.0 million | 86.71% | 6,042.0 / 3,236.0 - 1 | us-gaap:PaymentsToAcquireProductiveAssets |\n\nRevenue grew 65.47%, faster than operating income at 60.08%. Diluted EPS grew 66.67%, a little faster than net income at 64.75%. Capital spending grew fastest of all lines, at 86.71%.\n\n#### Margins\n| Ratio | FY2026 | FY2025 | Arithmetic (FY2026; FY2025) |\n|---|---|---|---|\n| Operating margin | 60.38% | 62.42% | 130,387.0 / 215,938.0; 81,453.0 / 130,497.0 |\n| Net margin | 55.60% | 55.85% | 120,067.0 / 215,938.0; 72,880.0 / 130,497.0 |\n\nOperating margin narrowed from 62.42% to 60.38% because operating income grew more slowly than revenue. Net margin was almost unchanged: 55.60% against 55.85%.\n\n#### Returns on equity\n- **Return on average equity, FY2026: 101.49%.** Arithmetic: 120,067.0 / ((157,293.0 + 79,327.0) / 2).\n  - Inputs: net income from us-gaap:NetIncomeLoss, 2025-01-27 to 2026-01-25. Stockholders' equity of $157,293.0 million at 2026-01-25 and $79,327.0 million at 2025-01-26, from us-gaap:StockholdersEquity.\n- Equity nearly doubled during the year. Return on year-end equity would therefore be noticeably lower than the average-equity figure. I have requested it in calculator_requests and did not compute it here.\n\n#### Leverage\n- **Debt to equity, FY2026: 0.054.** Arithmetic: (7,469.0 + 999.0) / 157,293.0.\n  - Long-term debt of $7,469.0 million comes from us-gaap:LongTermDebtNoncurrent at 2026-01-25.\n  - Current portion of $999.0 million comes from us-gaap:LongTermDebtCurrent at 2026-01-25.\n- **Debt to equity, FY2025: 0.107.** Arithmetic: (8,463.0 + 0.0) / 79,327.0.\n  - Inputs are us-gaap:LongTermDebtNoncurrent and us-gaap:LongTermDebtCurrent at 2025-01-26.\n- Leverage roughly halved. Debt edged down while equity nearly doubled.\n\n#### Cash flow\n| Ratio | Value | Arithmetic |\n|---|---|---|\n| Free cash flow, FY2026 | $96,676.0M | 102,718.0 - 6,042.0 |\n| Free cash flow, FY2025 | $60,853.0M | 64,089.0 - 3,236.0 |\n| Free cash flow growth | 58.87% | (102,718.0 - 6,042.0) / (64,089.0 - 3,236.0) - 1 |\n| Free cash flow margin, FY2026 | 44.77% | (102,718.0 - 6,042.0) / 215,938.0 |\n| Free cash flow / net income, FY2026 | 0.81 | (102,718.0 - 6,042.0) / 120,067.0 |\n\nFree cash flow grew 58.87%, more slowly than net income at 64.75%. Free cash flow covered 0.81 of net income. Cash conversion was strong in absolute terms, but it ran behind reported earnings in fiscal 2026.",
+   "latest_quarter": "### Third quarter of fiscal 2027 (three months ended October 25, 2026)\n\n**Source:** 8-K accession 0001045810-26-000088, Item 2.02, Exhibit 99.1, accepted 2026-11-17 16:20:51 ET. The statement is in millions, except per share data, and is unaudited.\n\nRelease header: \"Three Months Ended | Nine Months Ended / October 25, | October 26, | October 25, | October 26, / 2026 | 2025 | 2026 | 2025\". This quarter is the column for 2026. The same quarter last year is the column for 2025.\n\n#### Revenue\n- Release line: \"Revenue | $115,844 | $57,006 | $293,681 | $147,811\".\n- Quarter revenue: $115,844 million, against $57,006 million in the same quarter last year.\n- **Growth on the same quarter last year: 103.21%.** Arithmetic: 115,844 / 57,006 - 1, computed in code.\n- This matches the release's rounded statement: \"revenue for the third quarter ended October 25, 2026, of $115.8 billion, up 20% from the previous quarter and up 103% from a year ago.\"\n\n#### GAAP diluted EPS\n- Release lines: \"Net income per share:\" followed by \"Diluted | $2.70 | $1.30 | $7.55 | $3.14\".\n- Quarter GAAP diluted EPS: $2.70, against $1.30 in the same quarter last year.\n- **Growth: 107.69%.** Arithmetic: 2.70 / 1.30 - 1, computed in code.\n- The release also gives non-GAAP diluted EPS: \"GAAP and non-GAAP earnings per diluted share were $2.70 and $2.68, respectively.\" I used the GAAP figure of $2.70.\n\n#### Other release figures (quoted, not recomputed)\n- \"GAAP and non-GAAP gross margins were 74.8% and 74.9%, respectively.\"\n- Nine-month GAAP diluted EPS was $7.55, against $3.14 a year earlier (diluted line above).\n- Nine-month revenue was $293,681 million, against $147,811 million (revenue line above).",
+   "peer_comparison": "The context lists no peers (`peers` is empty), so I cannot make a peer comparison. The table shows NVIDIA alone, on the definitions I would apply to peers.\n\n| Company | Fiscal year end | Total revenue | Operating income | Operating margin | Source |\n|---|---|---|---|---|---|\n| NVIDIA CORP (NVDA) | 2026-01-25 (FY2026) | $215,938.0 million | $130,387.0 million | 60.38% (130,387.0 / 215,938.0) | 10-K 0001045810-26-000021: us-gaap:Revenues and us-gaap:OperatingIncomeLoss, 2025-01-27 to 2026-01-25 |\n\nTo compare peers on the same basis, I would need each peer's total revenue and operating income for its own named fiscal year.",
+   "valuation": "### Valuation\n\n- **P/E: 31.7.** Arithmetic: 155.46 / 4.90 (price / diluted EPS).\n  - Price: $155.46, the close of 2026-11-17, from financialdatasets.ai. It is the last close before the release was accepted at 2026-11-17 16:20:51 ET.\n  - EPS: fiscal 2026 GAAP diluted EPS of $4.90, from us-gaap:EarningsPerShareDiluted, 2025-01-27 to 2026-01-25, 10-K 0001045810-26-000021.\n\n#### Caveat on the denominator\n- The EPS in this P/E is for the fiscal year that ended 2026-01-25. The price date is almost ten months later.\n- Since then, the company has reported nine-month fiscal 2027 GAAP diluted EPS of $7.55, and $2.70 for the third quarter alone (release line \"Diluted | $2.70 | $1.30 | $7.55 | $3.14\").\n- On trailing-twelve-month earnings the P/E would therefore be materially lower than 31.7.\n- The context does not hold a trailing-twelve-month EPS, and I cannot compute one from calculator_variables, so I give no figure for it.\n\n#### What the ratios say\n- The 31.7 multiple sits against these fiscal 2026 results:\n  - GAAP diluted EPS growth of 66.67%\n  - Operating margin of 60.38%\n  - Return on average equity of 101.49%\n  - Debt to equity of 0.054\n  - Free cash flow of $96,676.0M\n- The latest quarter shows growth still accelerating on a year-over-year basis: revenue up 103.21% and GAAP diluted EPS up 107.69%.\n- There are no peers in the context, so I cannot place the multiple relative to the sector.\n- I have requested an earnings yield (diluted_eps / price) in calculator_requests.\n- No recommendation is given.",
+   "definitions": [
+    "Revenue is total revenue as tagged us-gaap:Revenues in the fiscal 2026 10-K; the context offers no separate net sales figure.",
+    "Net income is net income attributable to the parent (us-gaap:NetIncomeLoss).",
+    "EPS is GAAP diluted EPS (us-gaap:EarningsPerShareDiluted for the year; the release's GAAP 'Diluted' line for the quarter), not the release's non-GAAP diluted EPS of $2.68.",
+    "Return on equity is on average equity: the mean of stockholders' equity at 2026-01-25 and 2025-01-26 (us-gaap:StockholdersEquity), not year-end equity.",
+    "Debt is long-term debt excluding current maturities (us-gaap:LongTermDebtNoncurrent) plus current maturities (us-gaap:LongTermDebtCurrent); it excludes lease liabilities, which are not in the context.",
+    "Free cash flow is cash from operations (us-gaap:NetCashProvidedByUsedInOperatingActivities) minus additions to property and equipment, taken from us-gaap:PaymentsToAcquireProductiveAssets.",
+    "Operating margin is operating income (us-gaap:OperatingIncomeLoss) divided by total revenue (us-gaap:Revenues).",
+    "P/E uses the 2026-11-17 closing price over fiscal 2026 (year ended 2026-01-25) GAAP diluted EPS, not trailing-twelve-month or adjusted EPS."
+   ],
+   "insight": {
+    "claim": "In fiscal 2026 NVIDIA's operating income of $130,387.0 million grew 60.08%, more slowly than revenue at 65.47%, so operating margin narrowed from 62.42% to 60.38% even as the business scaled.",
+    "source": "10-K 0001045810-26-000021, filed 2026-02-25: consolidated statement of income, operating income line for fiscal years 2026 and 2025",
+    "line": "us-gaap:OperatingIncomeLoss, period 2025-01-27 to 2026-01-25: $130,387.0 million (prior period 2024-01-29 to 2025-01-26: $81,453.0 million)"
+   }
+  },
+  "manager_feedback": [
+   "Use context.calculator_results for the ratios you asked for. Do not request more calculations."
+  ]
+ },
+ "output": {
+  "calculator_requests": [],
+  "statement_analysis": "### NVIDIA CORP (NVDA): fiscal year ended 2026-01-25 (fiscal 2026)\n\nAll fiscal 2026 and fiscal 2025 figures come from 10-K 0001045810-26-000021, filed 2026-02-25.\n\n- Fiscal 2026 runs from 2025-01-27 to 2026-01-25.\n- Fiscal 2025 runs from 2024-01-29 to 2025-01-26.\n- Amounts are in $ millions, except per share.\n- Every ratio was computed in code: either in context.ratios_computed_in_code or in context.calculator_results. I copied each one as given.\n\n#### Growth (fiscal 2026 over fiscal 2025)\n| Line | FY2026 | FY2025 | Growth | Arithmetic | Source (tag) |\n|---|---|---|---|---|---|\n| Total revenue | $215,938.0 million | $130,497.0 million | 65.47% | 215,938.0 / 130,497.0 - 1 | us-gaap:Revenues |\n| Operating income | $130,387.0 million | $81,453.0 million | 60.08% | 130,387.0 / 81,453.0 - 1 | us-gaap:OperatingIncomeLoss |\n| Net income attributable to the company | $120,067.0 million | $72,880.0 million | 64.75% | 120,067.0 / 72,880.0 - 1 | us-gaap:NetIncomeLoss |\n| Diluted EPS (GAAP) | $4.90 | $2.94 | 66.67% | 4.90 / 2.94 - 1 | us-gaap:EarningsPerShareDiluted |\n| Cash from operations | $102,718.0 million | $64,089.0 million | 60.27% | 102,718.0 / 64,089.0 - 1 | us-gaap:NetCashProvidedByUsedInOperatingActivities |\n| Additions to property and equipment | $6,042.0 million | $3,236.0 million | 86.71% | 6,042.0 / 3,236.0 - 1 | us-gaap:PaymentsToAcquireProductiveAssets |\n\n- Revenue grew 65.47%, faster than operating income at 60.08%.\n- Diluted EPS grew 66.67%, slightly faster than net income at 64.75%.\n- Additions to property and equipment grew fastest of all the lines, at 86.71%.\n\n#### Margins\n| Ratio | FY2026 | FY2025 | Arithmetic (FY2026; FY2025) |\n|---|---|---|---|\n| Operating margin | 60.38% | 62.42% | 130,387.0 / 215,938.0; 81,453.0 / 130,497.0 |\n| Net margin | 55.60% | 55.85% | 120,067.0 / 215,938.0; 72,880.0 / 130,497.0 |\n\n- Operating margin narrowed from 62.42% to 60.38%, because operating income grew more slowly than revenue.\n- Net margin was almost unchanged, at 55.60% against 55.85%.\n\n#### Returns on equity\n| Ratio | FY2026 | Arithmetic | Computed in |\n|---|---|---|---|\n| Return on average equity | 101.49% | 120,067.0 / ((157,293.0 + 79,327.0) / 2) | ratios_computed_in_code |\n| Return on year-end equity | 76.33% | 120,067.0 / 157,293.0 (net_income / equity) | calculator_results |\n\nSources for the inputs:\n- Net income: us-gaap:NetIncomeLoss, 2025-01-27 to 2026-01-25.\n- Stockholders' equity: us-gaap:StockholdersEquity, $157,293.0 million at 2026-01-25 and $79,327.0 million at 2025-01-26.\n\nEquity rose from $79,327.0 million to $157,293.0 million during the year. As a result, the year-end measure (76.33%) is well below the average-equity measure (101.49%). The headline figure is on average equity, and the year-end figure is shown alongside it.\n\n#### Leverage\n- **Total debt at 2026-01-25: $8,468.0 million.**\n  - Arithmetic: 7,469.0 + 999.0 (long_term_debt + current_debt), from calculator_results, result_in_millions.\n  - Long-term debt of $7,469.0 million: us-gaap:LongTermDebtNoncurrent at 2026-01-25.\n  - Current portion of $999.0 million: us-gaap:LongTermDebtCurrent at 2026-01-25.\n- **Debt to equity, FY2026: 0.054.** Arithmetic: (7,469.0 + 999.0) / 157,293.0.\n- **Debt to equity, FY2025: 0.107.** Arithmetic: (8,463.0 + 0.0) / 79,327.0.\n  - Inputs: us-gaap:LongTermDebtNoncurrent and us-gaap:LongTermDebtCurrent at 2025-01-26.\n- Leverage fell from 0.107 to 0.054. Debt was little changed, while equity rose from $79,327.0 million to $157,293.0 million.\n\n#### Cash flow\n| Ratio | Value | Arithmetic |\n|---|---|---|\n| Free cash flow, FY2026 | $96,676.0M | 102,718.0 - 6,042.0 |\n| Free cash flow, FY2025 | $60,853.0M | 64,089.0 - 3,236.0 |\n| Free cash flow growth | 58.87% | (102,718.0 - 6,042.0) / (64,089.0 - 3,236.0) - 1 |\n| Free cash flow margin, FY2026 | 44.77% | (102,718.0 - 6,042.0) / 215,938.0 |\n| Free cash flow / net income, FY2026 | 0.81 | (102,718.0 - 6,042.0) / 120,067.0 |\n\n- Free cash flow grew 58.87%, more slowly than net income at 64.75%.\n- Free cash flow equalled 0.81 of net income. Cash conversion was large in absolute terms but ran behind reported earnings in fiscal 2026.",
+  "latest_quarter": "### Third quarter of fiscal 2027 (three months ended October 25, 2026)\n\n**Source:** 8-K accession 0001045810-26-000088, Item 2.02, Exhibit 99.1, accepted 2026-11-17 16:20:51 ET. The statement is \"(In millions, except per share data)\" and is \"(Unaudited)\".\n\nRelease header: \"Three Months Ended | Nine Months Ended / October 25, | October 26, | October 25, | October 26, / 2026 | 2025 | 2026 | 2025\".\n- This quarter is the column for 2026.\n- The same quarter last year is the column for 2025.\n\n#### Revenue\n- Release line: \"Revenue | $115,844 | $57,006 | $293,681 | $147,811\".\n- Quarter revenue was $115,844 million, against $57,006 million in the same quarter last year.\n- **Growth on the same quarter last year: 103.21%.** Arithmetic: 115,844 / 57,006 - 1, computed in code.\n- This agrees with the release's rounded sentence: \"revenue for the third quarter ended October 25, 2026, of $115.8 billion, up 20% from the previous quarter and up 103% from a year ago.\"\n\n#### GAAP diluted EPS\n- Release lines: \"Net income per share:\" followed by \"Diluted | $2.70 | $1.30 | $7.55 | $3.14\".\n- Quarter GAAP diluted EPS was $2.70, against $1.30 in the same quarter last year.\n- **Growth: 107.69%.** Arithmetic: 2.70 / 1.30 - 1, computed in code.\n- The release also gives non-GAAP EPS: \"GAAP and non-GAAP earnings per diluted share were $2.70 and $2.68, respectively.\" I used the GAAP figure of $2.70.\n\n#### Other release figures (quoted, not recomputed)\n- \"GAAP and non-GAAP gross margins were 74.8% and 74.9%, respectively.\"\n- Nine-month GAAP diluted EPS was $7.55, against $3.14 a year earlier (Diluted line above).\n- Nine-month revenue was $293,681 million, against $147,811 million (Revenue line above).",
+  "peer_comparison": "The context lists no peers (`peers` is empty), so no peer comparison is possible.\n\nThe table shows NVIDIA alone, on the definitions that would be applied to any peer.\n\n| Company | Fiscal year end | Total revenue | Operating income | Operating margin | Source |\n|---|---|---|---|---|---|\n| NVIDIA CORP (NVDA) | 2026-01-25 (FY2026) | $215,938.0 million | $130,387.0 million | 60.38% (130,387.0 / 215,938.0) | 10-K 0001045810-26-000021: us-gaap:Revenues and us-gaap:OperatingIncomeLoss, 2025-01-27 to 2026-01-25 |\n\nA same-basis comparison would need each peer's total revenue and operating income for its own named fiscal year.",
+  "valuation": "### Valuation\n\n#### P/E\n- **P/E: 31.7.** Arithmetic: 155.46 / 4.90 (price / diluted EPS).\n- Price: $155.46, the close of 2026-11-17, from financialdatasets.ai. It is the last close before the release was accepted at 2026-11-17 16:20:51 ET.\n- EPS: fiscal 2026 GAAP diluted EPS of $4.90.\n  - Source: us-gaap:EarningsPerShareDiluted, 2025-01-27 to 2026-01-25, 10-K 0001045810-26-000021.\n\n#### Earnings yield\n- **Earnings yield: 3.15%.** Arithmetic: 4.90 / 155.46 (diluted_eps / price).\n- Computed in calculator_results. It is the inverse view of the same P/E.\n\n#### Caveat on the denominator\n- The EPS in this P/E is for the fiscal year that ended 2026-01-25. The price date is almost ten months later.\n- Since then, the release reports nine-month fiscal 2027 GAAP diluted EPS of $7.55, and $2.70 for the third quarter alone (\"Diluted | $2.70 | $1.30 | $7.55 | $3.14\").\n- The 31.7 multiple and the 3.15% yield are therefore on fiscal-year rather than trailing-twelve-month earnings.\n- The context holds no trailing-twelve-month EPS, so I give no figure for it.\n\n#### What the ratios say\nThe 31.7 multiple sits against these fiscal 2026 results:\n- GAAP diluted EPS growth of 66.67%.\n- Operating margin of 60.38%.\n- Return on average equity of 101.49% (76.33% on year-end equity).\n- Debt to equity of 0.054, on total debt of $8,468.0 million.\n- Free cash flow of $96,676.0M.\n\nThe latest quarter shows continued year-over-year growth: revenue up 103.21% and GAAP diluted EPS up 107.69%.\n\nThere are no peers in the context, so the multiple cannot be placed against the sector. No recommendation is given.",
+  "definitions": [
+   "Revenue is total revenue as tagged us-gaap:Revenues in the fiscal 2026 10-K; the context offers no separate net sales figure.",
+   "Net income is net income attributable to the parent (us-gaap:NetIncomeLoss).",
+   "EPS is GAAP diluted EPS, not the release's non-GAAP diluted EPS of $2.68: us-gaap:EarningsPerShareDiluted for the year, and the release's GAAP 'Diluted' line for the quarter.",
+   "The headline return on equity is on average equity: the mean of stockholders' equity at 2026-01-25 and 2025-01-26 (us-gaap:StockholdersEquity). Return on year-end equity (76.33%) is shown beside it.",
+   "Debt is long-term debt excluding current maturities (us-gaap:LongTermDebtNoncurrent) plus current maturities (us-gaap:LongTermDebtCurrent), totalling $8,468.0 million at 2026-01-25. It excludes lease liabilities, which are not in the context.",
+   "Free cash flow is cash from operations (us-gaap:NetCashProvidedByUsedInOperatingActivities) minus additions to property and equipment (us-gaap:PaymentsToAcquireProductiveAssets).",
+   "Operating margin is operating income (us-gaap:OperatingIncomeLoss) divided by total revenue (us-gaap:Revenues).",
+   "P/E and earnings yield use the 2026-11-17 closing price and fiscal 2026 (year ended 2026-01-25) GAAP diluted EPS, not trailing-twelve-month or adjusted EPS."
+  ],
+  "insight": {
+   "claim": "In fiscal 2026 NVIDIA's operating income of $130,387.0 million grew 60.08%, more slowly than revenue at 65.47%, so operating margin narrowed from 62.42% to 60.38% even as the business scaled.",
+   "source": "10-K 0001045810-26-000021, filed 2026-02-25: consolidated statement of income, operating income line for fiscal years 2026 and 2025",
+   "line": "us-gaap:OperatingIncomeLoss, period 2025-01-27 to 2026-01-25: $130,387.0 million (prior period 2024-01-29 to 2025-01-26: $81,453.0 million)"
+  }
+ }
+}
