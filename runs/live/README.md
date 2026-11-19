@@ -18,7 +18,8 @@ How to file a live run:
 
 1. Run the desk on the ticker. The run folder appears in `output/`.
 2. Check the eleven core claims against the filings named on the report's first line.
-   Document observed errors in a separate file under `docs/live-record-errors/`, following its README.
+   Save the human error report and AI prompt directly inside this run's folder, following
+   `docs/live-record-errors/README.md`. Keep their company names, record numbers, and numbered revisions.
    Preserve the original run and document errors without fixing them unless requested. Create a file
    for each live record, including a stopped run or a run with no observed errors.
 3. Move the whole run folder from `output/` into this folder. Do not rename it and do not edit its files.
@@ -26,7 +27,8 @@ How to file a live run:
 5. Run `python live_record.py`, and commit `docs/live-record.md`.
 6. Look at what is going public, scan it for keys, and push.
 
-A live run is never changed after its commit. A correction is a new commit that says what it corrects.
+A live run's original research artifacts are never changed after its commit. New review reports may be
+appended inside its folder. Never overwrite an earlier review report. A correction is a new commit that says what it corrects.
 Never rebase, squash, amend or force-push `main`.
 
 This is a learning exercise, not financial advice.

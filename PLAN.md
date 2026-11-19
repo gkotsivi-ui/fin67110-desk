@@ -6,6 +6,11 @@ https://cinderzhang.github.io/FIN67110-Fall2026/
 
 ## 1. Where we stand
 
+Update 2026-11-19: the full pipeline, two skills, hook helpers, and newer team/Verifier now have group-owned
+copies. `desk.py` and the page use local code only. See `docs/group-pipeline.md`. Offline validation does
+not establish a successful full live run. The original team-only live records are preserved.
+
+
 Measured on 2026-11-11. The details are in [docs/decision-log.md](docs/decision-log.md).
 
 | What | Evidence |
@@ -17,7 +22,7 @@ Measured on 2026-11-11. The details are in [docs/decision-log.md](docs/decision-
 | A stranger's install | A clean virtual environment with the pinned packages installs, and the tests pass there |
 | The data steps on six companies | 1 clean; 1 with wrong quarter revenue and growth; 1 with a wrong debt to equity; 1 with an unsupported debt to equity; 1 that stopped; 1 that ran with awkward ratios |
 | The Verifier | It marked 9 correct numbers wrong or unsupported on the clean company. Fixed (F4): 150 of 150 correct on the same report |
-| Not built | The seeker, the worksheet with its view, the hook, the one command, the replay, the audits, the manual |
+| Still missing | The completed audits and manual; a successful full group live pipeline run |
 
 ## 2. What the grade rewards, in the order we protect it
 
@@ -73,7 +78,7 @@ Size: S is half a day or less, M is one to two days, L is three days or more.
 | One command, in a fixed order, through one run folder; each part prints its seconds; a failing part stops the run and names itself | Lab 08 | M |
 | Replay of a saved run with the network off | Lab 08 | S, after the one command |
 | The page runs the one command | Lab 08 | S |
-| The hit-rate table: built as `hit_rate.py`; worksheet view producer still pending | Lab 07 | S |
+| The hit-rate table and local worksheet view producer: implemented; historical runs without views stay unscored | Lab 07 | S |
 | `audits.md`: four tables, by hand | Project page | by hand |
 | `manual.md` | Project page | by hand, with tables from code |
 

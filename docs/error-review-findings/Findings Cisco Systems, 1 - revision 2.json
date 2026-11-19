@@ -14,7 +14,7 @@
   },
   "revision": 2,
   "previous": {
-    "human": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/docs/live-record-errors/Error Documentation Cisco Systems, 1.md"
+    "human": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live/CSCO_20261113_093231/Error Documentation Cisco Systems, 1.md"
   },
   "human_title": "Error Documentation Cisco Systems, 1 - revision 2",
   "ai_title": "AI Error Prompt Cisco Systems, 1 - revision 2",
@@ -249,10 +249,10 @@
     "history/Error Documentation Cisco Systems, 1.md": 124,
     "history/README.md": 43
   },
-  "history_folder": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/docs/live-record-errors",
+  "history_folder": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live",
   "outputs": {
-    "human": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/docs/live-record-errors/Error Documentation Cisco Systems, 1 - revision 2.md",
-    "ai": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/docs/ai-error-prompts/AI Error Prompt Cisco Systems, 1 - revision 2.md",
+    "human": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live/CSCO_20261113_093231/Error Documentation Cisco Systems, 1 - revision 2.md",
+    "ai": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live/CSCO_20261113_093231/AI Error Prompt Cisco Systems, 1 - revision 2.md",
     "findings": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/docs/error-review-findings/Findings Cisco Systems, 1 - revision 2.json"
   }
 }

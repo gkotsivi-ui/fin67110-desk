@@ -1,0 +1,7 @@
+{
+  "window_days": 30,
+  "factors": [
+    {"name": "return_since_first_close", "weight": 2, "direction": "higher"},
+    {"name": "days_since_distribution", "weight": 1, "direction": "lower"}
+  ]
+}

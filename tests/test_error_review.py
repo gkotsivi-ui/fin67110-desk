@@ -52,6 +52,9 @@ class ReviewTests(unittest.TestCase):
         result = review_run(self.run, self.history, 4, True, self.root,
                             self.proposal(), "synthetic-model")
         loaded = json.loads(Path(result["outputs"]["findings"]).read_text())
+        self.assertEqual(Path(result["outputs"]["human"]).parent, self.run.resolve())
+        self.assertEqual(Path(result["outputs"]["ai"]).parent, self.run.resolve())
+        self.assertNotIn(self.run.resolve(), Path(result["outputs"]["findings"]).parents)
         self.assertEqual(loaded["findings"], result["findings"])
         for kind in ("human", "ai"):
             text = Path(result["outputs"][kind]).read_text()
@@ -79,6 +82,26 @@ class ReviewTests(unittest.TestCase):
         self.assertEqual(r.metadata()["record_number"], 7)
         with self.assertRaises(ValueError):
             r.metadata(8)
+
+    def test_history_discovers_reports_inside_run_folders(self):
+        history = self.root / "runs/live"
+        folder = history / "OTHER"
+        folder.mkdir(parents=True)
+        put(folder, "Error Documentation Other, 2.md", "# Prior errors\n### Error 1\nType of error: wrong units\n")
+        r = Review(self.run, history)
+        self.assertTrue(r.previous)
+        self.assertIn("history/OTHER/Error Documentation Other, 2.md", r.texts)
+        self.assertIn("history/Error Documentation Other, 2.md", r.texts)
+
+    def test_local_reports_preserve_original_artifacts_and_times(self):
+        artifacts = {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in self.run.iterdir() if p.is_file()}
+        result = review_run(self.run, self.history, 1, True, self.root)
+        for path, (content, mtime) in artifacts.items():
+            self.assertEqual(path.read_bytes(), content)
+            self.assertEqual(path.stat().st_mtime_ns, mtime)
+        second = review_run(self.run, self.history, 1, True, self.root)
+        self.assertEqual(second["revision"], 2)
+        self.assertTrue(Path(result["outputs"]["human"]).exists())
 
     def test_confirmed_error_can_have_unknown_cause(self):
         put(self.run, "run.log", "TypeError: a bad value\n")
@@ -155,6 +178,16 @@ class ReviewTests(unittest.TestCase):
         self.assertFalse(r.findings)
         missing = {c["stage"] for c in r.checks if c["result"] == "not checked"}
         self.assertTrue({"Seeker", "Worksheet", "Hook", "Runtime logs"}.issubset(missing))
+
+    def test_failed_new_pipeline_is_not_mislabelled_complete(self):
+        put(self.run, 'verified_report.md', '# Intermediate report\n')
+        put(self.run, 'desk_run.json', {'status': 'failed', 'failed_part': 'worksheet', 'error': 'Synthetic judgment failure'})
+        put(self.run, 'nodes/Verifier_1/output.json', {'checks': []})
+        r = Review(self.run, self.history)
+        r.deterministic()
+        self.assertEqual(r.metadata(1)['outcome'], 'stopped')
+        self.assertIn('nodes/Verifier_1/output.json', r.data)
+        self.assertTrue(any(f['rule'] == 'joined-failure' for f in r.findings))
 
     def test_history_is_a_lead_not_current_proof(self):
         put(self.history, "previous.md", "### Error 1\nType of error: wrong guidance table\n")

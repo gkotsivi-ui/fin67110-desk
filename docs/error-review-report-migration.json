@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-19",
+  "reason": "User requested human and AI reports inside each live record folder.",
+  "reports": [
+    {
+      "from": "docs/live-record-errors/Error Documentation Cisco Systems, 1 - revision 2.md",
+      "to": "runs/live/CSCO_20261113_093231/Error Documentation Cisco Systems, 1 - revision 2.md",
+      "sha256": "54f4d79c527f6ed35ca77de0b436913b663fc8093d03116a2edcdde8f14c0751"
+    },
+    {
+      "from": "docs/live-record-errors/Error Documentation Cisco Systems, 1.md",
+      "to": "runs/live/CSCO_20261113_093231/Error Documentation Cisco Systems, 1.md",
+      "sha256": "f9775721f6f4006773372129a99e774e0c9721454e8ea57498688c993aa56575"
+    },
+    {
+      "from": "docs/live-record-errors/Error Documentation NVIDIA, 2.md",
+      "to": "runs/live/NVDA_20261118_084439/Error Documentation NVIDIA, 2.md",
+      "sha256": "29962c066d2ccf74f41a12b3334d1a945b326ac441ceb234c185540e334fa9cb"
+    },
+    {
+      "from": "docs/ai-error-prompts/AI Error Prompt Cisco Systems, 1 - revision 2.md",
+      "to": "runs/live/CSCO_20261113_093231/AI Error Prompt Cisco Systems, 1 - revision 2.md",
+      "sha256": "e45039089aaa873e195bb5ce18eee88e0d84962aef03e5b50bf4ce841e971fb3"
+    }
+  ],
+  "research_artifacts_unchanged": true
+}

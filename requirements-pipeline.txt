@@ -1,0 +1,11 @@
+# Complete group pipeline. CrewAI 1.15 requires Python 3.10-3.13; use Python 3.13.
+# Keep the legacy team's existing environment and requirements.txt unchanged.
+crewai[anthropic,google-genai]==1.15.34
+requests>=2.31.0,<3
+beautifulsoup4==4.12.3
+python-dotenv==1.2.4
+pdfplumber==0.11.10
+markdown>=3.7,<4
+markdown-it-py>=2.2.0
+exchange-calendars==4.13.3
+langgraph==1.2.19

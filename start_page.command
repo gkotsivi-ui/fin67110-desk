@@ -1,5 +1,8 @@
 #!/bin/bash
-# Starts the agent team's page and opens it in your browser. Keep this window open; close it to stop the page.
+# Start the group-owned pipeline page with its local Python 3.13 environment.
 cd "$(dirname "$0")" || exit 1
-if [ -f .venv/bin/activate ]; then source .venv/bin/activate; fi
-if command -v python3 >/dev/null 2>&1; then python3 page.py; else python page.py; fi
+if [ -x .venv-desk/bin/python ]; then
+  exec .venv-desk/bin/python page.py
+fi
+echo "Create .venv-desk with Python 3.13 and install requirements-pipeline.txt first."
+exit 1

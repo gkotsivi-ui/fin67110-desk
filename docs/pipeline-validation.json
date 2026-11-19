@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-19",
+  "python": "3.13.1",
+  "environment": ".venv-desk",
+  "suites": {
+    "group_and_pipeline": 346,
+    "seeker": 103,
+    "worksheet": 29,
+    "hook": 69
+  },
+  "total_passed": 547,
+  "isolation": "Temporary group-only checkout; imports and seeded pipeline tests pass without personal/workspace siblings.",
+  "personal_source_unchanged": true,
+  "historical_group_research_unchanged": true,
+  "paid_model_calls": 0,
+  "new_real_live_run": false,
+  "remaining_setup": [
+    "Set SEC_USER_AGENT, API_KEY, MODEL in the group .env. No personal credentials were copied."
+  ],
+  "limits": [
+    "Synthetic/offline tests do not establish successful real-provider final reports.",
+    "Copied worksheet judgment supports Anthropic; Windows Unix-lock portability remains unverified."
+  ]
+}

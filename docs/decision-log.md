@@ -1,5 +1,64 @@
 # Decision log
 
+## 2026-11-19: copy the personal pipeline into the group repo
+
+- The user clarified that the group needs independent copies of every component previously reached
+  through the personal repo. Copied the joined command, team and Verifier, claim contracts, hook,
+  saved-source helpers, closes reader, two skills, and their supporting tests. Source paths and hashes
+  are recorded in `docs/pipeline-import.json`. No personal credentials, run results, or registry were copied.
+- Copied the existing authored factors, worksheet method, worksheet persona, and pipeline role inputs
+  without rewriting them. Tests compare their hashes with the source-copy manifest. The legacy group
+  team and role inputs remain intact. New pipeline runs use the separate `pipeline_roles` snapshots.
+- Replaced workspace-level skill/helper lookups and personal-repo configuration paths with group-local
+  paths. The page and double-click launchers run this repo's `desk.py`. It shows a final report only
+  after successful pipeline completion. Failed stages and their evidence remain saved.
+- Integration errors caught offline: an edited help string needed different quoting; imported tests
+  assumed a real `.env`; a claims test loaded a personal saved-company fixture; a copied smoke helper
+  was missing; and a fixture's newly flattened rules path already had a parent directory. Corrected
+  the integration and test setup without changing live financial outputs or financial decision rules.
+- CrewAI 1.15.34 supports Python below 3.14 and has different Anthropic SDK constraints from the old
+  environment. Created `.venv-desk` with Python 3.13 and `requirements-pipeline.txt`; left `.venv` intact.
+  The new worksheet's provider limitation and Unix file locks are inherited, not claimed as resolved.
+- Added an isolation test that runs the seeded pipeline in a temporary group-only checkout with no
+  personal repo or workspace skills. Adapted the hit-rate reader to the copied worksheet's saved view
+  schema without changing earlier views. The reviewer reads new failed pipeline status accurately.
+- Validation: 346 group/pipeline tests, 103 seeker tests, 29 worksheet tests, and 69 hook tests pass
+  (547 total). The CLI path rule was tested before implementation. It prevents command inputs and
+  replay/storage paths from crossing the group repository boundary.
+- No new real live run was launched. Original Cisco and NVIDIA research artifacts remain unchanged.
+  The fact that offline tests pass does not establish a successful real-provider final report.
+- **What we will not delegate again.** (the team writes this)
+
+## 2026-11-19: restore repository independence
+
+- Traced the cross-repository page integration to commit `110217d`. That change launched a neighboring
+  repo's desk command, used its configuration, and exposed its completed runs through this page.
+  The earlier decision-log entry describes the integration. The user explicitly requires separate repos.
+- Restored the page to this repository's `team.py`, local setup checks, local report paths, and local
+  run arguments. Preserved the Intelligent Review Assistant and its run-local report placement.
+- The earlier implementation reused an external joined pipeline instead of keeping this repo independent.
+  Repository path inspection and git history exposed the dependency. Tests now check the local subprocess
+  target and reject review/report paths outside the repository. No neighboring repository was changed.
+- The seeker, worksheet, hook, and full pipeline remain missing from this repo; the page no longer
+  presents those external capabilities as available here. Original live records remain unchanged.
+- **What we will not delegate again.** (the team writes this)
+
+## 2026-11-19: keep review reports with each live record
+
+- The user changed the location requirement: both the human error report and AI prompt now belong
+  directly inside each live run folder. The reviewer appends these files and preserves original research
+  artifacts. Existing reports get numbered revisions. Shared findings remain in `docs/error-review-findings`.
+- Moved four existing report files without changing their contents. The migration manifest records
+  their old and new paths and hashes. Shared findings metadata now points to the moved files. History
+  discovery searches the live-run folders recursively and retains old citation aliases.
+- NVIDIA lacked an AI companion. Created one from its existing human report, preserving its confirmed
+  and unconfirmed classifications. It explicitly states that this was a format conversion, not a new
+  factual review. No underlying desk error was repaired.
+- A new path test initially compared a resolved macOS temporary path with its unresolved `/var` alias.
+  The test now compares resolved paths. Tests cover colocated reports, recursive history, unchanged
+  original bytes and timestamps, numbered revisions, and page downloads.
+- **What we will not delegate again.** (the team writes this)
+
 ## 2026-11-17: intelligent error review
 
 - Built a saved-run review command, one human report, one AI prompt, and shared findings. The installed

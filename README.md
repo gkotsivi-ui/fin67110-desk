@@ -1,17 +1,37 @@
 # FIN 67110 research desk
 
+## Group-owned complete pipeline
+
+The group now has independent copies of the full pipeline and its dependencies. No run calls the personal
+repo or loads its code, credentials, skills, or runs. The main group command is `desk.py`.
+
+```bash
+python3.13 -m venv .venv-desk
+.venv-desk/bin/python -m pip install -r requirements-pipeline.txt
+.venv-desk/bin/python desk.py TICKER --refresh-screen YYYY-MM-DD
+```
+
+Configure this repo's `.env` first. Replace the ticker and distribution start date. On a fresh checkout,
+refresh the screen; no personal registry is copied. With a saved group registry, use `--registry PATH`
+instead. New runs are practice runs unless `--live` is supplied. Start the same local command through
+`.venv-desk/bin/python page.py` or a double-click launcher.
+
+The copied worksheet supports Anthropic judgment calls. Use Python 3.13 and an explicit provider-prefixed
+`MODEL` available to the group's own account. The original Python 3.14 `.venv` remains untouched.
+See [group pipeline setup, files, limitations, and validation](docs/group-pipeline.md).
+
 ## Intelligent error review
 
 The extra application is `desk-error-review`: a saved-run reviewer that connects prior error patterns
 with current evidence. It creates a human report and one AI prompt, each grouped into **Confirmed
-errors** and **Unconfirmed errors**. It does not repair the desk, rerun it, or edit saved live records.
+errors** and **Unconfirmed errors**. It appends review reports without editing original research artifacts or repairing the desk.
 It uses code for calculations and the desk's configured model for semantic review. Model confidence
 alone never confirms an error. A missing optional component is a review limit, not an automatic failure.
 
 Review a saved run with the configured provider:
 
 ```bash
-.venv/bin/python desk_error_review.py runs/live/CSCO_20261113_093231 --history docs/live-record-errors --model
+.venv/bin/python desk_error_review.py runs/live/CSCO_20261113_093231 --history runs/live --model
 ```
 
 Use `--offline` instead of `--model` for code checks without network access. This leaves model checks
@@ -23,10 +43,14 @@ secrets are excluded. Long model inputs are clipped with explicit review limits.
 
 Use `--record-number N` for a new record without an existing error report. Existing records keep their
 number. For practice, use a folder under `runs/practice` or `output` and add `--practice`.
-Save nothing inside the selected run. Reports live in `docs/live-record-errors` and
-`docs/ai-error-prompts`; shared evidence and findings live in `docs/error-review-findings`.
-The command saves a new numbered revision when a report already exists. It checks that original file
-hashes did not change during the review. Review a completed, stable snapshot of an active run later.
+Both reports are saved directly inside the selected run folder, beside `report.md` and the saved filings:
+`Error Documentation [Company name, live record number].md` and
+`AI Error Prompt [Company name, live record number].md`. Shared findings remain in
+`docs/error-review-findings`. The command saves a new numbered revision when a report already exists.
+Original research artifacts are checked for changes; appended review reports are excluded from that
+research-artifact hash check. History defaults to `runs/live` and discovers human reports recursively.
+Past reports were moved without content changes; `docs/error-review-report-migration.json` records their locations and hashes.
+Review a completed, stable snapshot of an active run later.
 
 The Cisco review used this coding-agent session with saved evidence and no provider call. It found
 one confirmed error (an empty saved partner-check field) and two unconfirmed errors (a valuation
@@ -46,7 +70,7 @@ and unconfirmed findings are counted separately. Its temporary practice runs nev
 Results are saved to `docs/error-review-evaluation.json`. These results measure synthetic rules, not
 live accuracy or model semantic accuracy. Full ASD-STE100 vocabulary compliance is not certified.
 
-Start `.venv/bin/python page.py`, then use **Review a saved run**. Enter the run folder and its record
+Start `.venv-desk/bin/python page.py`, then use **Review a saved run**. Enter the run folder and its record
 number if necessary. Enable the model option to review patterns and conclusions. The page shows both
 error groups and their cited evidence, with separate downloads for the human report and AI prompt.
 It waits for an active desk job and has no repair execution action.
@@ -81,7 +105,7 @@ A completed worksheet should save `view.json` in its run folder when the view is
 ```
 
 Directions are `up`, `down`, `flat`, or `not computed`; timestamps must include a UTC offset.
-This is an input contract, not an implemented worksheet integration. Do not backdate or reconstruct a
+The local worksheet now writes `view_time` and value-versus-price direction labels. The reader also accepts the older `time` schema. Do not backdate or reconstruct a
 missing view from a recommendation or run start time. Existing reports without a saved view display
 `not computed`. When `filing_time` is absent, the command reads the earnings 8-K acceptance time from
 the saved report's first line; ticker can also come from `facts.json`.
@@ -102,7 +126,7 @@ earnings release (the 8-K's Exhibit 99.1), reads the statements as XBRL data, co
 claims in code, and has four roles write a five-part report. A Verifier then marks every sourced number
 against the saved filings. Nothing in the code names a company: the ticker is an argument.
 
-Team: to be added. The thing we own: the intelligent error review application. The joins: not built yet.
+Team: to be added. The thing we own: the intelligent error review application. The joins: implemented locally in `desk.py`; real-provider validation is still pending.
 
 ## What works today, and what does not
 
@@ -115,9 +139,9 @@ Checked on 2026-11-11 and 2026-11-12.
 | The page: run the desk and read the report without a terminal | ran one company end to end from the page on 2026-11-12, and showed the verified report |
 | The closes reader, for one price | built; tested on made-up files. On 2026-11-12 LSEG Workspace was not running, and the price came from financialdatasets.ai |
 | The live record table | built and tested on a made-up repository; no live report yet |
-| The hit-rate table | built; tested on synthetic runs; existing live report has no timestamped directional view |
+| The hit-rate table | built; accepts the copied worksheet view format; historical runs without saved views remain unscored |
 | The intelligent error review | built; code and HTTP tests; one saved-run review; synthetic evaluation only |
-| The spinoff seeker, the worksheet with its view, the hook, and one command for all of them | not built yet |
+| Group-local seeker, worksheet, hook, one command, and replay | copied and adapted; synthetic and isolation tests; no new live run claimed |
 
 Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them before you trust a number.
 
@@ -133,7 +157,7 @@ Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them
 - Optional: a source of closing prices. Without one, the report has no P/E. Read
   [Prices and licensed data](#prices-and-licensed-data) first.
 
-## Set up, one time
+## Legacy team setup, one time
 
 1. Get the code, and open a terminal in its folder.
 
@@ -195,30 +219,15 @@ Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them
 
 ## Run the desk
 
-**From Lab 05.** Keep `Analyst` next to this repository in the course workspace. Install
-`../Analyst/requirements.txt` and this repository's `markdown` dependency in the Python
-environment that starts the page. Configure the joined desk in `../Analyst/.env`. Start
-`python page.py` in that environment, or use the double-click launcher if you set up
-this repository's `.venv` with both sets of page and desk dependencies.
+Use the complete group command and page described at the top of this README. Both use only this repo's
+`desk.py`, local skills, local hook, `.env`, and run folders. The finished report is `final_report.md`.
 
-Open http://127.0.0.1:8765. Enter a ticker or `screen`. A seeker start date refreshes
-the screen before ticker selection. A blank date uses the latest saved screen for
-`screen`. The page shows each part and displays the final report after it passes the
-hook. The joined desk uses the sourced pre-filing close for the team's valuation.
-Joined page runs are saved in `../Analyst/runs/practice`.
+### Legacy team commands
 
-From `../Analyst`, run the same command in the terminal:
+These reproduce the original team-only workflow. They do not run the worksheet or final pipeline gate.
+Keep their original environment separate from `.venv-desk`.
 
-```bash
-python desk.py TICKER
-python desk.py screen
-python desk.py --replay 'runs/practice/SAVED_RUN_FOLDER'
-```
-
-Replace `TICKER` and `SAVED_RUN_FOLDER` with your inputs.
-See [joined desk options](../Analyst/docs/desk-command.md) for screen refreshes and live runs.
-
-**Run the original team alone.** Give the ticker. `CSCO` is an example; use any ticker.
+**Run from the terminal.** Give the ticker. `CSCO` is an example; use any ticker.
 
 Windows:
 

@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "company": "NVIDIA",
+    "ticker": "NVDA",
+    "record_number": 2,
+    "run_folder": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live/NVDA_20261118_084439",
+    "run_time": "Run time: 2026-11-18 08:44:39 US Eastern Standard Time (UTC-0500); model claude-opus-5-5; price: $155.46, the close of 2026-11-17, the last close before 2026-11-17 16:20:51 ET, when the release was accepted, from financialdatasets.ai",
+    "outcome": "completed",
+    "outcome_limit": "Artifact state only; historical stops need a saved log or separate attestation.",
+    "record_type": "live",
+    "review_time": "2026-11-19T13:05:27.369030+00:00",
+    "model": "OpenAI Codex (existing-report conversion; no new factual review)",
+    "review_purpose": "Create the missing AI companion from the existing human report. Preserve its classifications."
+  },
+  "revision": 1,
+  "previous": {},
+  "human_title": "Error Documentation NVIDIA, 2",
+  "ai_title": "AI Error Prompt NVIDIA, 2",
+  "findings": [
+    {
+      "id": "E-ac2f2f12b5e8",
+      "rule": "imported-human",
+      "status": "confirmed",
+      "type": "A true number with a quote that does not state it",
+      "stage": "Analyst text and Verifier",
+      "description": "The existing human report confirms that the cited line omits the Data Center label. The figures themselves are documented as correct.",
+      "observed": "The quotation states revenue without naming the Data Center segment.",
+      "expected": "Include evidence that establishes the segment and its reported values.",
+      "cause": "Suspected: the role read the heading and row together but quoted only the row.",
+      "effect": "The original review reports two unsupported Verifier marks. The investment conclusion effect is unknown.",
+      "uncertainty": "",
+      "evidence": [
+        {
+          "path": "history/NVDA_20261118_084439/Error Documentation NVIDIA, 2.md",
+          "line": 45,
+          "quote": "1. **Type of error:** a true number with a quote that does not state it."
+        },
+        {
+          "path": "history/NVDA_20261118_084439/Error Documentation NVIDIA, 2.md",
+          "line": 48,
+          "quote": "3. **Description:** The report says \"Third-quarter Data Center revenue was $107.6 billion, up 110% from a year"
+        },
+        {
+          "path": "history/NVDA_20261118_084439/Error Documentation NVIDIA, 2.md",
+          "line": 52,
+          "quote": "   release's: its line 4 reads \"Data Center revenue of $107.6 billion, up 110% from a year ago\"."
+        }
+      ],
+      "code_location": "Unknown",
+      "prior_pattern": "none",
+      "test": "Use a made-up segment heading and a revenue row without its segment name.",
+      "completion": "The test retains the segment context without changing saved live artifacts.",
+      "confirmation_basis": "Inherited from the existing human report. No new factual review was performed.",
+      "legacy_id": "Error 1"
+    },
+    {
+      "id": "E-0613d04e80c0",
+      "rule": "imported-human",
+      "status": "unconfirmed",
+      "type": "A column label that names a year, not a date",
+      "stage": "Release reader; claims 9 and 10",
+      "description": "The existing human report lists an ambiguous year-only column label as unconfirmed. This conversion retains that classification.",
+      "observed": "The core table uses the column for 2026. Quarter and year-to-date columns share that year.",
+      "expected": "Unknown",
+      "cause": "The original reviewer attributes the label to selection of the year header line. This attribution was not rechecked.",
+      "effect": "The original review states that the selected numerical value is correct. Effect on the conclusion is unknown.",
+      "uncertainty": "No new source or code review was performed. The source report classifies this item as unconfirmed.",
+      "evidence": [
+        {
+          "path": "history/NVDA_20261118_084439/Error Documentation NVIDIA, 2.md",
+          "line": 60,
+          "quote": "1. **Type of error:** a column label that names a year, not a date."
+        },
+        {
+          "path": "history/NVDA_20261118_084439/Error Documentation NVIDIA, 2.md",
+          "line": 62,
+          "quote": "3. **Description:** The table names the quarter's column \"the column for 2026\". The release prints each date"
+        },
+        {
+          "path": "history/NVDA_20261118_084439/Error Documentation NVIDIA, 2.md",
+          "line": 65,
+          "quote": "4. **Why it happened:** Confirmed from the code on `main`: the reader takes the header line that holds one date"
+        }
+      ],
+      "code_location": "release.py (named by the original reviewer; not rechecked)",
+      "prior_pattern": "none",
+      "test": "Create made-up evidence that reproduces a column label that names a year, not a date in release reader; claims 9 and 10.",
+      "completion": "The reproducing test and required repository checks pass.",
+      "legacy_id": "Error 2"
+    }
+  ],
+  "checks": [
+    {
+      "stage": "Existing report conversion",
+      "result": "completed",
+      "detail": "No new desk review or repair."
+    }
+  ],
+  "limits": [
+    "Classifications and causal statements come from the existing human report.",
+    "This is a format conversion, not independent confirmation of its findings.",
+    "No new filing, code, price, or investment conclusion review was performed."
+  ],
+  "original_hashes": {
+    "10K_2026-02-25_nvda-20260125.txt": "4e92565fc7ffbdd262a8bf0c866ee22659bb511a7ec0e249ef2833b3694f257b",
+    "10Q_2026-08-26_nvda-20260726.txt": "27d7c745bbe2c1d38eaa46bbe6018c72b1f0055107f152d18ef13a2759360394",
+    "8K_2026-11-17_q3fy27pr.txt": "055f9bcfe58f274b1fa616b47c5789a357cc9bf869808325685fe28741909c56",
+    "audit.md": "2543c1d480112138d044b52e47762e81233fcbdfa6223301723effd077a4309e",
+    "facts.json": "3d083c8503f58d7127e708490abca550e5121dc3bf36406f3204e5aafdf7bc4f",
+    "nodes/01_steps.json": "56f0819a5b0e16a7dcd218e12cb3561d76370bdd1343ee2a848e1c857c682dc7",
+    "nodes/02_research_analyst.json": "48db10101e1ae8fd65722e5c2fe93041a155cfbd587b53a938d5211af2818669",
+    "nodes/03_financial_analyst.json": "b1510b30663f9f13c0da91f7711aa577fbb231f3b77c94ff2acdf85e032e4dd1",
+    "nodes/04_investment_advisor.json": "0230d979450dfdae0161225b51ae2e418eb6408436032a30eb1e7b691d13f67d",
+    "nodes/05_strategy_manager.json": "a5445459529c681df83fa5901736ad550a2cb975b6849eb6cf50860a89f3bd78",
+    "nodes/06_financial_analyst.json": "e4bd9c5f497093e38e982816f42b85c9c035e119330e64663543343a85491dc5",
+    "nodes/07_strategy_manager.json": "30eaf18ac2c0869e3a7c05246112162ed9688181da5bc32f0ed67627f131c225",
+    "nodes/08_verifier.json": "0aa4ace10e9a235d352ab5afd092201b9b5ee9e9afb032a09b946bb956da7fdf",
+    "peer_facts.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "ratios.json": "0df15ee2fb9f511e12d7fc2ee57634268420572c3806131cdfd215a604c45988",
+    "report.md": "e43e7065f66efa891324614b2154a9d68444a6e572d8c615e288a98c64109900",
+    "verification.json": "9498f99d29bf27a3594a2130eebd865194989e8540f4de5ce92d792f20fc181c",
+    "verified_report.md": "08221187c3add561d10251f8442e0a8b6bf60142e723d87a13f4c4833b56c95b"
+  },
+  "evidence_manifest": {
+    "run/10K_2026-02-25_nvda-20260125.txt": 1853,
+    "run/10Q_2026-08-26_nvda-20260726.txt": 1038,
+    "run/8K_2026-11-17_q3fy27pr.txt": 253,
+    "run/audit.md": 22,
+    "run/facts.json": 287,
+    "run/nodes/01_steps.json": 197,
+    "run/nodes/02_research_analyst.json": 140,
+    "run/nodes/03_financial_analyst.json": 315,
+    "run/nodes/04_investment_advisor.json": 173,
+    "run/nodes/05_strategy_manager.json": 18,
+    "run/nodes/06_financial_analyst.json": 375,
+    "run/nodes/07_strategy_manager.json": 20,
+    "run/nodes/08_verifier.json": 24,
+    "run/peer_facts.json": 1,
+    "run/ratios.json": 38,
+    "run/report.md": 246,
+    "run/verification.json": 2827,
+    "run/verified_report.md": 400,
+    "history/CSCO_20261113_093231/Error Documentation Cisco Systems, 1 - revision 2.md": 111,
+    "history/Error Documentation Cisco Systems, 1 - revision 2.md": 111,
+    "history/CSCO_20261113_093231/Error Documentation Cisco Systems, 1.md": 124,
+    "history/Error Documentation Cisco Systems, 1.md": 124,
+    "history/NVDA_20261118_084439/Error Documentation NVIDIA, 2.md": 73,
+    "history/Error Documentation NVIDIA, 2.md": 73
+  },
+  "history_folder": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live",
+  "outputs": {
+    "human": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live/NVDA_20261118_084439/Error Documentation NVIDIA, 2.md",
+    "ai": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live/NVDA_20261118_084439/AI Error Prompt NVIDIA, 2.md",
+    "findings": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/docs/error-review-findings/Findings NVIDIA, 2.json"
+  }
+}

@@ -30,6 +30,11 @@
 __pycache__/
 *.py[cod]
 .venv/
+.venv-desk/
+.venv-lseg/
+/spinoff_output/
+/equity_research_output/
+.sec_rate_gate
 venv/
 .pytest_cache/
 

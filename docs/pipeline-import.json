@@ -1,0 +1,420 @@
+{
+  "date": "2026-11-19",
+  "source_commit": "e695b1822261b066c6a8f4940715a9685a0de064",
+  "purpose": "Independent group-owned copy. No runtime calls into the personal repo or workspace skills.",
+  "files": [
+    {
+      "source": "Repos/Analyst/desk.py",
+      "destination": "desk.py",
+      "source_sha256": "ee986a23faa992019ae3b967653fd653413714f25084cdb4a17c2e28d959bc7e",
+      "group_sha256": "15ccbb0f9c194ef079c32b9fbb2b2ddeab7b646d7cfbdf4b87d2c5fcf2687443",
+      "adapted": true
+    },
+    {
+      "source": "Repos/Analyst/desk_sources.py",
+      "destination": "desk_sources.py",
+      "source_sha256": "1f4c4f75f292cb79441273af32ff7b32d5f4619191ac7d4f6289acd12fc146d6",
+      "group_sha256": "422bc19efe7cdcaedd0bbddbb96f96d15474cffe79faf6485a243b87744dacc3",
+      "adapted": true
+    },
+    {
+      "source": "Repos/Analyst/desk_hook.py",
+      "destination": "desk_hook.py",
+      "source_sha256": "8d581537beceaeb60fcadb0ee0e625e6ad4501aa2fd379235f085986d29b23ea",
+      "group_sha256": "5cc4f1bdf999a0d5d30c7d4d2115abfea044d19c302ce369388920f0857c7cdd",
+      "adapted": true
+    },
+    {
+      "source": "Repos/Analyst/desk_files.py",
+      "destination": "desk_files.py",
+      "source_sha256": "f3cfe7f774ed105c423d6996af61c0b2eb2606c76b315e8cfebadfcf7933ecb6",
+      "group_sha256": "f3cfe7f774ed105c423d6996af61c0b2eb2606c76b315e8cfebadfcf7933ecb6",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/desk_timing.py",
+      "destination": "desk_timing.py",
+      "source_sha256": "6656d8a2059e37b7b89dacc4976fc2ff026a6de930c354009473bb098774022a",
+      "group_sha256": "6656d8a2059e37b7b89dacc4976fc2ff026a6de930c354009473bb098774022a",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/desk_quantities.py",
+      "destination": "desk_quantities.py",
+      "source_sha256": "c7920b425c9b94e6c13f0727e6a3176607d3fc4db10f5e195035afd08171abac",
+      "group_sha256": "c7920b425c9b94e6c13f0727e6a3176607d3fc4db10f5e195035afd08171abac",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/desk_claims.py",
+      "destination": "desk_claims.py",
+      "source_sha256": "675164e9660e7587098b14d1ae5eb2097ec09e987bbac4a7ba0f88944b9cbb08",
+      "group_sha256": "675164e9660e7587098b14d1ae5eb2097ec09e987bbac4a7ba0f88944b9cbb08",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/desk_role_contracts.py",
+      "destination": "desk_role_contracts.py",
+      "source_sha256": "d488e90ba9a70017d39434ad4db924b01ab2fa7ba9f2b1afb8eab5b984f33612",
+      "group_sha256": "d488e90ba9a70017d39434ad4db924b01ab2fa7ba9f2b1afb8eab5b984f33612",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/desk_parts.py",
+      "destination": "desk_parts.py",
+      "source_sha256": "b834134a910760373f2c0654bb5bae63e7d76a48c3986c9397a0daf8e805681f",
+      "group_sha256": "b65b4586d2a6443866287f928176acfef227358b2c473f1edc0eb780fa144533",
+      "adapted": true
+    },
+    {
+      "source": "Repos/Analyst/equity_research_desk.py",
+      "destination": "equity_research_desk.py",
+      "source_sha256": "ab57966f6d0d9d338df7b604e319c599e35ff710cc98325d0216f5667e8d8888",
+      "group_sha256": "ab57966f6d0d9d338df7b604e319c599e35ff710cc98325d0216f5667e8d8888",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/equity_research_agent_team.py",
+      "destination": "equity_research_agent_team.py",
+      "source_sha256": "77220ac751a43e598f41a6d5645838b67583d002ca618e18fae713a0c3cc5a8a",
+      "group_sha256": "1b800e74e473f90609bf279984496d89d467f4964b0df1ccee4fe708ff199fa8",
+      "adapted": true
+    },
+    {
+      "source": "Repos/Analyst/closes_reader.py",
+      "destination": "closes_reader.py",
+      "source_sha256": "b6278bb422517cec8e3a7170c5d99d671d1d21af377cde4a40bffff0bbd3579f",
+      "group_sha256": "8182f15dc261fcbc5b522f7da6d0744bc6677de6dbefef0a4e0fcf8694fe18d2",
+      "adapted": true
+    },
+    {
+      "source": "Repos/Analyst/quarterly_cash_flow.py",
+      "destination": "quarterly_cash_flow.py",
+      "source_sha256": "e817dc764f7c2a89f9bc1a8bd4491236868b1714ed6489f279b7cc826851668f",
+      "group_sha256": "e817dc764f7c2a89f9bc1a8bd4491236868b1714ed6489f279b7cc826851668f",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/report_naming.py",
+      "destination": "report_naming.py",
+      "source_sha256": "9f7f99f618d14487068cee50ba597487b4da84955ced8c23746c86eb60777003",
+      "group_sha256": "9f7f99f618d14487068cee50ba597487b4da84955ced8c23746c86eb60777003",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/insight_layout.py",
+      "destination": "insight_layout.py",
+      "source_sha256": "cbd9adafaac359625062a27bde20a9d79c99c42849ab6829a6386ccdff859cab",
+      "group_sha256": "cbd9adafaac359625062a27bde20a9d79c99c42849ab6829a6386ccdff859cab",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/spinoff_factors.json",
+      "destination": "spinoff_factors.json",
+      "source_sha256": "06af5a4108f88a882b37248846d86fac5e10542075667a5513291447effbf321",
+      "group_sha256": "06af5a4108f88a882b37248846d86fac5e10542075667a5513291447effbf321",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/spinoff-rules.md",
+      "destination": "spinoff-rules.md",
+      "source_sha256": "e39c5c0af8766b77ee75391c9ccd107879ec12388d6f396b4ad4b8d7120d4070",
+      "group_sha256": "e39c5c0af8766b77ee75391c9ccd107879ec12388d6f396b4ad4b8d7120d4070",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/persona-why-cheap.md",
+      "destination": "persona-why-cheap.md",
+      "source_sha256": "889f8b70918b3a52b4ab8242d15f9c50cbc23288be25596b3916e5248f3c4e92",
+      "group_sha256": "889f8b70918b3a52b4ab8242d15f9c50cbc23288be25596b3916e5248f3c4e92",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/roles/research_analyst.md",
+      "destination": "pipeline_roles/research_analyst.md",
+      "source_sha256": "c9ff00cd584e155ccafd057e05c5c521c1301a30a9c19aadf35a9eed65ac3734",
+      "group_sha256": "c9ff00cd584e155ccafd057e05c5c521c1301a30a9c19aadf35a9eed65ac3734",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/roles/verifier.md",
+      "destination": "pipeline_roles/verifier.md",
+      "source_sha256": "0bfd1da4a3903f37ce5764f487db839c69ec297aae0ba6e46fd758b5a3fb8b8e",
+      "group_sha256": "0bfd1da4a3903f37ce5764f487db839c69ec297aae0ba6e46fd758b5a3fb8b8e",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/roles/strategy_manager.md",
+      "destination": "pipeline_roles/strategy_manager.md",
+      "source_sha256": "1c2a75cea66b073b06e001b466b170e0672d787ae563d2e8f48595ee62700f8a",
+      "group_sha256": "1c2a75cea66b073b06e001b466b170e0672d787ae563d2e8f48595ee62700f8a",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/roles/investment_advisor.md",
+      "destination": "pipeline_roles/investment_advisor.md",
+      "source_sha256": "1ae1a1d157f4ee0ea76feb893150ac3c403b990901d7b97076f136128faaa2f3",
+      "group_sha256": "1ae1a1d157f4ee0ea76feb893150ac3c403b990901d7b97076f136128faaa2f3",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/roles/financial_analyst.md",
+      "destination": "pipeline_roles/financial_analyst.md",
+      "source_sha256": "f4559f36ac6c812240660165c370fdfca05cd24db404babb725817df46a3b32e",
+      "group_sha256": "f4559f36ac6c812240660165c370fdfca05cd24db404babb725817df46a3b32e",
+      "adapted": false
+    },
+    {
+      "source": ".codex/hooks/worksheet_numbers.py",
+      "destination": "hooks/worksheet_numbers.py",
+      "source_sha256": "02399beb076a3e1eb8a363263893dce7c2ba657a62b90dfb39409678a6307b28",
+      "group_sha256": "a733087a4c0797681785ca68384085fa6fca688bb8dcf9fc7ab95f17abf4b20a",
+      "adapted": true
+    },
+    {
+      "source": ".codex/hooks/worksheet_format.py",
+      "destination": "hooks/worksheet_format.py",
+      "source_sha256": "fd2b3f017c06ebdf6aaeeca731e6917a9bc84df1ef1861a3856e5b8d04929930",
+      "group_sha256": "60e9804e6d6fa50b99a7d747f8300e06af11f7bdf0593dc4fc5486d68bcb4df0",
+      "adapted": true
+    },
+    {
+      "source": ".agents/skills/us-spinoff-seeker/requirements.txt",
+      "destination": "skills/us-spinoff-seeker/requirements.txt",
+      "source_sha256": "8c41b581ae000e5d7672a2a6a4cc77bab7816198d2b80071494f4190860e6787",
+      "group_sha256": "8c41b581ae000e5d7672a2a6a4cc77bab7816198d2b80071494f4190860e6787",
+      "adapted": false
+    },
+    {
+      "source": ".agents/skills/us-spinoff-seeker/SKILL.md",
+      "destination": "skills/us-spinoff-seeker/SKILL.md",
+      "source_sha256": "3c0866e8b7ae0882828238504226a47e6af621b0e44e440c0639edc78f30f097",
+      "group_sha256": "67177602a48ee775c4bfddca420336abe3883a31fed6e7b42dfe55ce52c7d117",
+      "adapted": true
+    },
+    {
+      "source": ".agents/skills/us-spinoff-seeker/references/contracts.md",
+      "destination": "skills/us-spinoff-seeker/references/contracts.md",
+      "source_sha256": "f82d16ef4e095e31bcb2ca6f3aba93a6a7b64db91128020ea2b713b7d20b512d",
+      "group_sha256": "14aee600f0f05b955ce849f7b987c41a4c4c24f1c125c5df7720e3b0646b646c",
+      "adapted": true
+    },
+    {
+      "source": ".agents/skills/us-spinoff-seeker/references/factors.example.json",
+      "destination": "skills/us-spinoff-seeker/references/factors.example.json",
+      "source_sha256": "586388b9bb8ba0f21666efba402253e9189ff27cc04105f0ef8f21faf936e4ab",
+      "group_sha256": "586388b9bb8ba0f21666efba402253e9189ff27cc04105f0ef8f21faf936e4ab",
+      "adapted": false
+    },
+    {
+      "source": ".agents/skills/us-spinoff-seeker/tests/test_factor_data.py",
+      "destination": "skills/us-spinoff-seeker/tests/test_factor_data.py",
+      "source_sha256": "ed989871b91f502074a3c91652a5602bf75e12d382b061f24bf44027a370aaaa",
+      "group_sha256": "ed989871b91f502074a3c91652a5602bf75e12d382b061f24bf44027a370aaaa",
+      "adapted": false
+    },
+    {
+      "source": ".agents/skills/us-spinoff-seeker/tests/test_seeker.py",
+      "destination": "skills/us-spinoff-seeker/tests/test_seeker.py",
+      "source_sha256": "179f5caa5f0c94635034428d6285d416e13f2030d4cd2e60d525a750faf50119",
+      "group_sha256": "f8f630ea3de5d21f5e8fe88fee06115b71adaeac6f5a1a09e6ae32f2d7133469",
+      "adapted": true
+    },
+    {
+      "source": ".agents/skills/us-spinoff-seeker/scripts/seeker.py",
+      "destination": "skills/us-spinoff-seeker/scripts/seeker.py",
+      "source_sha256": "b3604315193ce369a6120ee9873f99530af5a28eabbfd712b6f5542d07ef0e2c",
+      "group_sha256": "284d377cef867addbc7141e2f77cd2f3609559eee9921bf4dcc9c98da1484891",
+      "adapted": true
+    },
+    {
+      "source": ".agents/skills/us-spinoff-seeker/scripts/factor_data.py",
+      "destination": "skills/us-spinoff-seeker/scripts/factor_data.py",
+      "source_sha256": "6d018b19e32861bfa46c1f5aa75db1d52c95b49ba822c9fbf832c3d93437db19",
+      "group_sha256": "6d018b19e32861bfa46c1f5aa75db1d52c95b49ba822c9fbf832c3d93437db19",
+      "adapted": false
+    },
+    {
+      "source": ".agents/skills/spinoff-worksheet/SKILL.md",
+      "destination": "skills/spinoff-worksheet/SKILL.md",
+      "source_sha256": "8d1249c081f5d0ee5312434adfc8a06ed599f8959420f237b71aacf846f59aa1",
+      "group_sha256": "039d30bcbc1fbbe9a477e4b88d906033fbdc09844e63a48f223b1a8b8a2fb79b",
+      "adapted": true
+    },
+    {
+      "source": ".agents/skills/spinoff-worksheet/references/worksheet.example.json",
+      "destination": "skills/spinoff-worksheet/references/worksheet.example.json",
+      "source_sha256": "df9ad4e15b109a3425d03c3feb64bdf4ee009018610b6b60d8cdeaa0335dd090",
+      "group_sha256": "df9ad4e15b109a3425d03c3feb64bdf4ee009018610b6b60d8cdeaa0335dd090",
+      "adapted": false
+    },
+    {
+      "source": ".agents/skills/spinoff-worksheet/references/worksheet-contract.md",
+      "destination": "skills/spinoff-worksheet/references/worksheet-contract.md",
+      "source_sha256": "3e1741896fbc187511bb5d83826a64df1a50e69c644bd5919e6dea7c3863c099",
+      "group_sha256": "91070ed79176e2a5d7997d997470fcad94ee21a4e0bbeec0f6690419bbf559ef",
+      "adapted": true
+    },
+    {
+      "source": ".agents/skills/spinoff-worksheet/tests/test_worksheet.py",
+      "destination": "skills/spinoff-worksheet/tests/test_worksheet.py",
+      "source_sha256": "0bb4f98623f4972ca95183194bf5c4dcc51df1e7ea75e42f53767bf45aaadf59",
+      "group_sha256": "0bb4f98623f4972ca95183194bf5c4dcc51df1e7ea75e42f53767bf45aaadf59",
+      "adapted": false
+    },
+    {
+      "source": ".agents/skills/spinoff-worksheet/tests/test_markdown_rules.py",
+      "destination": "skills/spinoff-worksheet/tests/test_markdown_rules.py",
+      "source_sha256": "5cbab92e915745399e5bf04cb29a1c1ba367a2446beebaeeac4c05985b87e2d2",
+      "group_sha256": "5cbab92e915745399e5bf04cb29a1c1ba367a2446beebaeeac4c05985b87e2d2",
+      "adapted": false
+    },
+    {
+      "source": ".agents/skills/spinoff-worksheet/agents/openai.yaml",
+      "destination": "skills/spinoff-worksheet/agents/openai.yaml",
+      "source_sha256": "2daae8ce8cf325828a005ee0bee06d0ccb9dc145b3656256272e2fcd2a40b402",
+      "group_sha256": "2daae8ce8cf325828a005ee0bee06d0ccb9dc145b3656256272e2fcd2a40b402",
+      "adapted": false
+    },
+    {
+      "source": ".agents/skills/spinoff-worksheet/scripts/markdown_rules.py",
+      "destination": "skills/spinoff-worksheet/scripts/markdown_rules.py",
+      "source_sha256": "9bbc08aeaa4e8d8cf6e2adbd63ee246178138e8b99a84668a7a04d7fb9d11d10",
+      "group_sha256": "9bbc08aeaa4e8d8cf6e2adbd63ee246178138e8b99a84668a7a04d7fb9d11d10",
+      "adapted": false
+    },
+    {
+      "source": ".agents/skills/spinoff-worksheet/scripts/worksheet.py",
+      "destination": "skills/spinoff-worksheet/scripts/worksheet.py",
+      "source_sha256": "ea86a059f2fb51703add3c7fd2ba45e73d0cb2a1b837b1e4a443511075afa728",
+      "group_sha256": "2c19f2beb4721e8bd4856c816e7b5048ceb7982b012aadff96a51140f8fb1396",
+      "adapted": true
+    },
+    {
+      "source": ".agents/skills/spinoff-worksheet/scripts/statements.py",
+      "destination": "skills/spinoff-worksheet/scripts/statements.py",
+      "source_sha256": "f735ca7fe20aedc3b701c827b176d8b8d10b2b9c0ecf252838e87fb303dd6d75",
+      "group_sha256": "f735ca7fe20aedc3b701c827b176d8b8d10b2b9c0ecf252838e87fb303dd6d75",
+      "adapted": false
+    },
+    {
+      "source": ".agents/skills/spinoff-worksheet/scripts/evidence_scores.py",
+      "destination": "skills/spinoff-worksheet/scripts/evidence_scores.py",
+      "source_sha256": "1d5adb1bc71b7daf8124830c8d0d3534cbab9404c3528de0a9e0ddd5e272bdaf",
+      "group_sha256": "1d5adb1bc71b7daf8124830c8d0d3534cbab9404c3528de0a9e0ddd5e272bdaf",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/tests/test_joined_desk.py",
+      "destination": "tests/test_joined_desk.py",
+      "source_sha256": "b6f7129567a6df8b200f5f8b359c65058cd5af21ddab1e903c7ce81879f4ca65",
+      "group_sha256": "66150810d5fe0e7f1f602c034ca4398bc62c16731ad69ea239cb020360a844ef",
+      "adapted": true
+    },
+    {
+      "source": "Repos/Analyst/tests/test_desk_adapters.py",
+      "destination": "tests/test_desk_adapters.py",
+      "source_sha256": "deb6ba97a00b267476e62a3269b2cef6ea1e4f8445631bdea5dfcc237ba27874",
+      "group_sha256": "cffa19388227a6d67264dc0dbbbc33dc32ed1cd54e122e4376b59f8699bf4c65",
+      "adapted": true
+    },
+    {
+      "source": "Repos/Analyst/tests/test_desk_boundaries.py",
+      "destination": "tests/test_desk_boundaries.py",
+      "source_sha256": "a18ee7a84487bc9132926db2eba1df756ec9d3a91fc8834e4cc461ed6a415526",
+      "group_sha256": "a18ee7a84487bc9132926db2eba1df756ec9d3a91fc8834e4cc461ed6a415526",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/tests/test_desk_claims.py",
+      "destination": "tests/test_desk_claims.py",
+      "source_sha256": "a63947d1cbe5915078a565c08909d14941ffd386e6cb9dd71544b58990494a2f",
+      "group_sha256": "b374e02daae2ba4c408273a26ffe257815b8860994291a68348159c516e7f67a",
+      "adapted": true
+    },
+    {
+      "source": "Repos/Analyst/tests/test_all_role_contracts.py",
+      "destination": "tests/test_all_role_contracts.py",
+      "source_sha256": "1d8fe8d63af7aa1b306a9617288eb813a88344573137e9b12399b335ac772097",
+      "group_sha256": "1d8fe8d63af7aa1b306a9617288eb813a88344573137e9b12399b335ac772097",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/tests/test_verifier_checks.py",
+      "destination": "tests/test_verifier_checks.py",
+      "source_sha256": "e73e402143fc689fa539538a98d52c7e194fcbf50760a7ba04ab2ded37036f2e",
+      "group_sha256": "e73e402143fc689fa539538a98d52c7e194fcbf50760a7ba04ab2ded37036f2e",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/tests/test_quarterly_cash_flow.py",
+      "destination": "tests/test_quarterly_cash_flow.py",
+      "source_sha256": "c62add18de37547bec9d60f2187043c63a970d7e0e9222fe6fcd2e277bd30bdc",
+      "group_sha256": "c62add18de37547bec9d60f2187043c63a970d7e0e9222fe6fcd2e277bd30bdc",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/tests/test_filing_extraction.py",
+      "destination": "tests/test_filing_extraction.py",
+      "source_sha256": "d7fc55e6af0209481293d5251bb3c5bcdf3b6dec23054c8543f8626c82c2cd74",
+      "group_sha256": "d7fc55e6af0209481293d5251bb3c5bcdf3b6dec23054c8543f8626c82c2cd74",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/tests/test_reader_volumes.py",
+      "destination": "tests/test_reader_volumes.py",
+      "source_sha256": "199a2aa24bf507c4ad726eb999963793a8667dcfdd2f390439ee3c8999a72973",
+      "group_sha256": "199a2aa24bf507c4ad726eb999963793a8667dcfdd2f390439ee3c8999a72973",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/tests/test_insight_layout.py",
+      "destination": "tests/test_insight_layout.py",
+      "source_sha256": "78a322916491b1dab65eab1d6c8ed7010ed78151e1417bfe0a845a5b1fcbfd5e",
+      "group_sha256": "78a322916491b1dab65eab1d6c8ed7010ed78151e1417bfe0a845a5b1fcbfd5e",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/tests/desk_stub_llm.py",
+      "destination": "tests/desk_stub_llm.py",
+      "source_sha256": "127b3a1dc7ca2c102700da7f4674df2d6e7c13a21debf20c2f374159224859cc",
+      "group_sha256": "127b3a1dc7ca2c102700da7f4674df2d6e7c13a21debf20c2f374159224859cc",
+      "adapted": false
+    },
+    {
+      "source": "Repos/Analyst/tests/desk_all_roles_smoke.py",
+      "destination": "tests/desk_all_roles_smoke.py",
+      "source_sha256": "6396d8fa1e3b11d823989f46cf127e116a74d373376462d95ab3c500d6796304",
+      "group_sha256": "6396d8fa1e3b11d823989f46cf127e116a74d373376462d95ab3c500d6796304",
+      "adapted": false
+    },
+    {
+      "source": ".codex/hooks/tests/test_worksheet_numbers.py",
+      "destination": "hooks/tests/test_worksheet_numbers.py",
+      "source_sha256": "a6e87e7e278be8f0282f7bc40e4410b70fbd28edd24ae2d8f7d8913c93bb1e1a",
+      "group_sha256": "fb78d7c732d1419d479930fe73dcec367b08c862ea2cf82f87cf3503b1c0b07d",
+      "adapted": true
+    },
+    {
+      "source": ".codex/hooks/tests/test_worksheet_format.py",
+      "destination": "hooks/tests/test_worksheet_format.py",
+      "source_sha256": "fe9d2111555068583cf8351831aeabf997912d551a25d6dcd4b98be5df514fe1",
+      "group_sha256": "5a45ecd0de78facfc00a570fecdbb0854f98ea919101c771bcfe44d7140c3977",
+      "adapted": true
+    },
+    {
+      "source": ".codex/hooks/worksheet_gate.py",
+      "destination": "hooks/worksheet_gate.py",
+      "source_sha256": "5bb08605ff97c9e16d2536e39b0cb323e255921dbc325b0e465da0a2dce61b8c",
+      "group_sha256": "6d9ec9261a78e5e92c9fef21bed46ac6000311a8e5bfb02f6f8b278ffe04d52b",
+      "adapted": true
+    },
+    {
+      "source": "Repos/Analyst/tests/desk_tool_smoke.py",
+      "destination": "tests/desk_tool_smoke.py",
+      "source_sha256": "8ae4a577193a961139a43afce84fbef3b1858613db078a107a3d1b9f70c36784",
+      "group_sha256": "8ae4a577193a961139a43afce84fbef3b1858613db078a107a3d1b9f70c36784",
+      "adapted": false
+    }
+  ]
+}

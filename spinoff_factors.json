@@ -1,0 +1,38 @@
+{
+  "window_days": 365,
+  "early_return_days": 20,
+  "factors": {
+    "insider_ownership": {
+      "weight": 0.25,
+      "direction": "higher"
+    },
+    "relative_size": {
+      "weight": 0.2,
+      "direction": "lower"
+    },
+    "insider_buying": {
+      "weight": 0.15,
+      "direction": "higher"
+    },
+    "early_return": {
+      "weight": 0.125,
+      "direction": "lower"
+    },
+    "debt_to_assets": {
+      "weight": 0.15,
+      "direction": "lower"
+    },
+    "market_cap": {
+      "weight": 0.1,
+      "direction": "lower"
+    },
+    "analyst_count": {
+      "weight": 0,
+      "direction": "lower"
+    },
+    "unwanted_selling": {
+      "weight": 0,
+      "direction": "higher"
+    }
+  }
+}

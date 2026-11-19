@@ -50,9 +50,12 @@ def row_for(run, now, offline=False):
             raise ValueError("no saved filing acceptance time")
         filed = datetime.fromisoformat(named["accepted"]).replace(tzinfo=eastern())
     direction = view.get("direction", "not computed")
+    direction = {"more than the price": "up", "less than the price": "down",
+                 "equal to the price": "flat"}.get(direction, direction)
     if direction not in ("up", "down", "flat", "not computed"):
         raise ValueError("view direction must be up, down, flat, or not computed")
-    viewed = stamp(view["time"]) if view.get("time") else None
+    view_time = view.get("view_time") or view.get("time")
+    viewed = stamp(view_time) if view_time else None
     if direction != "not computed" and viewed is None:
         raise ValueError("computed view has no timestamp")
     before, after = close_window(filed)

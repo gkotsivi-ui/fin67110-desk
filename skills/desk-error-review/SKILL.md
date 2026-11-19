@@ -1,6 +1,6 @@
 ---
 name: desk-error-review
-description: Review saved fin67110-desk research runs against SEC evidence and prior error reports. Produce separate human error reports and AI repair prompts without changing the desk or saved runs.
+description: Review saved fin67110-desk research runs against SEC evidence and prior error reports. Append human error reports and AI prompts without changing original research artifacts.
 ---
 
 # Desk error review
@@ -10,7 +10,7 @@ Read `AGENTS.md` first. Run from the repository root with its virtual-environmen
 
 ## Review a saved run
 
-Accept the run folder and previous-report folder. Use `docs/live-record-errors` as the default history.
+Accept the run folder and previous-report folder. Use `runs/live` as the default history and search its run folders.
 Keep live and practice records separate. Use the established record number; require one for a new record.
 
 Use saved evidence first. Do not rerun, stop, repair, or edit the desk during a review.
@@ -32,7 +32,7 @@ Inspect verification, skill, hook, and runtime evidence. The examples do not lim
 For a configured provider, run:
 
 ```bash
-.venv/bin/python desk_error_review.py RUN_FOLDER --history HISTORY_FOLDER --model
+.venv-desk/bin/python desk_error_review.py RUN_FOLDER --history HISTORY_FOLDER --model
 ```
 
 This sends only allowlisted saved evidence through the existing desk model adapter. It can incur provider charges.
@@ -43,7 +43,7 @@ Read [references/proposals.md](references/proposals.md) for the contract and evi
 Then run:
 
 ```bash
-.venv/bin/python desk_error_review.py RUN_FOLDER --history HISTORY_FOLDER --proposals PROPOSALS_JSON --model-name ACTUAL_MODEL_NAME
+.venv-desk/bin/python desk_error_review.py RUN_FOLDER --history HISTORY_FOLDER --proposals PROPOSALS_JSON --model-name ACTUAL_MODEL_NAME
 ```
 
 Use `--record-number N` when no established record exists. Add `--practice` for a practice run.
@@ -62,7 +62,9 @@ For each error, state its type, stage, description, and cause. Include observed 
 Use exact saved line references. Label suspected causes. State `Unknown` or `Effect unknown` when appropriate.
 Do not certify a report as correct because no error was found.
 
-The command writes a shared findings JSON, a human report, and one AI prompt outside the original run.
+The command appends the human report and AI prompt directly inside the selected run folder.
+It writes shared findings JSON outside the run, under `docs/error-review-findings`.
+Never change original reports, filings, facts, logs, views, or timestamps. Only append new review reports or numbered revisions.
 Both reports share identifiers and classifications. Existing reports receive numbered revisions and remain unchanged.
 The AI prompt groups unconfirmed errors with their evidence and uncertainty. Do not make a separate investigation prompt.
 Only confirmed entries receive proposed correction tests and completion conditions.
@@ -75,9 +77,9 @@ Do not claim human source verification. Use the course footer with the tools act
 ## Validation and page
 
 ```bash
-.venv/bin/python -m unittest discover -s tests
-.venv/bin/python live_record.py --offline --no-save
-.venv/bin/python error_review_evaluation.py
+.venv-desk/bin/python -m unittest discover -s tests
+.venv-desk/bin/python live_record.py --offline --no-save
+.venv-desk/bin/python error_review_evaluation.py
 ```
 
 The evaluation uses labelled synthetic practice runs. It does not establish live or model semantic accuracy.

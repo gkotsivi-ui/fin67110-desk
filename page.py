@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""The agent team's page (Lab 05). Enter a ticker or screen and press Run. The page calls the joined desk command
-and shows its progress and final report.
+"""The group desk page. Enter a ticker or screen. The page calls this repository's desk.py
+and shows its progress and verified report.
 
 Start it:  python page.py
 Or double-click start_page.bat (Windows) or start_page.command (Mac). The page opens in your browser.
@@ -12,7 +12,6 @@ from __future__ import annotations
 import argparse
 from datetime import date
 import html
-from importlib.util import find_spec
 import json
 import os
 import re
@@ -31,28 +30,26 @@ import markdown
 
 ROOT = Path(__file__).resolve().parent
 OUTPUT = ROOT / "output"
-DESK_COMMAND = ROOT.parent / "Analyst" / "desk.py"
+DESK_COMMAND = ROOT / "desk.py"
 NODES = ["inputs", "seeker", "pick", "team", "worksheet", "final report"]
 
 
-def joined_runs() -> Path:
-    return DESK_COMMAND.parent / "runs"
 TICKER = re.compile(r"[A-Za-z][A-Za-z0-9.\-]{0,15}")
 FILED = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
 PORT = 8765
 
 
 class Run:
-    """One run of the joined desk. Its output is kept line by line for the page."""
+    """One run of the group pipeline. Its output is kept line by line for the page."""
 
     def __init__(self, args: list[str]) -> None:
         self.args = args
         self.lines: list[str] = []
         self.code: int | None = None
-        self.final_report = ""
+        self.verified = ""
         self.lock = threading.Lock()
         env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUNBUFFERED="1")
-        self.process = subprocess.Popen([sys.executable, "-u", str(DESK_COMMAND), *args], cwd=DESK_COMMAND.parent, env=env,
+        self.process = subprocess.Popen([sys.executable, "-u", str(DESK_COMMAND), *args], cwd=ROOT, env=env,
                                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
         threading.Thread(target=self.read, daemon=True).start()
 
@@ -62,7 +59,7 @@ class Run:
             line = raw.rstrip("\r\n")
             found = re.match(r"Final report: (.+)$", line)
             if found:
-                self.final_report = found.group(1).strip()
+                self.verified = found.group(1).strip()
             with self.lock:
                 self.lines.append(line)
         self.code = self.process.wait()  # set after the last line, so a finished run has all its lines
@@ -80,8 +77,7 @@ REVIEW_JOB = None
 def review_folder(value: str) -> Path:
     """Review only saved runs under this repository, never arbitrary filesystem folders."""
     path = (ROOT / value).resolve()
-    allowed = [(ROOT / "runs/live").resolve(), (ROOT / "runs/practice").resolve(), OUTPUT.resolve(),
-               (joined_runs() / "live").resolve(), (joined_runs() / "practice").resolve()]
+    allowed = [(ROOT / "runs/live").resolve(), (ROOT / "runs/practice").resolve(), OUTPUT.resolve()]
     if not path.is_dir() or not any(base in path.parents for base in allowed):
         raise ValueError("Choose a run folder inside runs/live, runs/practice, or output.")
     return path
@@ -102,9 +98,8 @@ class ReviewJob:
         try:
             from desk_error_review import configured_model, review_run
             model = configured_model() if self.use_model else None
-            self.result = review_run(self.folder, ROOT / "docs/live-record-errors", self.number,
-                                     not any(base.resolve() in self.folder.parents
-                                             for base in (ROOT / "runs/live", joined_runs() / "live")),
+            self.result = review_run(self.folder, ROOT / "runs/live", self.number,
+                                     (ROOT / "runs/live").resolve() not in self.folder.parents,
                                      ROOT, model=model)
         except Exception as exc:
             # Do not send provider errors or credentials to the browser.
@@ -114,7 +109,7 @@ class ReviewJob:
 
 
 def arguments(body: dict[str, Any]) -> tuple[list[str], str]:
-    """Build the joined command's arguments from the form."""
+    """Arguments for this repository's complete pipeline, never another project."""
     ticker = str(body.get("ticker", "")).strip().upper()
     if not TICKER.fullmatch(ticker):
         return [], "Type a ticker or screen."
@@ -132,16 +127,24 @@ def arguments(body: dict[str, Any]) -> tuple[list[str], str]:
         except ValueError:
             return [], "The seeker start date is YYYY-MM-DD."
         args += ["--refresh-screen", refresh]
+    registry = str(body.get("registry", "")).strip()
+    if registry:
+        path = (ROOT / registry).resolve()
+        if ROOT.resolve() not in path.parents or not path.is_file() or path.suffix != ".json":
+            return [], "Select a saved registry JSON inside this repository."
+        args += ["--registry", str(path)]
     filed = str(body.get("filed", "")).strip()
     if filed:
         if not FILED.fullmatch(filed):
             return [], "The filing time is YYYY-MM-DDTHH:MM:SS, in Eastern time."
         args += ["--filed", filed]
+    if body.get("live") is True:
+        args += ["--live"]
     return args, ""
 
 
 def safe_report(relative: str) -> Path | None:
-    """Allow legacy Markdown reports and sealed joined desk final reports."""
+    """The report file, when it is a Markdown file inside the output folder; None for any other path."""
     try:
         path = (ROOT / relative).resolve()
     except (OSError, ValueError):
@@ -150,10 +153,13 @@ def safe_report(relative: str) -> Path | None:
         return None
     if OUTPUT.resolve() in path.parents:
         return path
-    allowed = [(joined_runs() / kind).resolve() for kind in ("live", "practice")]
-    if path.name == "final_report.md" and path.parent.parent in allowed:
+    roots = [(ROOT / "runs" / kind).resolve() for kind in ("live", "practice")]
+    if (path.parent.parent in roots and path.name in {"report.md", "verified_report.md"}
+            and not (path.parent / "desk_run.json").exists()):
+        return path
+    if path.parent.parent in roots and path.name == "final_report.md":
         try:
-            state = json.loads((path.parent / "desk_run.json").read_text(encoding="utf-8"))
+            state = json.loads((path.parent / "desk_run.json").read_text())
             if state.get("status") == "complete" and state.get("final_report") == path.name:
                 return path
         except (OSError, ValueError, AttributeError):
@@ -162,11 +168,11 @@ def safe_report(relative: str) -> Path | None:
 
 
 def report_link(printed: str) -> str:
-    """Convert the printed final report path to a link for the page."""
+    """The verified report's path as team.py printed it, made relative to this folder for the page."""
     if not printed:
         return ""
     path = safe_report(printed)
-    return Path(os.path.relpath(path, ROOT)).as_posix() if path else ""
+    return path.relative_to(ROOT.resolve()).as_posix() if path else ""
 
 
 def render(path: Path) -> str:
@@ -327,8 +333,9 @@ class Page(BaseHTTPRequestHandler):
             return
         path = Path(job.result["outputs"][key])
         # Serve only the exact output of the current review, not a user-supplied path.
-        folder = (ROOT / ("docs/live-record-errors" if key == "human" else "docs/ai-error-prompts")).resolve()
-        if path.resolve().parent != folder or path.suffix != ".md":
+        prefix = "Error Documentation " if key == "human" else "AI Error Prompt "
+        if (path.is_symlink() or path.resolve().parent != job.folder.resolve()
+                or path.suffix != ".md" or not path.name.startswith(prefix)):
             self.send_json({"error": "Invalid review output."}, HTTPStatus.NOT_FOUND)
             return
         body = path.read_bytes()
@@ -367,7 +374,7 @@ class Page(BaseHTTPRequestHandler):
                     with run.lock:
                         finished = sent >= len(run.lines)
                     if finished:
-                        end = {"code": run.code, "final_report": report_link(run.final_report) if run.code == 0 else ""}
+                        end = {"code": run.code, "verified": report_link(run.verified) if run.code == 0 else ""}
                         self.wfile.write(f"id: {sent}\nevent: done\ndata: {json.dumps(end)}\n\n".encode("utf-8"))
                         self.wfile.flush()
                         return
@@ -391,29 +398,25 @@ class Page(BaseHTTPRequestHandler):
                 newest = reports[-1]
                 found.append({"name": folder.name, "path": newest.relative_to(ROOT).as_posix(), "time": newest.stat().st_mtime})
         for kind in ("live", "practice"):
-            for report in (joined_runs() / kind).glob("*/final_report.md"):
-                link = report_link(str(report))
-                if link:
-                    found.append({"name": report.parent.name, "path": link, "time": report.stat().st_mtime})
+            for folder in (ROOT / "runs" / kind).glob("*"):
+                if not folder.is_dir():
+                    continue
+                # Joined runs publish only the final report. Historical team-only records remain readable.
+                name = "final_report.md" if (folder / "desk_run.json").exists() else "verified_report.md"
+                report = safe_report(str(folder / name))
+                if report:
+                    found.append({"name": folder.name, "path": report.relative_to(ROOT.resolve()).as_posix(), "time": report.stat().st_mtime})
         found.sort(key=lambda r: r["time"], reverse=True)
         self.send_json(found[:60])
 
     def route_setup(self, query: dict[str, list[str]]) -> None:
-        """Check the joined desk's local setup without contacting providers."""
-        lines = []
-        if not DESK_COMMAND.is_file():
-            lines.append("FIX   Put the Analyst and fin67110-desk repositories side by side.")
-        missing = [name for name in ("dotenv", "crewai", "bs4", "requests") if find_spec(name) is None]
-        if missing:
-            lines.append("FIX   Install Analyst/requirements.txt in the Python environment that starts this page.")
-        elif DESK_COMMAND.is_file():
-            from dotenv import dotenv_values
-
-            config = dotenv_values(DESK_COMMAND.parent / ".env")
-            for key in ("SEC_USER_AGENT", "API_KEY"):
-                if not str(config.get(key) or "").strip():
-                    lines.append(f"FIX   Set {key} in Analyst/.env.")
-        self.send_json({"ok": not lines, "lines": lines})
+        """check_env.py without its network checks, so the page can say what to fix before a run."""
+        try:
+            done = subprocess.run([sys.executable, str(ROOT / "check_pipeline.py")], cwd=ROOT, capture_output=True, text=True,
+                                  encoding="utf-8", errors="replace", timeout=60, env=dict(os.environ, PYTHONIOENCODING="utf-8"))
+            self.send_json({"ok": done.returncode == 0, "lines": [line for line in done.stdout.splitlines() if line.strip()]})
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            self.send_json({"ok": False, "lines": [f"FIX   check_env.py did not run: {exc}"]})
 
 
 PAGE = """<!doctype html>
@@ -478,18 +481,19 @@ pre.log { max-height: 320px; overflow: auto; background: var(--bg); border: 1px 
 <body>
 <main>
 <h1>Equity research desk</h1>
-<p class="sub">Enter screen to use the top ticker from the latest saved seeker report. A start date refreshes that report first.</p>
+<p class="sub">Run this repository's seeker, team, worksheet, and blocking hook from one command.</p>
 <div id="setup" class="setup" hidden></div>
 
 <section class="card">
-<h2>Run the joined desk</h2>
+<h2>Run the group desk</h2>
 <form id="form" autocomplete="off">
 <div class="row">
-<div><label for="ticker">Ticker or screen</label><input id="ticker" required maxlength="16" placeholder="Ticker or screen"></div>
+<div><label for="ticker">Ticker or screen</label><input id="ticker" required maxlength="16" placeholder="Ticker"></div>
 <div><label for="peers">Peers <span>optional, with commas</span></label><input id="peers" maxlength="120" placeholder="Separate tickers with commas"></div>
-<div><label for="refresh-screen">Refresh seeker <span>optional start date</span></label><input id="refresh-screen" type="date"></div>
+<div><label for="refresh-screen">Refresh seeker <span>distribution start date</span></label><input id="refresh-screen" type="date"></div><div><label for="registry">Saved registry <span>optional local JSON path</span></label><input id="registry" placeholder="runs/practice/SAVED_RUN/registry.json"></div>
 <div><label for="filed">Filing time <span>optional, Eastern</span></label><input id="filed" maxlength="19" placeholder="YYYY-MM-DDTHH:MM:SS"></div>
 </div>
+<p><label><input id="live-run" type="checkbox" style="width:auto"> Save as a live record</label></p><p class="hint">For a fresh clone, provide a seeker start date. Otherwise select a saved local registry.</p>
 <div class="buttons">
 <button id="run" type="submit">Run</button>
 <button id="stop" type="button" class="quiet" disabled>Stop</button>
@@ -514,7 +518,7 @@ pre.log { max-height: 320px; overflow: auto; background: var(--bg); border: 1px 
 </section>
 <section class="card">
 <h2>Review a saved run</h2>
-<p class="hint">Review evidence without changing the run. Findings do not authorize repairs.</p>
+<p class="hint">Save review reports in the run folder while preserving its original research files. Findings do not authorize repairs.</p>
 <form id="review-form">
 <div class="row">
 <div><label for="review-folder">Saved run folder</label><input id="review-folder" required placeholder="runs/live/TICKER_timestamp"></div>
@@ -567,13 +571,13 @@ function listen() {
   source.addEventListener('line', (e) => {
     const line = JSON.parse(e.data);
     const log = $('#log'); log.textContent += line + '\\n'; log.scrollTop = log.scrollHeight;
-    const part = line.match(/^Part starting: (.+)$/); if (part) reached(part[1]);
+    const part = line.match(/^Part starting: (.+)$/); if (part && NODES.includes(part[1])) reached(part[1]);
   });
   source.addEventListener('done', async (e) => {
     source.close(); source = null; busy(false);
     document.querySelectorAll('#graph li.now').forEach((li) => { li.classList.remove('now'); li.classList.add('ran'); });
     const end = JSON.parse(e.data);
-    if (end.code === 0 && end.final_report) { say('The run completed. The final report is below.', 'ok'); await saved(); showReport(end.final_report); }
+    if (end.code === 0 && end.verified) { say('The run completed. The final report is below.', 'ok'); await saved(); showReport(end.verified); }
     else {
       const last = $('#log').textContent.trim().split('\\n').slice(-6).join('\\n');
       say(`The run stopped (exit code ${end.code}). Its last lines:\\n${last}`, 'bad');
@@ -614,7 +618,7 @@ async function setup() {
 
 $('#form').addEventListener('submit', async (e) => {
   e.preventDefault(); say('', ''); $('#message').style.whiteSpace = '';
-  const body = { ticker: $('#ticker').value, peers: $('#peers').value, refresh_screen: $('#refresh-screen').value, filed: $('#filed').value };
+  const body = { ticker: $('#ticker').value, peers: $('#peers').value, refresh_screen: $('#refresh-screen').value, registry: $('#registry').value, live: $('#live-run').checked, filed: $('#filed').value };
   const r = await fetch('/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   const answer = await r.json();
   if (!r.ok) { say(answer.error, 'bad'); return; }
@@ -665,7 +669,7 @@ async function pollReview() {
     const r = await fetch('/review/status'); const state = await r.json();
     if (!state.done) { setTimeout(pollReview, 1000); return; }
     $('#review-start').disabled = false;
-    $('#review-message').textContent = state.error || 'Review complete. Original run files were preserved.';
+    $('#review-message').textContent = state.error || 'Review complete. Reports are in the run folder. Original research files were preserved.';
     if (state.result) { showReview(state.result); $('#review-downloads').hidden = false; }
   } catch (error) { $('#review-message').textContent = 'Cannot read review status.'; $('#review-start').disabled = false; }
 }
@@ -678,7 +682,7 @@ $('#review-form').addEventListener('submit', async (e) => {
       body: JSON.stringify({folder: $('#review-folder').value, record_number: $('#review-number').value, model: $('#review-model').checked}) });
     const response = await r.json();
     if (!r.ok) { $('#review-message').textContent = response.error; $('#review-start').disabled = false; return; }
-    $('#review-message').textContent = 'Review in progress. The saved run will remain unchanged.';
+    $('#review-message').textContent = 'Review in progress. Original research files will remain unchanged.';
     pollReview();
   } catch (error) { $('#review-message').textContent = 'Cannot start the review.'; $('#review-start').disabled = false; }
 });
@@ -695,7 +699,7 @@ $('#review-form').addEventListener('submit', async (e) => {
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Lab 05: run the joined desk and read the final report")
+    parser = argparse.ArgumentParser(description="Run the local group pipeline and read the final report")
     parser.add_argument("--port", type=int, default=PORT, help=f"The port to listen on (default {PORT}; the next free one if it is taken)")
     parser.add_argument("--no-browser", action="store_true", help="Do not open the browser")
     args = parser.parse_args()

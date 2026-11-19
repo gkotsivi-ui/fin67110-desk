@@ -19,31 +19,54 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import page  # noqa: E402
+import desk  # noqa: E402
 
 
 class FormTests(unittest.TestCase):
-    def test_the_form_becomes_desk_arguments(self) -> None:
-        args, problem = page.arguments({"ticker": " screen ", "peers": "peer, oth",
-                                        "refresh_screen": "2026-01-01", "filed": "2026-10-06T21:13:15"})
-        self.assertEqual((args, problem), (["screen", "--peers", "PEER", "OTH", "--refresh-screen",
-                                            "2026-01-01", "--filed", "2026-10-06T21:13:15"], ""))
-        self.assertEqual(page.arguments({"ticker": "EXM"}), (["EXM"], ""))
+    def test_local_final_report_requires_complete_pipeline_status(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder).resolve()
+            run = root / 'runs/practice/EXM'
+            run.mkdir(parents=True)
+            final = run / 'final_report.md'
+            final.write_text('# Final report\n')
+            intermediate = run / 'verified_report.md'
+            intermediate.write_text('# Intermediate\n')
+            state = run / 'desk_run.json'
+            with mock.patch.object(page, 'ROOT', root), mock.patch.object(page, 'OUTPUT', root / 'output'):
+                state.write_text(json.dumps({'status': 'failed', 'final_report': final.name}))
+                self.assertIsNone(page.safe_report(str(final)))
+                self.assertIsNone(page.safe_report(str(intermediate)))
+                state.write_text(json.dumps({'status': 'complete', 'final_report': final.name}))
+                self.assertEqual(page.safe_report(str(final)), final)
 
-    def test_run_invokes_joined_command_and_reads_final_path(self) -> None:
-        process = mock.Mock(stdout=iter(["Verified report: intermediate.md\n", "Final report: final_report.md\n"]))
-        process.wait.return_value = 0
+    def test_run_uses_only_this_repositorys_pipeline(self) -> None:
+        process = mock.Mock(stdout=iter([]))
         with mock.patch.object(page.subprocess, "Popen", return_value=process) as popen, \
              mock.patch.object(page.threading, "Thread"):
-            run = page.Run(["screen"])
-            run.read()
-        self.assertEqual(popen.call_args.args[0], [sys.executable, "-u", str(page.DESK_COMMAND), "screen"])
-        self.assertEqual(popen.call_args.kwargs["cwd"], page.DESK_COMMAND.parent)
-        self.assertEqual(run.final_report, "final_report.md")
-        self.assertEqual(run.code, 0)
+            page.Run(["EXM"])
+        self.assertEqual(popen.call_args.args[0], [sys.executable, "-u", str(ROOT / "desk.py"), "EXM"])
+        self.assertEqual(popen.call_args.kwargs["cwd"], ROOT)
+
+    def test_other_repository_reports_and_reviews_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "verified_report.md"
+            path.write_text("# External report\n")
+            self.assertIsNone(page.safe_report(str(path)))
+            with self.assertRaises(ValueError):
+                page.review_folder(folder)
+
+    def test_the_page_lists_the_graphs_nodes_in_order(self) -> None:
+        self.assertEqual(page.NODES, ["inputs", "seeker", "pick", "team", "worksheet", "final report"])
+
+    def test_the_form_becomes_local_pipeline_arguments(self) -> None:
+        args, problem = page.arguments({"ticker": " exm ", "peers": "peer, oth", "refresh_screen": "2026-01-01", "filed": "2026-10-06T21:13:15"})
+        self.assertEqual((args, problem), (["EXM", "--peers", "PEER", "OTH", "--refresh-screen", "2026-01-01", "--filed", "2026-10-06T21:13:15"], ""))
+        self.assertEqual(page.arguments({"ticker": "EXM"}), (["EXM"], ""))
 
     def test_a_bad_form_says_what_is_wrong(self) -> None:
         for body, words in (({"ticker": ""}, "Type a ticker"), ({"ticker": "EXM; rm"}, "Type a ticker"),
-                            ({"ticker": "EXM", "peers": "A,B C"}, "Peers are tickers"), ({"ticker": "screen", "refresh_screen": "2026-02-30"}, "YYYY-MM-DD"),
+                            ({"ticker": "EXM", "peers": "A,B C"}, "Peers are tickers"), ({"ticker": "EXM", "refresh_screen": "2026-02-30"}, "YYYY-MM-DD"),
                             ({"ticker": "EXM", "filed": "2026-10-06 21:13"}, "YYYY-MM-DDTHH:MM:SS")):
             args, problem = page.arguments(body)
             self.assertEqual(args, [])
@@ -83,7 +106,7 @@ class ServerTests(unittest.TestCase):
     def test_the_page_and_its_saved_runs(self) -> None:
         status, text = self.ask("GET", "/")
         self.assertEqual(status, 200)
-        self.assertIn("Run the joined desk", text)
+        self.assertIn("Run the group desk", text)
         self.assertIn(json.dumps(page.NODES), text)
         status, text = self.ask("GET", "/runs")
         self.assertEqual(status, 200)
@@ -105,22 +128,6 @@ class ServerTests(unittest.TestCase):
         self.assertNotIn("<script>", text)
         self.assertIn("&lt;script&gt;", text)
 
-    def test_joined_final_report_is_served_only_after_completion(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            desk = Path(tmp) / "desk.py"
-            folder = desk.parent / "runs/practice/EXM_example"
-            folder.mkdir(parents=True)
-            report = folder / "final_report.md"
-            report.write_text("Filings read: example\n\n## Worksheet view and evidence")
-            with mock.patch.object(page, "DESK_COMMAND", desk):
-                self.assertEqual(self.ask("GET", f"/report?path={report}")[0], 404)
-                (folder / "desk_run.json").write_text(json.dumps({
-                    "status": "complete", "final_report": report.name,
-                }))
-                status, rendered = self.ask("GET", f"/report?path={report}")
-                self.assertEqual(status, 200)
-                self.assertIn("<h2>Worksheet view and evidence</h2>", rendered)
-
     def test_another_website_cannot_start_a_run(self) -> None:
         body = json.dumps({"ticker": "EXM"})
         with mock.patch.object(page, "Run") as run:
@@ -135,6 +142,14 @@ class ServerTests(unittest.TestCase):
             run.assert_not_called()
         self.assertEqual(status, 400)
         self.assertIn("Type a ticker", json.loads(text)["error"])
+
+    def test_setup_uses_local_configuration_check(self) -> None:
+        done = mock.Mock(returncode=0, stdout="ok local setup\n")
+        with mock.patch.object(page.subprocess, "run", return_value=done) as run:
+            status, _ = self.ask("GET", "/setup")
+        self.assertEqual(status, 200)
+        self.assertEqual(run.call_args.args[0][1], str(ROOT / "check_pipeline.py"))
+        self.assertEqual(run.call_args.kwargs["cwd"], ROOT)
 
 
 if __name__ == "__main__":

@@ -9,6 +9,20 @@ from hit_rate import close_window, row_for, stamp
 
 
 class HitRateTests(unittest.TestCase):
+    def test_group_worksheet_schema_is_scored_without_changing_view(self):
+        run, _, _, _ = self.run_case("2026-11-27T12:00:00-05:00", offline=True)
+        path = run / 'view.json'
+        view = json.loads(path.read_text())
+        view['view_time'] = view.pop('time')
+        view['direction'] = 'more than the price'
+        path.write_text(json.dumps(view))
+        before = path.read_bytes()
+        rows = [(datetime(2026, 11, 25).date(), 100), (datetime(2026, 11, 27).date(), 110)]
+        with patch('hit_rate.closes.read', return_value=(rows, 'synthetic source')):
+            fields, score = row_for(run, stamp('2026-11-30T17:00:00-05:00'))
+        self.assertTrue(score)
+        self.assertEqual(fields[3], 'up')
+        self.assertEqual(before, path.read_bytes())
     def test_holiday_early_close_and_weekend(self):
         before, after = close_window(stamp("2026-11-25T17:00:00-05:00"))
         self.assertEqual(before.isoformat(), "2026-11-25T21:00:00+00:00")

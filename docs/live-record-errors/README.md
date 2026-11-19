@@ -1,16 +1,22 @@
 # Live-record error documentation
 
-The review command is `desk_error_review.py`. It creates a human report here, an AI prompt under
-`docs/ai-error-prompts`, and shared findings under `docs/error-review-findings`. Group both reports into
+The review command is `desk_error_review.py`. It saves both the human report and AI prompt directly
+inside the corresponding run folder under `runs/live/`. Shared findings remain under
+`docs/error-review-findings`. This folder retains format instructions, not live-run reports. Group both reports into
 **Confirmed errors** and **Unconfirmed errors**. Keep unknown causes separate from error status.
 Preserve existing files and save numbered revisions. A prompt does not authorize a repair.
 
-Keep one error documentation file per live record in this folder, separate from the saved run artifacts.
+Keep each live record's error documentation beside its saved research artifacts in that record's folder.
 Name it `Error Documentation [Company name, live record number].md`, replacing the bracketed contents
 with the actual company name and live record number. Use the same wording as the document title.
 Use the record's established number; if none exists, assign the next unused sequential number in this
-folder and record the saved run path so that the association is unambiguous. Different runs of the same
+live-record history and record the saved run path so that the association is unambiguous. Different runs of the same
 company receive separate files.
+
+Name the AI companion `AI Error Prompt [Company name, live record number].md`.
+History discovery searches `runs/live` recursively. Preserve existing contents when moving historical
+reports. The migration manifest is `docs/error-review-report-migration.json`. A missing historical AI
+companion can be generated from the existing human report if it states that no new factual review occurred.
 
 Document observed errors without fixing them or changing the saved report, filings, facts, or logs.
 Let the live run proceed according to its existing behavior. If it stops, preserve that result and

@@ -1,0 +1,68 @@
+{
+  "price_filed": null,
+  "price_currency": null,
+  "liquidity": {
+    "start": null,
+    "end": null,
+    "purchase_size": null,
+    "currency": "USD"
+  },
+  "insider_start": null,
+  "insider_end": null,
+  "facts": {
+    "after_tax_earnings": {
+      "file": "10-K.txt",
+      "section": null,
+      "end_section": null,
+      "pattern": null,
+      "period": null,
+      "kind": null,
+      "unit": "USD",
+      "scale": 1
+    },
+    "depreciation": {
+      "file": "10-K.txt",
+      "section": null,
+      "end_section": null,
+      "pattern": null,
+      "period": null,
+      "kind": null,
+      "unit": "USD",
+      "scale": 1
+    },
+    "capital_spending": {
+      "file": "10-K.txt",
+      "section": null,
+      "end_section": null,
+      "pattern": null,
+      "period": null,
+      "kind": null,
+      "unit": "USD",
+      "scale": 1
+    },
+    "shares_outstanding": {
+      "file": "10-K.txt",
+      "section": null,
+      "end_section": null,
+      "pattern": null,
+      "period": null,
+      "kind": null,
+      "unit": "shares",
+      "scale": 1
+    }
+  },
+  "valuation": {
+    "low": {
+      "formula": null,
+      "rates": {}
+    },
+    "mid": {
+      "formula": null,
+      "rates": {}
+    }
+  },
+  "conviction": {
+    "high_if": null,
+    "parameters": {}
+  }
+}

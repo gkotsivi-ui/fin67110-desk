@@ -1,0 +1,3 @@
+interface:
+  display_name: "Spinoff Worksheet"
+  short_description: "Build sourced worksheets from saved equity runs"

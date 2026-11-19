@@ -6,6 +6,16 @@ source of truth: https://cinderzhang.github.io/FIN67110-Fall2026/ (project, grad
 
 ## Hard rules
 
+**Repository independence.** This project must run without any neighboring project repository.
+Do not launch its commands, import its code, read its credentials, or serve its run files.
+Use this repository's team, configuration, and run folders. Do not connect it to `Analyst`.
+The user authorized independent copies of the personal pipeline and its dependencies on 2026-11-19.
+The main group command is now `desk.py`; its skills and hook helpers are versioned here. Copied
+authored factors, methods, and personas remain unchanged. Keep the original LangGraph team available
+for historical records. Use `.venv-desk` (Python 3.13) for the full pipeline and its combined tests.
+For group seeker and worksheet work, use the copies under this repository's `skills/` folder, not the
+workspace-installed versions that target the personal project. `desk_sources.skill` enforces local loading.
+
 1. **Secrets.** Keys, names and emails live only in `.env`, which is never committed. Before every push, show
    the team what is going public and scan it for keys. Ask before you create or change anything on GitHub.
 2. **Licensed data.** Never read, print or paste WRDS (CRSP, Compustat) values into a session or a model
@@ -38,8 +48,10 @@ source of truth: https://cinderzhang.github.io/FIN67110-Fall2026/ (project, grad
 
 ## Live-record error documentation
 
-For each live record, create a separate Markdown file in `docs/live-record-errors/`, following that
-folder's README. Observe and document errors; do not fix them unless the user asks. Preserve the live
+For each live record, save its human error report and AI prompt directly inside that record's folder
+under `runs/live/`. See `docs/live-record-errors/README.md` for the report format. Append new reports or
+numbered revisions; never overwrite existing reports. Observe and document errors; do not fix them unless
+the user asks. Preserve the live
 run's original files and results. Let the run continue where its existing behavior permits; do not bypass
 an existing stop or failure to force completion. Document stopped and incomplete runs too.
 
