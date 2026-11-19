@@ -7,7 +7,7 @@
       "source": "Repos/Analyst/desk.py",
       "destination": "desk.py",
       "source_sha256": "ee986a23faa992019ae3b967653fd653413714f25084cdb4a17c2e28d959bc7e",
-      "group_sha256": "15ccbb0f9c194ef079c32b9fbb2b2ddeab7b646d7cfbdf4b87d2c5fcf2687443",
+      "group_sha256": "0a137b4f52a141f568f2d5c2cdc84ad04a438e6c40e0249284c1963981d14798",
       "adapted": true
     },
     {
@@ -21,7 +21,7 @@
       "source": "Repos/Analyst/desk_hook.py",
       "destination": "desk_hook.py",
       "source_sha256": "8d581537beceaeb60fcadb0ee0e625e6ad4501aa2fd379235f085986d29b23ea",
-      "group_sha256": "5cc4f1bdf999a0d5d30c7d4d2115abfea044d19c302ce369388920f0857c7cdd",
+      "group_sha256": "b056e9e64fd52d148f924b4879945f4cd684eb8a677d2fcc525cd38a867db565",
       "adapted": true
     },
     {
@@ -238,7 +238,7 @@
       "source": ".agents/skills/spinoff-worksheet/SKILL.md",
       "destination": "skills/spinoff-worksheet/SKILL.md",
       "source_sha256": "8d1249c081f5d0ee5312434adfc8a06ed599f8959420f237b71aacf846f59aa1",
-      "group_sha256": "039d30bcbc1fbbe9a477e4b88d906033fbdc09844e63a48f223b1a8b8a2fb79b",
+      "group_sha256": "7513cf7efe2a5654a2943c6a51aa2dfb71744356af193002710d0df9ee2b9849",
       "adapted": true
     },
     {
@@ -259,15 +259,15 @@
       "source": ".agents/skills/spinoff-worksheet/tests/test_worksheet.py",
       "destination": "skills/spinoff-worksheet/tests/test_worksheet.py",
       "source_sha256": "0bb4f98623f4972ca95183194bf5c4dcc51df1e7ea75e42f53767bf45aaadf59",
-      "group_sha256": "0bb4f98623f4972ca95183194bf5c4dcc51df1e7ea75e42f53767bf45aaadf59",
-      "adapted": false
+      "group_sha256": "c09c548b8274e103489647152ae002d1c197bd50d3bba231b00a5007b4a07fbd",
+      "adapted": true
     },
     {
       "source": ".agents/skills/spinoff-worksheet/tests/test_markdown_rules.py",
       "destination": "skills/spinoff-worksheet/tests/test_markdown_rules.py",
       "source_sha256": "5cbab92e915745399e5bf04cb29a1c1ba367a2446beebaeeac4c05985b87e2d2",
-      "group_sha256": "5cbab92e915745399e5bf04cb29a1c1ba367a2446beebaeeac4c05985b87e2d2",
-      "adapted": false
+      "group_sha256": "221a0d58daaa1518b307a512ac6988fdce583047b4f26255bbb6be59eb070c37",
+      "adapted": true
     },
     {
       "source": ".agents/skills/spinoff-worksheet/agents/openai.yaml",
@@ -287,7 +287,7 @@
       "source": ".agents/skills/spinoff-worksheet/scripts/worksheet.py",
       "destination": "skills/spinoff-worksheet/scripts/worksheet.py",
       "source_sha256": "ea86a059f2fb51703add3c7fd2ba45e73d0cb2a1b837b1e4a443511075afa728",
-      "group_sha256": "2c19f2beb4721e8bd4856c816e7b5048ceb7982b012aadff96a51140f8fb1396",
+      "group_sha256": "72a907c462065219a74099e547d09b1d934715aa03b21d3477899580a2fc4d4d",
       "adapted": true
     },
     {
@@ -416,5 +416,11 @@
       "group_sha256": "8ae4a577193a961139a43afce84fbef3b1858613db078a107a3d1b9f70c36784",
       "adapted": false
     }
-  ]
+  ],
+  "group_only_files": [
+    "view_record.py"
+  ],
+  "group_only_hashes": {
+    "view_record.py": "87263c293c9d46e0260cc6f5bb54bc2c7d3fb7d0feb22184bade0bed5edf20e5"
+  }
 }

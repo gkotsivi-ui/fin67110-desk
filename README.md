@@ -105,13 +105,16 @@ A completed worksheet should save `view.json` in its run folder when the view is
 ```
 
 Directions are `up`, `down`, `flat`, or `not computed`; timestamps must include a UTC offset.
-The local worksheet now writes `view_time` and value-versus-price direction labels. The reader also accepts the older `time` schema. Do not backdate or reconstruct a
+Future worksheets write canonical `up`, `down`, `flat`, or `not computed`, a code-generated `time`,
+the compatible `view_time` alias, and an explicit `reaction_window`. Reports repeat the stored values.
+The reader still accepts older saved schemas without modifying them. Do not backdate or reconstruct a
 missing view from a recommendation or run start time. Existing reports without a saved view display
 `not computed`. When `filing_time` is absent, the command reads the earnings 8-K acceptance time from
 the saved report's first line; ticker can also come from `facts.json`.
 
+Use `--run RUN_FOLDER_NAME` to show only one run inside the folder you named.
 The command creates only a new `reaction.json` in each run once the reaction becomes available,
-recording both closes, session times, filing time, ticker, price source, and retrieval time. It never
+recording both closes, session times, filing time, ticker, price source, retrieval time, and the saved view hash. It never
 overwrites an existing reaction, view, report, or timestamp. `--offline` reads saved reactions and
 writes nothing. The saved price pair is recomputed in code for the table on every invocation.
 

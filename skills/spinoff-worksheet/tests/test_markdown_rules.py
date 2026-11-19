@@ -9,11 +9,11 @@ class MarkdownRulesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             run=Path(d)
             filed='2026-11-10T17:00:00-05:00'
-            (run/'filing_time.json').write_text(json.dumps({'effective_filed_eastern':filed}))
+            (run/'filing_time.json').write_text(json.dumps({'effective_filed_eastern':filed,'edgar_accepted':filed}))
             first=datetime.fromisoformat('2026-11-11T09:00:00-05:00')
-            w.freeze_view(run,'ZZZ','more than the price',first)
+            w.freeze_view(run,'ZZZ','more than the price',clock=lambda:first)
             path=run/'view.json';before=(path.read_bytes(),path.stat().st_mtime_ns)
-            w.freeze_view(run,'ZZZ','less than the price',datetime.fromisoformat('2026-11-11T17:00:00-05:00'))
+            w.freeze_view(run,'ZZZ','less than the price',clock=lambda:datetime.fromisoformat('2026-11-11T17:00:00-05:00'))
             self.assertEqual((path.read_bytes(),path.stat().st_mtime_ns),before)
             data=json.loads(path.read_text());self.assertEqual(data['view_time'],first.isoformat());self.assertEqual(data['filing_time'],filed)
 
@@ -22,7 +22,7 @@ class MarkdownRulesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             run=Path(d)
             (run/'Spinoff worksheet, earlier.json').write_text(json.dumps({'worksheet_time':'2026-11-11T09:00:00-05:00','view':{'direction':'not computed'}}))
-            w.freeze_view(run,'ZZZ','more than the price',datetime.fromisoformat('2026-11-11T17:00:00-05:00'))
+            w.freeze_view(run,'ZZZ','more than the price',clock=lambda:datetime.fromisoformat('2026-11-11T17:00:00-05:00'))
             self.assertFalse((run/'view.json').exists())
     def test_author_rules_are_read_without_overwriting_choices(self):
         path=w.ANALYST/'spinoff-rules.md'

@@ -36,27 +36,10 @@ def local_file(run,name):
     if not path.is_relative_to(run.resolve()):raise ValueError('Filing selector must stay inside the saved run')
     return path
 
-def freeze_view(run,ticker,direction,when):
-    """Publish the first view only; never replace an existing forecast or time."""
-    run=Path(run);path=run/'view.json'
-    if path.exists():return
-    for prior in run.glob('Spinoff worksheet*.json'):
-        if ', model ' in prior.name:continue
-        data=json.loads(prior.read_text())
-        if isinstance(data.get('view'),dict):return
-    evidence=json.loads((run/'filing_time.json').read_text()) if (run/'filing_time.json').exists() else {}
-    filed=evidence.get('effective_filed_eastern') or evidence.get('edgar_accepted')
-    payload={'ticker':ticker,'filing_time':filed,'view_time':when.isoformat(),'direction':direction,
-             'artifact_type':'live' if run.resolve().is_relative_to((ROOT/'runs/live').resolve()) else 'practice_run'}
-    # An exclusive atomic link keeps readers from seeing partial JSON and
-    # prevents a simultaneous worksheet from overwriting the first view.
-    import tempfile
-    with tempfile.NamedTemporaryFile(mode='w',dir=run,prefix='.view-',suffix='.tmp',delete=False) as stream:
-        json.dump(payload,stream,indent=2);temp=Path(stream.name)
-    try:
-        try:os.link(temp,path)
-        except FileExistsError:pass
-    finally:temp.unlink(missing_ok=True)
+def freeze_view(run,ticker,direction,*,clock=None):
+    recorder=load_module('worksheet_view_record',ROOT/'view_record.py')
+    return recorder.freeze_view(run,ticker,direction,
+                                clock=clock or (lambda:datetime.now(ZoneInfo('America/New_York'))))
 
 def measurement(run,spec):
     """A selector points to an exact section, period and named amount capture."""
@@ -395,8 +378,8 @@ def build(run,config,persona,registry,reader,model_call=judge_once,now=None):
     low=values['low']['value'];comparison={'price':price_value,'price_date':price.get('date') if isinstance(price,dict) else None,'price_source':price.get('source') if isinstance(price,dict) else None,'low_value':low,'difference':low-price_value if low is not None and price_value is not None else None,'comparison':'not computed'}
     if comparison['difference'] is not None:comparison['comparison']='more than the price' if low>price_value else 'less than the price' if low<price_value else 'equal to the price'
     comparison['percent_price_minus_low']=(price_value-low)/low*100 if price_value is not None and low not in (None,0) else None
-    view_time=datetime.now(ZoneInfo('America/New_York'))
-    freeze_view(run,ticker,comparison['comparison'],view_time)
+    saved_view=freeze_view(run,ticker,comparison['comparison'])
+    view_time=(saved_view.get('time') or saved_view.get('view_time')) if saved_view else None
     criteria=[];conditions={}
     if config.get('rules_format')=='author_markdown':
         scores_module=load_module('worksheet_evidence_scores',Path(__file__).with_name('evidence_scores.py'))
@@ -451,9 +434,10 @@ def build(run,config,persona,registry,reader,model_call=judge_once,now=None):
         if ob['value'] is None:missing.append(key+': '+ob.get('reason',UNKNOWN))
     if price_value is None:missing.append('requested close')
     if liq.get('reason'):missing.append('liquidity: '+liq['reason'])
-    view={'direction':comparison['comparison'],'time':view_time.isoformat(),'deciding_number':low if comparison['comparison']!='not computed' else None,'source':'; '.join(values['low'].get('sources',[]))}
+    view={'direction':saved_view.get('direction','not computed') if saved_view else 'not computed','time':view_time,'deciding_number':low if comparison['comparison']!='not computed' else None,'source':'; '.join(values['low'].get('sources',[]))}
     result={'ticker':ticker,'run':str(run),'worksheet_time':now.isoformat(),'facts':facts,'owner_cash_flow':ocf,'value_range':values,'price_vs_low':comparison,'judgment':judgment,'liquidity':liq,'view':view,'conviction':conviction,'not_known':missing,'judgment_attempts':1,'model_error_type':model_error_type,'model_error_message':model_error_message,'criteria_scores':criteria,'conviction_reason':conviction_reason,'worksheet_source':config.get('worksheet_source')}
-    result['view_time']=view_time.isoformat()
+    result['view_time']=view_time
+    result['prediction']=saved_view
     md=run/(stem+'.md');out=run/(stem+'.json')
     md.write_text(render(result));out.write_text(json.dumps(result,indent=2));result['files']={'markdown':md,'json':out}
     return result
@@ -485,7 +469,7 @@ def render(result):
     lines.append('Liquidity: '+(UNKNOWN+' — '+liq['reason'] if liq.get('reason') else f"historical; median(daily close * daily volume) = {fmt(liq['median_daily_dollar_volume'])} USD; client purchase {fmt(liq['purchase_size'])} USD; purchase/median {fmt(liq['purchase_fraction'])}; {liq['observations']} observations; {', '.join(liq['dates'])}; sources: {'; '.join(liq['sources'])}; daily inputs printed above and saved in companion JSON"))
     if 'buyable' in liq:lines.append(f"Can you buy it: {'yes' if liq['buyable'] else 'no'}; {liq['participation_rate']*100:g}% * median = {fmt(liq['daily_capacity'])} USD/day; required {fmt(liq['minimum_trading_days'])} trading days; limit {liq['max_trading_days']}")
     elif result.get('criteria_scores'):lines.append('Can you buy it: not known')
-    view=result['view'];lines+=['',f"View on the release: {view['direction']}",f"Deciding number: {'not computed' if view['deciding_number'] is None else fmt(view['deciding_number'])+' USD/share (computed low value)'}; {view['source']}",f"Conviction: {result['conviction']}",'','Not known:']
+    view=result['view'];lines+=['',f"View on the release: {view['direction']}",f"View timestamp: {view.get('time') or 'not computed'}",f"Filing acceptance: {(result.get('prediction') or {}).get('filing_time') or 'not available'}",f"Reaction window: {((result.get('prediction') or {}).get('reaction_window') or {}).get('baseline_close_time') or 'not available'} to {((result.get('prediction') or {}).get('reaction_window') or {}).get('first_close_after_filing_time') or 'not available'}",f"Deciding number: {'not computed' if view['deciding_number'] is None else fmt(view['deciding_number'])+' USD/share (computed low value)'}; {view['source']}",f"Conviction: {result['conviction']}",'','Not known:']
     if result.get('conviction_reason'):lines.insert(-2,'Conviction rule: '+result['conviction_reason'])
     lines+=['- '+item for item in result['not_known']] or ['- None']
     return '\n'.join(lines)+'\n'

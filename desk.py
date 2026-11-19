@@ -96,6 +96,14 @@ class DeskRun:
             self.state.update(status='failed',failed_part=name,error=str(error))
             self.state['parts'].append({'name':name,'seconds':time.perf_counter()-began,'status':'FAIL',
                 'outputs':[{'path':str(p.relative_to(self.run)),'sha256':digest(p)} for p in changed]})
+            # A stopped run must not fabricate a successful prediction or backdate one.
+            ticker=self.state.get('ticker') or (self.options.selector if self.options.selector!='screen' else None)
+            if ticker:
+                try:
+                    from view_record import freeze_view
+                    freeze_view(self.run,ticker,'not computed')
+                except Exception as view_error:
+                    self.state['view_save_error']=str(view_error)
             self.save()
             write_json(self.run/'artifacts.json',{'files':tree(self.run)})
             print(f'Error: Part {name} failed: {error}',flush=True)

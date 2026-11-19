@@ -189,6 +189,13 @@ class ReviewTests(unittest.TestCase):
         self.assertIn('nodes/Verifier_1/output.json', r.data)
         self.assertTrue(any(f['rule'] == 'joined-failure' for f in r.findings))
 
+    def test_failed_practice_before_facts_retains_requested_ticker(self):
+        (self.run / 'facts.json').unlink()
+        put(self.run, 'desk_run.json', {'status': 'failed', 'selector': 'EXM', 'failed_part': 'seeker'})
+        put(self.run, 'view.json', {'ticker': 'EXM', 'direction': 'not computed'})
+        r = Review(self.run, self.history)
+        self.assertEqual(r.metadata(1, practice=True)['ticker'], 'EXM')
+
     def test_history_is_a_lead_not_current_proof(self):
         put(self.history, "previous.md", "### Error 1\nType of error: wrong guidance table\n")
         r = Review(self.run, self.history)

@@ -167,7 +167,13 @@ class Review:
         facts = self.data.get("facts.json", {})
         if not isinstance(facts, dict):
             facts = {}
-        company, ticker = facts.get("company", "Unknown company"), facts.get("ticker", "Unknown")
+        view = self.data.get('view.json', {})
+        state = self.data.get('desk_run.json', {})
+        requested = state.get('ticker') or state.get('selector')
+        if requested == 'screen':
+            requested = None
+        ticker = facts.get('ticker') or view.get('ticker') or requested or 'Unknown'
+        company = facts.get('company') or (ticker if ticker != 'Unknown' else 'Unknown company')
         for path, lines in self.texts.items():
             if path.startswith("history/") and self.run.name in "\n".join(lines):
                 title = re.search(r"^# Error Documentation (.*), (\d+)\s*$", "\n".join(lines), re.M)

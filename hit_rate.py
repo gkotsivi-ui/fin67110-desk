@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """Read saved views and append available close-to-close reactions; never edit a view."""
 import argparse
+import hashlib
 import json
 import math
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-import exchange_calendars
-
 import closes
 from live_record import eastern, release_named
+from view_record import close_window, validate_view
 
 
 def stamp(value):
@@ -18,15 +18,6 @@ def stamp(value):
     if result.tzinfo is None:
         raise ValueError("view time must include a UTC offset")
     return result
-
-
-def close_window(filed):
-    """Scheduled US equity closes, including holidays and early closes."""
-    calendar = exchange_calendars.get_calendar(
-        "XNYS", start=(filed - timedelta(days=30)).date().isoformat(),
-        end=(filed + timedelta(days=30)).date().isoformat())
-    times = [t.to_pydatetime() for t in calendar.schedule["close"]]
-    return max(t for t in times if t <= filed), min(t for t in times if t > filed)
 
 
 def load(path):
@@ -38,6 +29,7 @@ def load(path):
 
 def row_for(run, now, offline=False):
     view = load(run / "view.json") if (run / "view.json").exists() else {}
+    validate_view(view)
     facts = load(run / "facts.json") if (run / "facts.json").exists() else {}
     ticker = view.get("ticker") or facts.get("ticker") or "unknown"
     filed_text = view.get("filing_time")
@@ -47,6 +39,9 @@ def row_for(run, now, offline=False):
         report = next((run / n for n in ("verified_report.md", "report.md") if (run / n).exists()), None)
         named = release_named(report.read_text().splitlines()[0]) if report else None
         if not named or not named["accepted"]:
+            if view.get('direction') == 'not computed':
+                when = view.get('time') or view.get('view_time')
+                return [ticker, 'not available', when or 'not computed', 'not computed', 'not available', '—', ''], None
             raise ValueError("no saved filing acceptance time")
         filed = datetime.fromisoformat(named["accepted"]).replace(tzinfo=eastern())
     direction = view.get("direction", "not computed")
@@ -75,12 +70,16 @@ def row_for(run, now, offline=False):
                         "before_close_time": before.isoformat(), "after_close_time": after.isoformat(),
                         "before_close": first, "after_close": last, "source": source,
                         "retrieved_at": now.isoformat()}
+            if (run / 'view.json').exists():
+                reaction['view_sha256'] = hashlib.sha256((run / 'view.json').read_bytes()).hexdigest()
             # New evidence only: never overwrite an existing reaction or any original run file.
             with reaction_path.open("x") as handle:
                 json.dump(reaction, handle, indent=2)
                 handle.write("\n")
     change = None
     if reaction is not None:
+        if reaction.get('view_sha256') and reaction['view_sha256'] != hashlib.sha256((run / 'view.json').read_bytes()).hexdigest():
+            raise ValueError('Saved view changed after its reaction was recorded')
         if (reaction["ticker"] != ticker or stamp(reaction["filing_time"]) != filed
                 or stamp(reaction["before_close_time"]) != before
                 or stamp(reaction["after_close_time"]) != after):
@@ -107,6 +106,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("folder", type=Path, help="runs/live or a separate practice folder")
     parser.add_argument("--offline", action="store_true", help="read saved reactions only; write nothing")
+    parser.add_argument('--run', help='print just this immediate run folder name')
     args = parser.parse_args()
     if not args.folder.is_dir():
         parser.error("folder does not exist")
@@ -115,6 +115,8 @@ def main():
     scored = []
     errors = 0
     for run in sorted(p for p in args.folder.iterdir() if p.is_dir() and not p.name.startswith(".")):
+        if args.run and run.name != args.run:
+            continue
         try:
             fields, agreement = row_for(run, datetime.now(timezone.utc), args.offline)
             if agreement is not None:

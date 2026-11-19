@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-19",
+  "scope": "Prediction-record feature and real COST practice attempts; neither attempt produced a completed final report.",
+  "tests": {
+    "root": 355,
+    "worksheet": 30,
+    "seeker": 103,
+    "hook": 69
+  },
+  "practice_attempts": [
+    {
+      "run": "runs/practice/COST_prediction_check_20261119_162639/COST_2026-11-19_16-26-39.649219",
+      "status": "failed",
+      "failed_part": "seeker",
+      "direction": "not computed",
+      "prediction_time": "2026-11-19T16:26:52.208643-05:00"
+    },
+    {
+      "run": "runs/practice/COST_prediction_check_20261119_162639/COST_2026-11-19_16-28-09.933045",
+      "status": "failed",
+      "failed_part": "team",
+      "direction": "not computed",
+      "prediction_time": "2026-11-19T16:31:21.623980-05:00"
+    }
+  ],
+  "temporary_personal_environment_use": "Explicitly authorized; temporary copy removed after each command.",
+  "historical_live_records_unchanged": true,
+  "repairs_to_recorded_practice_errors": false,
+  "hit_rate": "0/0; direct COST attempt is not computed, reaction unavailable, and after the first post-filing close."
+}

@@ -9,6 +9,21 @@ from hit_rate import close_window, row_for, stamp
 
 
 class HitRateTests(unittest.TestCase):
+    def test_reaction_refresh_preserves_prediction_bytes_and_timestamp(self):
+        run, _, _, _ = self.run_case('2026-11-27T12:00:00-05:00')
+        view = run / 'view.json'
+        before = view.read_bytes(), view.stat().st_mtime_ns
+        row_for(run, stamp('2026-12-01T17:00:00-05:00'))
+        self.assertEqual((view.read_bytes(), view.stat().st_mtime_ns), before)
+
+    def test_changed_prediction_is_not_silently_scored_with_saved_reaction(self):
+        run, _, _, _ = self.run_case('2026-11-27T12:00:00-05:00')
+        path = run / 'view.json'
+        view = json.loads(path.read_text())
+        view['direction'] = 'down'
+        path.write_text(json.dumps(view))
+        with self.assertRaisesRegex(ValueError, 'Saved view changed'):
+            row_for(run, stamp('2026-12-01T17:00:00-05:00'))
     def test_group_worksheet_schema_is_scored_without_changing_view(self):
         run, _, _, _ = self.run_case("2026-11-27T12:00:00-05:00", offline=True)
         path = run / 'view.json'

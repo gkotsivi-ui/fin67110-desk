@@ -64,8 +64,10 @@ The command fixes this order: input snapshots, seeker, ticker pick, team with Ve
 and final report. The hook checks each stage's saved outputs. A failed stage stops later stages and
 preserves its run folder. It does not repair an inherited calculation, parsing, or judgment error.
 
-The final report is published only after the hook accepts it. `view.json` is written by worksheet code
-at view computation and preserves its first timestamp. The hit-rate reader accepts that schema while
+The final report is published only after the hook accepts it. `view.json` is written by code immediately when the prediction is saved. It records `up`, `down`,
+`flat`, or `not computed`, actual filing acceptance, and the intended reaction window. The report prints
+the same saved direction and timestamp. The first record is immutable; neither reaction refresh nor
+a later report can change it. Failed new runs retain `not computed` when no prediction exists. The hit-rate reader accepts that schema while
 leaving older runs without a view unscored. A worksheet view is relative value versus price; its
 direction mapping measures agreement with the reaction, not proof of a correct investment decision.
 

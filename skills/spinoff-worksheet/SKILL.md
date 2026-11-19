@@ -48,18 +48,25 @@ Use invented filings, injected readers and stubbed model/HTTP responses. Do not 
 
 ## Saved-view hit rate
 
-Future worksheets record `view_time` at view computation, separately from the
-run/worksheet start. Publish a first view.json before the model call only when
-no older canonical or worksheet view exists; never replace that source, its
-direction or its time. Live runs belong under `runs/live`, practice elsewhere.
-Existing retrospective runs are not automatically moved or relabeled as live.
+Future worksheets use `view_record.py` to save the first prediction as `up`, `down`, `flat`, or
+`not computed`. Code maps the existing low-value versus price comparison to this label; this is not
+an additional statistical price-reaction model. Do not change the authored valuation method.
 
-From the workspace root, `.venv-desk/bin/python hit_rate.py runs/live`
-refreshes reactions and prints one row per saved run; replace the folder to
-inspect another cohort. It writes reaction.json only, hashes the chosen view,
-and makes no model calls. Add --offline to use saved price evidence only.
-Reaction is the first completed close strictly after filing versus the last
-close strictly before it. Mark `after` for a view strictly later than that first
-post-filing close, and exclude those rows and not-computed views from the final
-agreement denominator. See [run format and timing](../../runs/live/README.md)
-from this repository root at runs/README.md.
+The record includes ticker, actual EDGAR acceptance, `time`, the compatible `view_time` alias, and
+`reaction_window`. The window identifies the last official close at or before filing and the first
+close strictly after it, using the XNYS calendar with holidays and early closes. An explicit price
+cutoff override does not replace the actual filing acceptance time.
+
+Read the code clock immediately before saving the record, after window calculation. Do not use the
+model's time or the run start. Save before the judgment call. The report must print the stored direction,
+timestamp, filing acceptance, and window. Reuse the first saved record when rendering later outputs.
+Do not overwrite or backfill historical views. If the filing time is unknown, save `not computed` and
+explain the missing evidence. Failed new ticker runs also preserve a timestamped `not computed` record
+when no prediction exists. Failure does not authorize a backdated or successful prediction.
+
+Run `.venv-desk/bin/python hit_rate.py runs/live` to refresh available reactions. For one practice
+result, run `.venv-desk/bin/python hit_rate.py PRACTICE_PARENT --run RUN_FOLDER_NAME`.
+The command writes only a new reaction record. It never rewrites the view. Saved reaction records
+include the view hash, and later changes to that view stop scoring. `after` means the view was saved
+strictly later than the first post-filing close. Exclude late, not-computed, and unavailable-reaction
+rows from the agreement count. Historical records without a timestamped view remain unscored.

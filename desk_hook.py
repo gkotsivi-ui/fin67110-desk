@@ -219,6 +219,8 @@ class Hook:
                         if any(c.get('status')!='correct' for c in data['model_checks'].get('checks',[])):
                             raise ValueError('Team verifier has wrong or unsupported claims')
                     if path.name=='view.json':
+                        from view_record import validate_view
+                        validate_view(data)
                         if not isinstance(data,dict) or not data.get('view_time') or not data.get('direction'):raise ValueError('View has no direction/time')
                         worksheets=[p for p in self.run.glob('Spinoff worksheet*.json') if ', model ' not in p.name]
                         if len(worksheets)!=1:raise ValueError('View has no unique saved worksheet')

@@ -37,6 +37,10 @@ class IndependenceTests(unittest.TestCase):
                 target = clone / rel
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source, target)
+            for relative in manifest.get('group_only_files', []):
+                target=clone/relative
+                target.parent.mkdir(parents=True,exist_ok=True)
+                shutil.copyfile(ROOT/relative,target)
             script = '''
 from pathlib import Path
 import desk, desk_sources, desk_parts, desk_hook, equity_research_desk, equity_research_agent_team, closes_reader

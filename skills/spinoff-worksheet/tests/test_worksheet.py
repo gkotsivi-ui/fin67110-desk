@@ -1,15 +1,38 @@
 import importlib.util,json,sys,tempfile,unittest
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock,patch
 from datetime import datetime
 P=Path(__file__).resolve().parents[1]/'scripts/worksheet.py'
 spec=importlib.util.spec_from_file_location('worksheet_tested',P)
 w=importlib.util.module_from_spec(spec);sys.modules[spec.name]=w;spec.loader.exec_module(w)
 
 class WorksheetTests(unittest.TestCase):
+    def test_prediction_is_saved_before_model_and_report_uses_that_record(self):
+        saved_at=datetime.fromisoformat('2027-02-02T12:05:00-05:00')
+        class Clock(datetime):
+            @classmethod
+            def now(cls,tz=None):return saved_at
+        def judgment(persona,payload):
+            record=json.loads((self.run/'view.json').read_text())
+            self.assertEqual(record['direction'],'up')
+            self.assertEqual(record['time'],saved_at.isoformat())
+            return {'judgment':'The supplied evidence supports the valuation.',
+                    'next_filing_trigger':'A decline in earnings would weaken the view.'}
+        with patch.object(w,'datetime',Clock):
+            result=self.execute(model=judgment)
+        saved=json.loads((self.run/'view.json').read_text())
+        text=result['files']['markdown'].read_text()
+        self.assertEqual(result['view']['direction'],saved['direction'])
+        self.assertEqual(result['view']['time'],saved['time'])
+        self.assertIn('View on the release: up',text)
+        self.assertIn('View timestamp: '+saved['time'],text)
+        self.assertIn('Filing acceptance: '+saved['filing_time'],text)
+        self.assertIn(saved['reaction_window']['first_close_after_filing_time'],text)
+
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         self.run=Path(self.tmp.name)
+        (self.run/'filing_time.json').write_text(json.dumps({'edgar_accepted':'2027-02-01 16:30:00'}))
         (self.run/'facts.json').write_text(json.dumps({'ticker':'ZZZ','company':'Issuer','cik':'101','report_period':'2026-12-31','facts':{}}))
         (self.run/'10-K.txt').write_text('CONSOLIDATED STATEMENTS\nYear ended December 31, 2026\nNet income $100\nDepreciation $20\nCapital spending $30\nShares outstanding 10\n')
         (self.run/'persona.md').write_text('Test supplied filing facts and explain the deciding evidence.')
@@ -28,7 +51,7 @@ class WorksheetTests(unittest.TestCase):
         self.assertEqual(result['value_range']['low']['value'],90)
         self.assertEqual(result['liquidity']['median_daily_dollar_volume'],400)
         self.assertEqual(result['liquidity']['purchase_fraction'],.25)
-        self.assertEqual(result['view']['direction'],'more than the price')
+        self.assertEqual(result['view']['direction'],'up')
         self.assertEqual(result['conviction'],'high')
         self.assertEqual(result['facts']['parent']['value'],'not applicable')
         self.assertTrue(result['files']['markdown'].exists())

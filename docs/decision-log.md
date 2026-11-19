@@ -1,5 +1,33 @@
 # Decision log
 
+## 2026-11-19: timestamped predictions and COST practice
+
+- Added a code-owned first prediction record with canonical direction, actual filing acceptance,
+  save time, and an explicit close-to-close reaction window. The worksheet report repeats that record.
+  Window calculation handles holidays, early closes, and UTC offsets. No historical view was backfilled.
+  A failed new ticker run saves `not computed` when it has not produced a prediction.
+- Tests establish the save-time clock, report consistency, first-record preservation, unavailable
+  filing behavior, and reaction-refresh preservation. Saved reactions record the view hash. The table
+  rejects a changed view instead of silently scoring a different prediction.
+- The user authorized use of the personal `.env` for this practice. A temporary group copy was used
+  without displaying credentials and was removed after each invocation. No personal code was called.
+- First COST attempt stopped at the seeker: the bounded screen contained no ranked ticker. The
+  limited screen was explicitly partial. It is not evidence that no spinoffs exist. A separate direct
+  COST attempt used that saved local registry through the supported command; the first failure remains.
+- The direct COST attempt stopped at the team hook after a Verifier rejection of the claim
+  `approximately $500 [10-K.txt:L1022]`. The recorded reason is a missing millions-of-dollars unit.
+  This is documented as a confirmed process failure and an unconfirmed financial units error.
+  No claim, source, verification mark, or failed outcome was repaired.
+- The run did not reach the worksheet. Its failed-run view is `not computed`, saved at
+  `2026-11-19T16:31:21.623980-05:00`. The filed release was accepted at
+  `2026-09-24T16:17:37-04:00`; the first post-filing close was September 25 at 16:00 Eastern.
+  The table therefore flags `after` and excludes the run. Reaction lookup returned no prices because
+  the closes reader reported that its optional `lseg-data` dependency was missing. That was documented,
+  not corrected. The table is not a hit or miss and makes no prediction-accuracy claim.
+- Human reports, AI prompts, source evidence, and the hit-rate table are saved with the practice
+  attempts under `runs/practice/COST_prediction_check_20261119_162639/`. Original live records remain unchanged.
+- **What we will not delegate again.** (the team writes this)
+
 ## 2026-11-19: copy the personal pipeline into the group repo
 
 - The user clarified that the group needs independent copies of every component previously reached
