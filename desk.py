@@ -211,7 +211,9 @@ def replay(path,hook_factory=Hook):
                 if name=='seeker' and (run/'screen.json').exists():
                     from desk_parts import validate_screen
                     from desk_sources import skill
-                    validate_screen(skill('us-spinoff-seeker'),json.loads((run/'screen.json').read_text()))
+                    # As in the run: only a run that picked from the screen needed a ranked name.
+                    picked=(run/'pick.json').exists() and json.loads((run/'pick.json').read_text()).get('selection')=='top ranked entry in saved screen'
+                    validate_screen(skill('us-spinoff-seeker'),json.loads((run/'screen.json').read_text()),need_ticker=picked)
                 paths={'seeker':[run/'registry.json'],'pick':[run/'pick.json'],
                        'team':[run/'facts.json',run/'report.md',verified],
                        'worksheet':[worksheet,worksheet.with_suffix('.json')],

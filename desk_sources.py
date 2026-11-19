@@ -84,7 +84,7 @@ class Sources:
         if url not in item['documents']:item['documents'].append(url)
         if self.phase not in item['parts']:item['parts'].append(self.phase)
         if path:
-            local=str(Path(path).resolve().relative_to(self.run));item.setdefault('saved_texts',[])
+            local=Path(path).resolve().relative_to(self.run).as_posix();item.setdefault('saved_texts',[])
             if local not in item['saved_texts']:item['saved_texts'].append(local)
             saved=item.setdefault('saved_text_hashes',{})
             current=digest(path)
@@ -112,7 +112,7 @@ class Sources:
                     raise ValueError('SEC redirect requires an explicit canonical document URL: '+url)
                 response.raise_for_status();content=response.content
             path.write_bytes(content)
-            record={'path':str(path.relative_to(self.run)),'sha256':digest(path),'parts':[]}
+            record={'path':path.relative_to(self.run).as_posix(),'sha256':digest(path),'parts':[]}
             self.data['responses'][url]=record
         if self.phase not in record['parts']:record['parts'].append(self.phase)
         self.inventory(url);self.save()

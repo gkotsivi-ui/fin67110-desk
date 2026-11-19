@@ -11,7 +11,7 @@ class AssignedFiles:
         for path in paths:
             path=inside(self.run,Path(path).resolve())
             if not path.is_file():raise ValueError('Missing assigned file: '+str(path))
-            self.files[str(path.relative_to(self.run))]=digest(path)
+            self.files[path.relative_to(self.run).as_posix()]=digest(path)
 
     def manifest(self):
         return [{'file':name,'sha256':sha,'permission':'quote only; never recompute'}
@@ -25,7 +25,7 @@ class AssignedFiles:
     def _read(self,file):
         try:
             path=inside(self.run,file)
-            name=str(path.relative_to(self.run))
+            name=path.relative_to(self.run).as_posix()
             if name not in self.files:raise ValueError('File is not assigned: '+file)
             if digest(path)!=self.files[name]:raise ValueError('Assigned file changed: '+name)
             text=path.read_text()

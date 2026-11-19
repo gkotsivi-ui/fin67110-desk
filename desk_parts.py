@@ -48,19 +48,26 @@ def latest_screen(folder):
     return max(choices)[2]
 
 
-def validate_screen(module,data):
+def validate_screen(module,data,need_ticker=True):
+    """Recompute the saved ranks. need_ticker: the run picks the top name, so the screen must have one.
+    A run on a requested ticker checks the ranks the same way but does not need a ranked name: a screen that
+    ranks nobody is a valid screen, and the requested ticker's spinoff parts are then 'not applicable'."""
     registry=data.get('registry',{});factors=data.get('factors') or registry.get('factors')
     if not factors:raise ValueError('Screen has no saved factor specification')
     pending=set(registry.get('pending_ciks',[]))
     pool=[deepcopy(c) for c in registry.get('candidates',{}).values() if not c.get('drop') and c.get('eligibility')=='included' and c['cik'] not in pending]
     ranked,_=module.rank(pool,factors)
-    if not ranked:raise ValueError('The latest seeker report has no ranked ticker')
     for row in ranked:
         original=registry['candidates'][row['cik']]
         for key in ('rank','points','total_points'):
             if original.get(key)!=row.get(key):raise ValueError('Saved screen '+key+' differs from the factor calculation')
+    if not ranked:
+        if need_ticker:raise ValueError('The latest seeker report has no ranked ticker')
+        return None,None
     chosen=ranked[0];ticker=(chosen.get('facts',{}).get('ticker') or {}).get('value')
-    if not ticker:raise ValueError('Top screen entry has no filing-established regular ticker')
+    if not ticker:
+        if need_ticker:raise ValueError('Top screen entry has no filing-established regular ticker')
+        return None,chosen
     return str(ticker).upper(),chosen
 
 
@@ -120,7 +127,8 @@ class Parts:
         write_json(self.run/'seeker_status.json',{'mode':'refreshed' if options.refresh_screen else 'saved snapshot' if options.selector=='screen' else 'not requested',
                   'snapshot':self.snapshot.name if self.snapshot else None})
         if self.snapshot:
-            data=json.loads(self.snapshot.read_text());validate_screen(self.seeker,data)
+            # Only a run that picks from the screen needs a ranked name; a requested ticker does not.
+            data=json.loads(self.snapshot.read_text());validate_screen(self.seeker,data,need_ticker=options.selector=='screen')
         return self.snapshot
 
     def pick(self):

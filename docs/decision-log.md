@@ -370,6 +370,36 @@ The Lab 05 page still launched the team alone and read its intermediate report.
 The page test now checks the subprocess arguments and the final report path.
 A server test checks that the page serves the joined report only after completion.
 
+## 2026-11-19: the group pipeline on Windows, and a practice run
+
+- **What we ran.** One practice run of `desk.py` on a company that released earnings that morning, on
+  Windows 11, from `main` at 91ee189, with a member's own `.env`. It did not run until four things were
+  found. The run then reached the Verifier and stopped there, as designed.
+- **The `.env`.** The pipeline needs `SEC_USER_AGENT`, an Anthropic `API_KEY`, and `MODEL` written as
+  `anthropic/` and a Claude model. Without `MODEL` the agent team falls back to a Gemini model, and the
+  worksheet accepts only a Claude model. The member's `.env` had no `MODEL` line.
+- **What AI got wrong: code that ran only on a Mac.** The seeker and the worksheet hook import `fcntl`,
+  which Windows does not have. The seeker is loaded on every run, so no run could start. Run paths were
+  written with `str()`, which gives `\` on Windows, and then compared with text that has `/`. So the hook
+  skipped its checks of the Verifier's and the roles' outputs on Windows, and gave no error. The tests
+  showed both: 17 failures and 15 errors in `tests/`, and two test folders that could not load. We caught
+  them by running the tests on the second operating system before the run. The locks now use `msvcrt` on
+  Windows, and the paths are written with `.as_posix()`, which gives the same text on a Mac.
+- **What AI got wrong: a ticker run that needed the screen.** With `--refresh-screen`, the seeker part
+  required a ranked name even when the command named a ticker. The bounded scan found ten registrants and
+  could date none, so it ranked none, and the run on the requested ticker stopped. Only `desk.py screen`
+  now needs a ranked name. A test covers both cases.
+- **The price.** The new reader reads LSEG only. Workspace was closed, and on Windows the reader's helper
+  points to a Mac path. The run had no close, so its view would have been "not computed".
+- **Open: one flag stops the run.** The Verifier marked 7 of 92 numbers. Three were real errors in the
+  roles' text: a projection for the current fiscal year called "next year", and a capital-spending
+  increase used as if it were the whole gap between cash flow and free cash flow. Four were true
+  numbers: their labels stand a few lines from the cited line, outside the lines the Verifier was given.
+  Any flag stops the run with no report, and each of our earlier real runs had two or three flags. The
+  team decides whether a flagged sentence is removed and the rest published, and how many lines the
+  Verifier sees around a citation.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code. I verified the sources myself; the judgments are mine.

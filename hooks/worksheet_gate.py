@@ -2,7 +2,34 @@
 """Codex lifecycle adapter. This file is inactive until hooks are installed."""
 from __future__ import annotations
 
-import fcntl
+try:
+    import fcntl
+except ImportError:  # Windows has no fcntl. Lock the file's first byte with msvcrt: one owner at a time, as flock does.
+    import msvcrt
+    import time as _time
+
+    class fcntl:  # noqa: N801 - the names of fcntl this file uses
+        LOCK_EX, LOCK_NB, LOCK_UN = 2, 4, 8
+
+        @staticmethod
+        def flock(stream, operation):
+            stream.flush()
+            position = stream.tell()
+            stream.seek(0)
+            try:
+                if operation & fcntl.LOCK_UN:
+                    msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
+                    return
+                while True:
+                    try:
+                        msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+                        return
+                    except OSError as exc:
+                        if operation & fcntl.LOCK_NB:
+                            raise BlockingIOError(*exc.args) from exc
+                        _time.sleep(0.05)
+            finally:
+                stream.seek(position)
 import hashlib
 import json
 import os
