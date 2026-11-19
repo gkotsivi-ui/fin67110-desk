@@ -180,7 +180,7 @@ class Hook:
         if not requested:errors.append(('<outputs>',1,'Part supplied no saved output files',''))
         for path in requested:
             if not path.is_relative_to(self.run):raise HookFailure('Output is outside the shared run: '+str(path))
-            if not path.is_file():errors.append((str(path.relative_to(self.run)),1,'Requested saved output is missing',''))
+            if not path.is_file():errors.append((path.relative_to(self.run).as_posix(),1,'Requested saved output is missing',''))
             else:paths.append(path)
         try:
             self.sources.verify()
@@ -188,7 +188,7 @@ class Hook:
         except (OSError,ValueError,TypeError) as error:errors.append(('sources.json',1,str(error),''))
         for path in paths:
             if not path.resolve().is_relative_to(self.run.resolve()):raise HookFailure('Output is outside the shared run: '+str(path))
-            relative=str(path.relative_to(self.run))
+            relative=path.relative_to(self.run).as_posix()
             try:
                 if path.suffix=='.json':
                     data=json.loads(path.read_text())
@@ -265,8 +265,8 @@ class Hook:
                         elif (self.run/'team_report.json').exists():verify_team_file(self.run,path)
                         else:errors.extend((relative,*e) for e in report_errors(self.run,path))
             except (ValueError,TypeError,OSError) as error:errors.append((relative,1,str(error),''))
-        record={'part':phase,'requested_outputs':[str(p.relative_to(self.run)) for p in requested],
-                'outputs':[{'path':str(p.relative_to(self.run)),'sha256':digest(p)} for p in paths],
+        record={'part':phase,'requested_outputs':[p.relative_to(self.run).as_posix() for p in requested],
+                'outputs':[{'path':p.relative_to(self.run).as_posix(),'sha256':digest(p)} for p in paths],
                 'status':'FAIL' if errors else 'PASS','errors':errors}
         write_json(self.run/'hook'/f'{self.sequence:05d}.json',record)
         if errors:

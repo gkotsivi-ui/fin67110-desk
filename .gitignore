@@ -41,6 +41,9 @@ venv/
 # Editors, coding agents and operating systems
 .claude/settings.local.json
 .claude/launch.json
+
+# The closes reader's diagnostics, written at the top of the folder on each run that asks for a price.
+/closes_diagnostics.jsonl
 .vscode/
 .idea/
 .DS_Store

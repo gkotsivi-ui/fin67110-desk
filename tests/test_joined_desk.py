@@ -319,6 +319,17 @@ class ScreenAndReportTests(unittest.TestCase):
         self.assertEqual(validate_screen(module,data)[0],'ZZZZ')
         c['total_points']=2
         with self.assertRaisesRegex(ValueError,'total_points'):validate_screen(module,data)
+        # A requested ticker still gets the rank check, but needs no ranked name.
+        with self.assertRaisesRegex(ValueError,'total_points'):validate_screen(module,data,need_ticker=False)
+
+    def test_a_screen_that_ranks_nobody_stops_only_a_screen_pick(self):
+        # On 2026-11-19 a bounded scan found ten registrants and could date none, so it ranked none. A run on a
+        # requested ticker stopped there, though the ticker needed no screen.
+        module=type('Module',(),{'rank':staticmethod(lambda pool,factors:([],[]))})
+        c={'cik':'12345','eligibility':'missing dates','facts':{}}
+        data={'factors':{'a':1},'registry':{'complete':False,'pending_ciks':[],'candidates':{'12345':c}}}
+        with self.assertRaisesRegex(ValueError,'no ranked ticker'):validate_screen(module,data)
+        self.assertEqual(validate_screen(module,data,need_ticker=False),(None,None))
 
     def test_report_numeric_citation_is_exact_and_stray_amount_fails(self):
         with tempfile.TemporaryDirectory() as tmp:

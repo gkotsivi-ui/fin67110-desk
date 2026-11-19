@@ -681,7 +681,7 @@ class EquityResearchFlow(Flow):
         assert self.runtime
         print("Node starting: Investment Advisor", flush=True)
         context = {
-            "analyst_outputs":{r:str(latest(self.runtime.output_dir,r)[0].relative_to(self.runtime.output_dir)) for r in ('Research Analyst','Financial Analyst')},
+            "analyst_outputs":{r:latest(self.runtime.output_dir,r)[0].relative_to(self.runtime.output_dir).as_posix() for r in ('Research Analyst','Financial Analyst')},
         }
         self.contexts["Investment Advisor"] = context
         envelope = self.runtime.envelope(
@@ -738,7 +738,7 @@ class EquityResearchFlow(Flow):
                 context["prior_claims_output"] = self.role_ledgers[role]
             if role == "Investment Advisor":
                 context["original_context"] = {
-                    "analyst_outputs":{r:str(latest(self.runtime.output_dir,r)[0].relative_to(self.runtime.output_dir)) for r in ('Research Analyst','Financial Analyst')},
+                    "analyst_outputs":{r:latest(self.runtime.output_dir,r)[0].relative_to(self.runtime.output_dir).as_posix() for r in ('Research Analyst','Financial Analyst')},
                 }
             retry = self.runtime.envelope(
                 "Correct only the failing report part once. Use the original assigned context and Strategy Manager feedback.",
@@ -771,14 +771,14 @@ class EquityResearchFlow(Flow):
         write_json(self.runtime.output_dir/'team_report.json',{'filings_line':filings_line,'run_time':self.runtime.desk.run_timestamp})
         self.report_path = self.runtime.output_dir / "report.md"
         self.report_path.write_text(report_text(self.runtime.output_dir), encoding="utf-8")
-        self.runtime.save_node("Strategy Manager", "output", {"compiled_from":str(latest(self.runtime.output_dir,'Strategy Manager')[0].relative_to(self.runtime.output_dir)), "report": str(self.report_path)})
+        self.runtime.save_node("Strategy Manager", "output", {"compiled_from":latest(self.runtime.output_dir,'Strategy Manager')[0].relative_to(self.runtime.output_dir).as_posix(), "report": str(self.report_path)})
         return str(self.report_path)
 
     def _manager_call(self, task: str, failures: Any = None) -> dict[str, Any]:
         assert self.runtime and self.runtime.output_dir
         envelope = self.runtime.envelope(
             f"{task}. Check all five requested report parts and consistency. Require exactly one Insight: line per analyst role, three total. Place the Research Analyst Insight only at the end of Future Developments and Strategic Recommendations, the Financial Analyst Insight at the end of Valuation Insights, and the Investment Advisor Insight at the end of Investment Recommendation. Overview and Market Positioning and Growth Outlook must have no Insight line. Fail the responsible role if its Insight count is not one, is misplaced, or only repeats a figure in the earnings release first narrative paragraph. Return role, part, and feedback for each failure. Do not calculate or add facts.",
-            {"role_files":{r:str(latest(self.runtime.output_dir,r)[0].with_name('draft.md').relative_to(self.runtime.output_dir)) for r in self.role_outputs}, "required_sections": list(SECTIONS), "previous_failures": failures or [], "earnings_release": numbered_lines(self.runtime.output_dir / "earnings_release_Ex99-1.txt")},
+            {"role_files":{r:latest(self.runtime.output_dir,r)[0].with_name('draft.md').relative_to(self.runtime.output_dir).as_posix() for r in self.role_outputs}, "required_sections": list(SECTIONS), "previous_failures": failures or [], "earnings_release": numbered_lines(self.runtime.output_dir / "earnings_release_Ex99-1.txt")},
             "JSON with claims, failures, and sections keyed by exact part names; each section is a saved file/start/end range. Do not rewrite any role text.",
         )
         self.runtime.save_node("Strategy Manager", "input", envelope)

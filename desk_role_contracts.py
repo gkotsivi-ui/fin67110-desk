@@ -13,7 +13,7 @@ PREFIX={role:role.replace(' ','_') for role in (*AUTHORS,'Strategy Manager','Ver
 def manager_contract(run):
     sections={}
     for part,owner in PART_OWNERS.items():
-        try:path,_=latest(run,owner);name=str(path.with_name('draft.md').relative_to(Path(run)))
+        try:path,_=latest(run,owner);name=path.with_name('draft.md').relative_to(Path(run)).as_posix()
         except ValueError:name=f'nodes/{PREFIX[owner]}_1/draft.md'
         sections[part]={'file':name,'start':1,'end':1}
     example={'claims':[],'failures':[],'sections':sections}
@@ -45,7 +45,7 @@ def origins_for(run,role):
             md=path.with_name('draft.md')
             if md.exists() and md.read_text()!=data['draft']:raise ValueError('Saved role Markdown differs from its checked output: '+str(md))
             origins[author]=result.values
-            origins[str(path.relative_to(Path(run)))]=result.values
+            origins[path.relative_to(Path(run)).as_posix()]=result.values
         if author not in origins and role=='Investment Advisor':raise ValueError('No saved checked output for '+author)
     return origins
 
@@ -57,7 +57,7 @@ def values_for(run,role,data):
         claims=[dict(c) if isinstance(c,dict) else c for c in claims]
         for c in claims:
             if isinstance(c,dict) and c.get('from') in AUTHORS and 'from_file' not in c:
-                path,_=latest(run,c['from']);c['from_file']=str(path.relative_to(Path(run)))
+                path,_=latest(run,c['from']);c['from_file']=path.relative_to(Path(run)).as_posix()
     result=check({'claims':claims,'draft':data.get('draft','')},texts,facts,
                  origins_for(run,role),role in ('Investment Advisor','Strategy Manager'))
     result.normalized_claims=claims
@@ -102,7 +102,7 @@ def validate(run,role,raw):
                 if not isinstance(ref,dict):raise ValueError('Select a saved text range for '+part)
                 source,data=latest(run,owner)
                 md=source.with_name('draft.md')
-                expected=str(md.relative_to(Path(run)))
+                expected=md.relative_to(Path(run)).as_posix()
                 if ref.get('file')!=expected:raise ValueError(part+' must select the latest saved draft of '+owner)
                 lines=md.read_text().splitlines();start=ref.get('start');end=ref.get('end')
                 if type(start) is not int or type(end) is not int or not 1<=start<=end<=len(lines):raise ValueError('Invalid saved line range for '+part)

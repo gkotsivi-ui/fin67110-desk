@@ -15,14 +15,20 @@ python3.13 -m venv .venv-desk
 ```
 
 On Windows, use `py -3.13 -m venv .venv-desk` and `.venv-desk\Scripts\python` in place of the Mac path.
-The inherited seeker and standalone hook use Unix file locks; Windows portability is not verified.
-The automated tests in this change ran on macOS and Python 3.13.
+The inherited seeker and standalone hook lock files with fcntl on macOS and Linux and with msvcrt on Windows.
+The automated tests ran on macOS and Python 3.13, and on 2026-11-19 on Windows 11 and Python 3.13. On
+Windows, six tests in `tests/` still fail for reasons of the test harness: three create symlinks, which need
+administrator rights; one decodes a child process's output as UTF-8; two block every socket, and Windows'
+event loop needs a local one.
 
 Configure only this repo's `.env`. It needs `SEC_USER_AGENT`, `API_KEY`, and an explicit `MODEL`.
 Use the CrewAI model prefix, such as `anthropic/` followed by a model ID available to your account.
 The copied worksheet supports Anthropic judgment calls only. This inherited limitation is not changed.
 The closes reader uses this repo's `.env` too. No price or volume source is copied from the personal repo.
 Its optional LSEG worker defaults to this repo's `.venv-lseg`, not a workspace environment.
+That default is the Mac path, `.venv-lseg/bin/python`. On Windows, set `LSEG_PYTHON` in `.env` to a Python that
+has `lseg-data`, for example `.venv\Scripts\python.exe`. The reader has no other price source: with LSEG
+Workspace closed, a run has no close, and its worksheet view is "not computed".
 
 ```bash
 .venv-desk/bin/python check_pipeline.py
