@@ -6,6 +6,7 @@ from pathlib import Path
 import tempfile
 import unittest
 import subprocess
+import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
@@ -18,7 +19,7 @@ from desk_timing import timed_role
 class BoundaryTests(unittest.TestCase):
     def test_real_crewai_file_tool_with_seeded_llm(self):
         result=subprocess.run([sys.executable,str(Path(__file__).with_name('desk_tool_smoke.py'))],
-                              text=True,capture_output=True,timeout=45)
+                              text=True,encoding="utf-8",env={**os.environ,"PYTHONIOENCODING":"utf-8"},capture_output=True,timeout=45)
         self.assertEqual(result.returncode,0,result.stdout[-4000:]+result.stderr[-4000:])
         self.assertIn('SEEDED real file-tool smoke check passed',result.stdout)
 

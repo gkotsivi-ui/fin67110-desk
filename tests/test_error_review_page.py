@@ -10,6 +10,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import page
+from portable import symlink_or_skip
 from error_review_evaluation import put
 
 
@@ -86,6 +87,6 @@ class ReviewPageTests(unittest.TestCase):
     def test_symlink_run_outside_allowed_folders_is_rejected(self):
         outside = self.root / "private"
         outside.mkdir()
-        (self.root / "runs/practice/link").symlink_to(outside)
+        symlink_or_skip(self, self.root / "runs/practice/link", outside, is_directory=True)
         with self.assertRaises(ValueError):
             page.review_folder("runs/practice/link")

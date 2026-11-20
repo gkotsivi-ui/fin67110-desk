@@ -6,6 +6,7 @@ import io
 import json
 from pathlib import Path
 import socket
+from portable import local_sockets_only
 import sys
 import tempfile
 import unittest
@@ -97,7 +98,7 @@ class JoinedDeskTests(unittest.TestCase):
     def runner(self):return desk.DeskRun(self.options,parts_factory=FakeParts,clock=self.started)
     def execute(self):
         runner=self.runner()
-        with redirect_stdout(io.StringIO()),patch.object(socket.socket,'connect',side_effect=AssertionError('test network')):
+        with redirect_stdout(io.StringIO()),local_sockets_only():
             result=runner.execute()
         return runner,result
 
@@ -147,7 +148,7 @@ class JoinedDeskTests(unittest.TestCase):
     def test_offline_replay_preserves_view_and_makes_no_fetches(self):
         runner,result=self.execute();view=runner.run/'view.json'
         before=(view.read_bytes(),view.stat().st_mtime_ns)
-        with redirect_stdout(io.StringIO()),patch('requests.Session.request',side_effect=AssertionError('HTTP attempted')),patch.object(socket.socket,'connect',side_effect=AssertionError('socket attempted')):
+        with redirect_stdout(io.StringIO()),patch('requests.Session.request',side_effect=AssertionError('HTTP attempted')),local_sockets_only():
             self.assertEqual(desk.replay(runner.run),result)
         self.assertEqual(before,(view.read_bytes(),view.stat().st_mtime_ns))
         self.assertEqual(FakeParts.calls,['seeker','pick','team','worksheet'])
@@ -168,7 +169,7 @@ class JoinedDeskTests(unittest.TestCase):
         with redirect_stdout(io.StringIO()),self.assertRaisesRegex(ValueError,'invented team failure'):runner.execute()
         original=(runner.run/'desk_run.json').read_bytes();calls=list(FakeParts.calls)
         output=io.StringIO()
-        with redirect_stdout(output),patch.object(socket.socket,'connect',side_effect=AssertionError('fetch')),self.assertRaisesRegex(ValueError,'Saved part team failed: invented team failure'):
+        with redirect_stdout(output),local_sockets_only(),self.assertRaisesRegex(ValueError,'Saved part team failed: invented team failure'):
             desk.replay(runner.run)
         self.assertIn('Part replay pick:',output.getvalue())
         self.assertIn('Missing output: verified_report.md',output.getvalue())
@@ -195,7 +196,7 @@ class JoinedDeskTests(unittest.TestCase):
 
     def test_real_worksheet_and_final_hook_with_sourced_financial_values(self):
         runner=self.real_worksheet_runner()
-        with redirect_stdout(io.StringIO()),patch.object(socket.socket,'connect',side_effect=AssertionError('test network')):
+        with redirect_stdout(io.StringIO()),local_sockets_only():
             result=runner.execute()
         self.assertEqual(json.loads((runner.run/'desk_run.json').read_text())['status'],'complete')
         self.assertIn('Low value: 90;',result.read_text())

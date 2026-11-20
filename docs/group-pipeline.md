@@ -16,19 +16,21 @@ python3.13 -m venv .venv-desk
 
 On Windows, use `py -3.13 -m venv .venv-desk` and `.venv-desk\Scripts\python` in place of the Mac path.
 The inherited seeker and standalone hook lock files with fcntl on macOS and Linux and with msvcrt on Windows.
-The automated tests ran on macOS and Python 3.13, and on 2026-11-19 on Windows 11 and Python 3.13. On
-Windows, six tests in `tests/` still fail for reasons of the test harness: three create symlinks, which need
-administrator rights; one decodes a child process's output as UTF-8; two block every socket, and Windows'
-event loop needs a local one.
+The automated tests ran on macOS and Python 3.13, and on 2026-11-19 on Windows 11 and Python 3.13.
+The November 19 Windows run had six remaining test-harness failures: three symlink permissions,
+child-process encoding, and two guards blocking event-loop sockets. The November 20 changes make symlink
+checks conditional on system permission, set child output to UTF-8, and allow loopback sockets while
+blocking external connections. The ordinary secret/excluded-file checks always run. These changes were
+checked on macOS; a new Windows run is still required to confirm the remaining failures are resolved.
 
 Configure only this repo's `.env`. It needs `SEC_USER_AGENT`, `API_KEY`, and an explicit `MODEL`.
 Use the CrewAI model prefix, such as `anthropic/` followed by a model ID available to your account.
 The copied worksheet supports Anthropic judgment calls only. This inherited limitation is not changed.
 The closes reader uses this repo's `.env` too. No price or volume source is copied from the personal repo.
 Its optional LSEG worker defaults to this repo's `.venv-lseg`, not a workspace environment.
-That default is the Mac path, `.venv-lseg/bin/python`. On Windows, set `LSEG_PYTHON` in `.env` to a Python that
-has `lseg-data`, for example `.venv\Scripts\python.exe`. The reader has no other price source: with LSEG
-Workspace closed, a run has no close, and its worksheet view is "not computed".
+The default is `.venv-lseg/bin/python` on macOS/Linux and `.venv-lseg\Scripts\python.exe` on Windows.
+Create that environment and install `lseg-data`, or set `LSEG_PYTHON` in `.env` to an existing Python
+that has the package, for example `.venv\Scripts\python.exe` on Windows. The override takes precedence. The reader has no other price source: with LSEG Workspace closed, a run has no close, and its worksheet view is "not computed".
 
 ```bash
 .venv-desk/bin/python check_pipeline.py

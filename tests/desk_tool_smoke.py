@@ -8,8 +8,10 @@ import tempfile
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 
-def denied(*args,**kwargs):raise RuntimeError('Seeded tool test cannot fetch')
-socket.socket.connect=denied
+from portable import connect_local_only, connect_ex_local_only
+socket.socket.connect = connect_local_only
+socket.socket.connect_ex = connect_ex_local_only
+
 
 with tempfile.TemporaryDirectory() as tmp:
     run=Path(tmp)

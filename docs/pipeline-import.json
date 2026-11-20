@@ -84,7 +84,7 @@
       "source": "Repos/Analyst/closes_reader.py",
       "destination": "closes_reader.py",
       "source_sha256": "b6278bb422517cec8e3a7170c5d99d671d1d21af377cde4a40bffff0bbd3579f",
-      "group_sha256": "8182f15dc261fcbc5b522f7da6d0744bc6677de6dbefef0a4e0fcf8694fe18d2",
+      "group_sha256": "36f37d83c3b11300de657506e20e8df6472edf4e93cca8921fdc7ec005f037fc",
       "adapted": true
     },
     {
@@ -308,7 +308,7 @@
       "source": "Repos/Analyst/tests/test_joined_desk.py",
       "destination": "tests/test_joined_desk.py",
       "source_sha256": "b6f7129567a6df8b200f5f8b359c65058cd5af21ddab1e903c7ce81879f4ca65",
-      "group_sha256": "66150810d5fe0e7f1f602c034ca4398bc62c16731ad69ea239cb020360a844ef",
+      "group_sha256": "9e79931085590416fe216e0f08ee33b5e1a8f8ad59cb2c3da6d86ad7d5ccbf5c",
       "adapted": true
     },
     {
@@ -322,8 +322,8 @@
       "source": "Repos/Analyst/tests/test_desk_boundaries.py",
       "destination": "tests/test_desk_boundaries.py",
       "source_sha256": "a18ee7a84487bc9132926db2eba1df756ec9d3a91fc8834e4cc461ed6a415526",
-      "group_sha256": "a18ee7a84487bc9132926db2eba1df756ec9d3a91fc8834e4cc461ed6a415526",
-      "adapted": false
+      "group_sha256": "c15bdd9a84eb64d52771ce90d5f8aed74d2400bab82d2691246980c42fc409f6",
+      "adapted": true
     },
     {
       "source": "Repos/Analyst/tests/test_desk_claims.py",
@@ -336,8 +336,8 @@
       "source": "Repos/Analyst/tests/test_all_role_contracts.py",
       "destination": "tests/test_all_role_contracts.py",
       "source_sha256": "1d8fe8d63af7aa1b306a9617288eb813a88344573137e9b12399b335ac772097",
-      "group_sha256": "1d8fe8d63af7aa1b306a9617288eb813a88344573137e9b12399b335ac772097",
-      "adapted": false
+      "group_sha256": "98b73369e1e822e12cf1e2f3a00e92ee41951f1c25e664b4b00436a5e518f0c7",
+      "adapted": true
     },
     {
       "source": "Repos/Analyst/tests/test_verifier_checks.py",
@@ -385,8 +385,8 @@
       "source": "Repos/Analyst/tests/desk_all_roles_smoke.py",
       "destination": "tests/desk_all_roles_smoke.py",
       "source_sha256": "6396d8fa1e3b11d823989f46cf127e116a74d373376462d95ab3c500d6796304",
-      "group_sha256": "6396d8fa1e3b11d823989f46cf127e116a74d373376462d95ab3c500d6796304",
-      "adapted": false
+      "group_sha256": "b7cebbc90d3859f13b028161cb2a9501649ea3a3f58d8bc67f6c11655cbf3692",
+      "adapted": true
     },
     {
       "source": ".codex/hooks/tests/test_worksheet_numbers.py",
@@ -413,8 +413,8 @@
       "source": "Repos/Analyst/tests/desk_tool_smoke.py",
       "destination": "tests/desk_tool_smoke.py",
       "source_sha256": "8ae4a577193a961139a43afce84fbef3b1858613db078a107a3d1b9f70c36784",
-      "group_sha256": "8ae4a577193a961139a43afce84fbef3b1858613db078a107a3d1b9f70c36784",
-      "adapted": false
+      "group_sha256": "5f27b9e857dd81f1220fe0d349d26486c9953dc337dbda96584f3fafccfaec40",
+      "adapted": true
     }
   ],
   "group_only_files": [

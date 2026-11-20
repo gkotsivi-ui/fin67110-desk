@@ -4,6 +4,7 @@ from pathlib import Path
 import tempfile
 import unittest
 import subprocess
+import os
 import sys
 from desk_claims import check,load_sources,with_repairs
 from desk_sources import write_json,Sources
@@ -14,7 +15,7 @@ from insight_layout import PART_OWNERS
 
 class AllRoleContracts(unittest.TestCase):
     def test_real_crewai_all_role_chain_with_seeded_model(self):
-        result=subprocess.run([sys.executable,str(Path(__file__).with_name('desk_all_roles_smoke.py'))],text=True,capture_output=True,timeout=60)
+        result=subprocess.run([sys.executable,str(Path(__file__).with_name('desk_all_roles_smoke.py'))],text=True,encoding="utf-8",env={**os.environ,"PYTHONIOENCODING":"utf-8"},capture_output=True,timeout=60)
         self.assertEqual(result.returncode,0,result.stdout[-4500:]+result.stderr[-4500:])
         self.assertIn('SEEDED all-role CrewAI chain passed',result.stdout)
 
