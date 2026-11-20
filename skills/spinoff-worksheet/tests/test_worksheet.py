@@ -168,6 +168,23 @@ class AdditionalContracts(unittest.TestCase):
         with patch.dict('os.environ',env),patch.object(w,'RETRY_WAIT_SECONDS',0),patch('requests.post',side_effect=requests.exceptions.ConnectionError('dropped')) as post:
             with self.assertRaises(requests.exceptions.ConnectionError):w.judge_once('Test persona',{})
         self.assertEqual(post.call_count,2)
+    def test_printed_reasons_hold_no_digit_the_hook_cannot_trace(self):
+        # 2026-11-20: "3 comparable fiscal years ... were not established" stopped a whole run at the hook.
+        spec=importlib.util.spec_from_file_location('statements_tested',P.with_name('statements.py'))
+        s=importlib.util.module_from_spec(spec);spec.loader.exec_module(s)
+        _,ocf=s.collect(tempfile.mkdtemp(),3,True)
+        self.assertTrue(ocf['reason'].startswith('three comparable fiscal years'),ocf['reason'])
+        settings={'start':'2027-01-01','end':'2027-01-31','observations':20,'currency':'USD'}
+        rows=[{'date':'2027-01-04','close':10,'volume':100,'currency':'USD'}]
+        thin=w.liquidity(rows,settings)
+        self.assertEqual((thin['required'],thin['supplied']),(20,1))
+        for reason in (ocf['reason'],thin['reason']):self.assertNotRegex(reason,r'\d')
+    def test_with_no_price_the_price_criterion_says_so_in_words(self):
+        spec=importlib.util.spec_from_file_location('scores_tested',P.with_name('evidence_scores.py'))
+        e=importlib.util.module_from_spec(spec);spec.loader.exec_module(e)
+        rows=e.score({},{'price':None,'low_value':None,'price_source':None},{'value':None})
+        third=next(r for r in (rows[0] if isinstance(rows,tuple) else rows) if r['criterion']==3)
+        self.assertEqual((third['score'],third['source']),(0,'Code price/low comparison; not computed, no price or no low value'))
     def test_a_refused_request_is_not_sent_again(self):
         import requests
         refused=Mock();refused.raise_for_status.side_effect=requests.exceptions.HTTPError('400 Client Error',response=Mock(status_code=400))

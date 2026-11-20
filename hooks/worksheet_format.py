@@ -341,7 +341,11 @@ class WorksheetFormat:
                 if names.get(index)!=m['name']:raise ValueError('Criterion identifier and name do not match the persona method')
                 keys={1:['forced_seller','index_exclusion','index','relative_size'],2:['indifferent_seller','relative_size','dividend_mismatch'],4:['debt_raised','retained_liabilities','restrictions'],5:['insider_purchases'],6:['cash_to_parent','parent_motive','parent']}
                 def absent(key):return key not in self.facts or self.facts[key]['value'] in ('not known','not applicable')
-                if index==3 and self.price is not None and self.low is not None:expected=Decimal(2 if self.price<=self.low else 0)
+                if index==3:
+                    # With no price (LSEG closed) or no low value, the comparison's evidence is absent, and absent
+                    # evidence scores 0, as for the other five criteria and in evidence_scores.py. A 2 still needs
+                    # both, verified above. On 2026-11-20 this case had no rule, and it stopped a whole run.
+                    expected=Decimal(2 if self.price<=self.low else 0) if self.price is not None and self.low is not None else Decimal(0)
                 elif index in keys and all(absent(k) for k in keys[index]):expected=Decimal(0)
                 if expected is None:raise ValueError('Score needs evidence that cannot be established from printed fact rows')
                 if amount(m['score'])!=expected:raise ValueError('Score differs from printed evidence and persona policy')

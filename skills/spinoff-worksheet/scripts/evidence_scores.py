@@ -26,7 +26,7 @@ def score(facts,comparison,ocf):
       ('Load pushed in',2 if quantified and covered else 1 if quantified else 0,load_keys+['debt_service']),
       ('Insiders buying',2 if open_market else 1 if positive(insider) else 0,['insider_purchases']),
       ('Parent motive',2 if positive(facts.get('cash_to_parent',{})) or has('parent_motive') else 1 if has('parent') else 0,['cash_to_parent','parent_motive','parent'])]
-    rows=[{'criterion':i,'name':name,'score':value,'source':'; '.join(facts[k]['source'] for k in keys if has(k)) or ('Code price/low comparison; '+str(comparison.get('price_source')) if i==3 else 'not known')} for i,(name,value,keys) in enumerate(specs,1)]
+    rows=[{'criterion':i,'name':name,'score':value,'source':'; '.join(facts[k]['source'] for k in keys if has(k)) or ('Code price/low comparison; '+(str(comparison['price_source']) if comparison.get('price_source') else 'not computed, no price or no low value') if i==3 else 'not known')} for i,(name,value,keys) in enumerate(specs,1)]
     conditions={'seller_identified':forced or indifferent,'insider_interest':open_market or stake,'at_or_below_low':price_ok,'parent_load_quantified_and_covered':quantified and covered}
     return rows,conditions
 

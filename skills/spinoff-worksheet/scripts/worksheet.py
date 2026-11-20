@@ -288,7 +288,8 @@ def liquidity(rows,settings):
         except (KeyError,TypeError,ValueError):return unknown('A requested daily close or volume is missing or invalid')
     required=settings.get('observations')
     if required:
-        if len(pairs)<required:return unknown(f'{required} trading-day observations required; only {len(pairs)} supplied')
+        # Printed in the worksheet, where the hook refuses a digit it cannot trace; the counts stay in the saved JSON.
+        if len(pairs)<required:return {**unknown('Fewer trading-day observations were supplied than the liquidity rule requires'),'required':required,'supplied':len(pairs)}
         ordered=sorted(zip(days,pairs))[-required:];days=[x[0] for x in ordered];pairs=[x[1] for x in ordered]
     if not pairs or currencies!={settings.get('currency')} or settings.get('currency')!='USD':return unknown('USD prices/volumes and a compatible purchase currency are required')
     try:purchase=number(settings['purchase_size'])

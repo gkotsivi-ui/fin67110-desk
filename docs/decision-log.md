@@ -438,11 +438,20 @@ A server test checks that the page serves the joined report only after completio
   a model call whose reply never came (a dropped connection, a timeout, or the provider's server error) is
   made once more after thirty seconds, and the role's `dropped_connections.json` records it. A reply that
   came, however bad, is never asked again. The worksheet's one call does the same.
+- **What AI got wrong: no rule for a missing price.** In the run after that (2026-11-20), the agent team
+  finished: the Verifier flagged one claim, and its line was left out as designed. The worksheet then stopped
+  at the hook. LSEG was closed, so there was no price, and the price criterion scored 0; the hook had a rule
+  for that criterion only when both the price and the low value were known, and refused the line. It now
+  expects 0, the persona's score for absent evidence, as it does for the other five criteria; a 2 still needs
+  both, verified. So the README's "prices are optional" was not true until this fix. Two reasons the
+  worksheet's own code prints held a digit the hook cannot trace ("3 comparable fiscal years", and the count
+  of trading days for liquidity); they are now written without one, and the counts stay in the worksheet's
+  JSON. The worksheet also printed a raw `None` as its price evidence; it now says "not computed".
 - **What AI got wrong: a float read as exact.** The hook compared a return on equity saved as a binary float
   with the exact decimal of its formula and refused a correct number. A practice run on Lowe's found it.
 - **What AI got wrong: a home folder in the public repository.** The error-review files saved one member's
   full path to the repository. The audit found it; the paths are now relative to the repository.
-- **Tests.** On Windows 11 and Python 3.13, the four test folders ran 600 tests with no failure; the three
+- **Tests.** On Windows 11 and Python 3.13, the four test folders ran 603 tests with no failure; the three
   that create a symlink were skipped. A Mac run of the same folders is still to be done.
 - **Open.** The worksheet reads its owner-cash-flow inputs from the 10-K's text and found none for Walmart.
   Without LSEG Workspace open, the closes reader has no price, and the view is "not computed". A leave-out

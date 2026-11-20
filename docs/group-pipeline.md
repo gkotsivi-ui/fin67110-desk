@@ -20,7 +20,7 @@ The desk's programs start themselves in Python's UTF-8 mode on Windows (`utf8_mo
 rules and the reports are UTF-8, and Windows would otherwise read and write them in its own code page: the
 worksheet could not read its own rule "owner cash flow ÷ 10%". Run the tests there with `-X utf8` for the
 same reason. The automated tests ran on macOS and Python 3.13, and on 2026-11-19 on Windows 11 and Python
-3.13: 600 tests in the four folders, no failure. Three tests that create a symlink are skipped on an
+3.13: 603 tests in the four folders, no failure. Three tests that create a symlink are skipped on an
 account that may not create one (Windows: administrator rights or Developer Mode). The seeded CrewAI tests
 block every connection except the loopback pair Windows' event loop builds for itself (`tests/no_network.py`).
 
