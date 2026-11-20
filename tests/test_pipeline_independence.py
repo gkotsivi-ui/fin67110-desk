@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import os
 import sys
 import tempfile
 import unittest
@@ -31,7 +32,7 @@ class IndependenceTests(unittest.TestCase):
             clone.mkdir()
             for item in manifest['files']:
                 rel = Path(item['destination'])
-                if rel.parts[0] == 'tests' and rel.name != 'test_joined_desk.py':
+                if rel.parts[0] == 'tests' and rel.name not in {'test_joined_desk.py', 'portable.py'}:
                     continue
                 source = ROOT / rel
                 target = clone / rel
@@ -41,6 +42,7 @@ class IndependenceTests(unittest.TestCase):
                 target=clone/relative
                 target.parent.mkdir(parents=True,exist_ok=True)
                 shutil.copyfile(ROOT/relative,target)
+            shutil.copyfile(ROOT/'tests/portable.py', clone/'tests/portable.py')
             script = '''
 from pathlib import Path
 import desk, desk_sources, desk_parts, desk_hook, equity_research_desk, equity_research_agent_team, closes_reader
@@ -59,9 +61,11 @@ result=unittest.TextTestRunner(verbosity=0).run(unittest.defaultTestLoader.disco
 assert result.wasSuccessful()
 print('STANDALONE PASS')
 '''
-            # UTF-8 mode, as desk.py starts itself on Windows (utf8_mode.py); macOS and Linux are UTF-8 already.
+            # UTF-8 mode, as desk.py starts itself on Windows (utf8_mode.py): the copied tests read UTF-8 rules and
+            # filings. macOS and Linux are UTF-8 already. A slow Windows import can pass ninety seconds.
             done = subprocess.run([sys.executable, '-X', 'utf8', '-c', script], cwd=clone, capture_output=True,
-                                  encoding='utf-8', errors='replace', timeout=300)
+                                  encoding='utf-8', errors='replace', env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+                                  timeout=300)
             self.assertEqual(done.returncode, 0, done.stderr[-3000:])
             self.assertIn('STANDALONE PASS', done.stdout)
 

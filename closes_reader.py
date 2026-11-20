@@ -180,11 +180,13 @@ def _lseg_rows(instrument, start, end, app_key, include_volume=False):
                 pass
 
 
-def lseg_python(system: str = '') -> Path:
-    """The default Python of the LSEG worker: this folder's .venv-lseg, on Windows as on a Mac or Linux.
-    LSEG_PYTHON in .env names another one. system is os.name unless a test gives one."""
-    venv = Path(__file__).resolve().parent / '.venv-lseg'
-    return venv / 'Scripts' / 'python.exe' if (system or os.name) == 'nt' else venv / 'bin' / 'python'
+def worker_python(config, *, platform=None):
+    """Use the explicit interpreter, or this repo's platform-specific LSEG environment."""
+    if config.get('LSEG_PYTHON'):
+        return config['LSEG_PYTHON']
+    platform = os.name if platform is None else platform
+    relative = ('Scripts', 'python.exe') if platform == 'nt' else ('bin', 'python')
+    return str(Path(__file__).resolve().parent.joinpath('.venv-lseg', *relative))
 
 
 def daily_closes(ticker: str, start_date: str, end_date: str, *, include_volume=False):
@@ -214,11 +216,11 @@ def daily_closes(ticker: str, start_date: str, end_date: str, *, include_volume=
             _diagnostic(config, ticker, start_date, end_date, 'configuration', 'LSEG_APP_KEY and LSEG_CLOSES_FILE are both absent or blank.')
             return NOT_AVAILABLE
         instrument = json.loads(config.get('LSEG_RIC_MAP') or '{}').get(ticker, ticker)
-        python = config.get('LSEG_PYTHON') or str(lseg_python())
+        python = worker_python(config)
         stage = 'worker_launch'
         worker = subprocess.run([python, str(Path(__file__).resolve()), '--worker-volume' if include_volume else '--worker', instrument,
                                  start.isoformat(), end.isoformat()],
-                                env={**os.environ, 'LSEG_APP_KEY': key}, capture_output=True, text=True, timeout=180)
+                                env={**os.environ, 'LSEG_APP_KEY': key, 'PYTHONIOENCODING': 'utf-8'}, capture_output=True, text=True, encoding='utf-8', timeout=180)
         if worker.returncode:
             _diagnostic(config, ticker, start_date, end_date, 'worker_exit', worker.stderr or worker.stdout or 'Worker exited without output.', returncode=worker.returncode, instrument=instrument)
             return NOT_AVAILABLE

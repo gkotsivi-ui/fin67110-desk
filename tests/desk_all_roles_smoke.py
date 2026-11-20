@@ -8,8 +8,10 @@ import tempfile
 from types import SimpleNamespace
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from no_network import deny_network
-deny_network('Seeded all-role test cannot fetch')
+from portable import connect_local_only, connect_ex_local_only
+socket.socket.connect = connect_local_only
+socket.socket.connect_ex = connect_ex_local_only
+
 
 with tempfile.TemporaryDirectory() as tmp:
     run=Path(tmp);os.environ['CREWAI_STORAGE_DIR']=str(run/'framework')

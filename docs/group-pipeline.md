@@ -19,10 +19,12 @@ The inherited seeker and standalone hook lock files with fcntl on macOS and Linu
 The desk's programs start themselves in Python's UTF-8 mode on Windows (`utf8_mode.py`). The filings, the
 rules and the reports are UTF-8, and Windows would otherwise read and write them in its own code page: the
 worksheet could not read its own rule "owner cash flow ÷ 10%". Run the tests there with `-X utf8` for the
-same reason. The automated tests ran on macOS and Python 3.13, and on 2026-11-19 on Windows 11 and Python
-3.13: 603 tests in the four folders, no failure. Three tests that create a symlink are skipped on an
-account that may not create one (Windows: administrator rights or Developer Mode). The seeded CrewAI tests
-block every connection except the loopback pair Windows' event loop builds for itself (`tests/no_network.py`).
+same reason. The test harness is portable (`tests/portable.py`): symlink checks run only where the system
+permits a symlink, the ordinary secret and excluded-file checks always run, and the seeded CrewAI tests
+allow loopback sockets, which Windows' event loop needs, while blocking every external connection. The
+automated tests ran on macOS and Python 3.13, and, with both sets of Windows changes, on Windows 11 and
+Python 3.13 on 2026-11-20: 607 tests in the four folders, no failure; the four that create a symlink
+were skipped.
 
 Configure only this repo's `.env`. It needs `SEC_USER_AGENT`, `API_KEY`, and an explicit `MODEL`.
 Use the CrewAI model prefix, such as `anthropic/` followed by a model ID available to your account.
@@ -30,9 +32,9 @@ The worksheet's judgment uses the same `MODEL` and `API_KEY` as the agent team. 
 request to Anthropic, as before; any other model goes through CrewAI's LLM, as the team's roles do.
 The closes reader uses this repo's `.env` too. No price or volume source is copied from the personal repo.
 Its optional LSEG worker defaults to this repo's `.venv-lseg`, not a workspace environment.
-That default is the Mac path, `.venv-lseg/bin/python`. On Windows, set `LSEG_PYTHON` in `.env` to a Python that
-has `lseg-data`, for example `.venv\Scripts\python.exe`. The reader has no other price source: with LSEG
-Workspace closed, a run has no close, and its worksheet view is "not computed".
+The default is `.venv-lseg/bin/python` on macOS/Linux and `.venv-lseg\Scripts\python.exe` on Windows.
+Create that environment and install `lseg-data`, or set `LSEG_PYTHON` in `.env` to an existing Python
+that has the package, for example `.venv\Scripts\python.exe` on Windows. The override takes precedence. The reader has no other price source: with LSEG Workspace closed, a run has no close, and its worksheet view is "not computed".
 
 ```bash
 .venv-desk/bin/python check_pipeline.py

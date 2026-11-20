@@ -5,16 +5,9 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from portable import symlink_or_skip
 from desk_error_review import Review, review_run, shown, snapshot, write_reports
 from error_review_evaluation import evaluate, put
-
-
-def symlink_or_skip(test, link, target):
-    """Windows lets an account create a symlink only with administrator rights or Developer Mode."""
-    try:
-        link.symlink_to(target)
-    except OSError as error:
-        test.skipTest(f"this account cannot create a symlink: {error}")
 
 
 class ReviewTests(unittest.TestCase):
@@ -176,7 +169,7 @@ class ReviewTests(unittest.TestCase):
     def test_output_symlink_does_not_create_directories_in_original(self):
         destination = self.root / "destination"
         destination.mkdir()
-        symlink_or_skip(self, destination / "docs", self.run)
+        symlink_or_skip(self, destination / "docs", self.run, is_directory=True)
         r = Review(self.run, self.history)
         before = snapshot(self.run)
         with self.assertRaises(ValueError):
@@ -254,13 +247,21 @@ class ReviewTests(unittest.TestCase):
         put(self.run, "wrds.csv", "synthetic blocked file")
         put(self.run, "nodes/wrds.json", {"synthetic": "blocked"})
         r = Review(self.run, self.history)
-        self.assertFalse(any("wrds" in k or ".env" in k for k in r.texts))
+        self.assertFalse(any("wrds" in k or ".env" in k or "link" in k for k in r.texts))
 
-    def test_symlinks_are_not_model_input(self):
+    def test_file_symlinks_are_not_model_input(self):
         put(self.run, ".env", "API_KEY=not-a-real-key")
         symlink_or_skip(self, self.run / "10K_link.txt", self.run / ".env")
         r = Review(self.run, self.history)
-        self.assertFalse(any(".env" in k or "link" in k for k in r.texts))
+        self.assertFalse(any("link" in key for key in r.texts))
+
+    def test_directory_symlinks_are_not_model_input(self):
+        private = self.root / "private"
+        private.mkdir()
+        put(private, "10K.txt", "synthetic private content")
+        symlink_or_skip(self, self.run / "linked", private, is_directory=True)
+        r = Review(self.run, self.history)
+        self.assertFalse(any("linked" in key for key in r.texts))
 
     def test_synthetic_evaluation_has_no_misses_false_alarms_or_broken_refs(self):
         result = evaluate(self.root / "evaluation")

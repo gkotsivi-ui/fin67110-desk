@@ -207,7 +207,7 @@ Checked on 2026-11-19, on Windows 11.
 | The live record | two reports inside their 24-hour windows, Week 4 (Cisco) and Week 5 (NVIDIA), both written by the legacy desk below |
 | The hit-rate table | runs; both live reports predate the worksheet and have no view, so it scores none yet |
 | The intelligent error review | built; a review of each live report is saved beside it |
-| Tests | 603 in four folders, no failure; three symlink tests skipped. The macOS run is to be redone |
+| Tests | 607 in four folders, no failure; four symlink tests skipped. The macOS run is to be redone |
 
 Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them before you trust a number.
 
@@ -421,7 +421,7 @@ Mac:
 .venv-desk/bin/python -m unittest discover -s skills/us-spinoff-seeker/tests
 ```
 
-On Windows 11 on 2026-11-19 the four folders ran 603 tests with no failure. Three tests that create a
+On Windows 11 on 2026-11-20 the four folders ran 607 tests with no failure. Four tests that create a
 symlink were skipped: Windows lets an account create one only with administrator rights or Developer Mode.
 
 They cover the XBRL tag choice, the full-year filter, the release's table text, the quote and number

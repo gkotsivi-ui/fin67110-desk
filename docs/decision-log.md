@@ -1,5 +1,28 @@
 # Decision log
 
+## 2026-11-20: remaining Windows portability issues
+
+- The November 19 teammate run documented six remaining Windows test failures. The Mac-only LSEG worker
+  default also prevented the Windows helper from launching. This work addresses those compatibility
+  issues, without changing financial rules, Verifier policy, or saved runs.
+- Symlink security tests still create actual symlinks. Only permission/unsupported-operation errors
+  skip those tests. Ordinary secret and excluded-file checks run independently. File and directory
+  symlink exclusion remain separate checks.
+- Seeded CrewAI child processes and the LSEG worker explicitly use UTF-8 for output. This avoids a
+  Windows code-page mismatch between the parent and child.
+- Offline test guards permit numeric loopback addresses for local event-loop sockets. Both connect
+  and connect_ex reject external addresses and hostnames. Regression checks exercise a real loopback
+  socket and event loop, plus blocked synthetic external addresses. No provider call is used.
+- The LSEG helper selects this repository's .venv-lseg/Scripts/python.exe on Windows and
+  .venv-lseg/bin/python on macOS/Linux. An explicit LSEG_PYTHON still takes precedence. Path-selection
+  tests simulate both platforms without an LSEG connection or credential access.
+- Validation: main suite 365 passed; hooks 69 passed; worksheet 30 passed; seeker 103 passed.
+  The required live_record.py --offline --no-save check and git diff --check passed.
+- Validation runs on macOS/Python 3.13 only. A real Windows test run remains necessary; simulated
+  Windows path selection does not establish full Windows compatibility. No original run was changed.
+- AI assistance for this change: OpenAI Codex. No human verification is claimed.
+
+
 ## 2026-11-19: timestamped predictions and COST practice
 
 - Added a code-owned first prediction record with canonical direction, actual filing acceptance,
@@ -451,8 +474,9 @@ A server test checks that the page serves the joined report only after completio
   with the exact decimal of its formula and refused a correct number. A practice run on Lowe's found it.
 - **What AI got wrong: a home folder in the public repository.** The error-review files saved one member's
   full path to the repository. The audit found it; the paths are now relative to the repository.
-- **Tests.** On Windows 11 and Python 3.13, the four test folders ran 603 tests with no failure; the three
-  that create a symlink were skipped. A Mac run of the same folders is still to be done.
+- **Tests.** On Windows 11 and Python 3.13 on 2026-11-20, with Jackson's Windows changes of that day merged
+  in, the four test folders ran 607 tests with no failure; the four that create a symlink were skipped.
+  That is the Windows run his entry asks for. A Mac run of the merged folders is still to be done.
 - **Open.** The worksheet reads its owner-cash-flow inputs from the 10-K's text and found none for Walmart.
   Without LSEG Workspace open, the closes reader has no price, and the view is "not computed". A leave-out
   removes the whole draft line, so good claims on the same line go with the bad one.
