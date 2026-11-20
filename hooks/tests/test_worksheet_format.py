@@ -153,6 +153,13 @@ class ExistingFormatTests(unittest.TestCase):
         self.assertTrue(self.check(self.text.replace('Price against value: 2','Price against value: 0')))
         self.assertTrue(self.check(self.text.replace('Forced seller: 0','Forced seller: 2')))
 
+    def test_with_no_price_the_price_criterion_scores_zero(self):
+        # LSEG closed on 2026-11-20: no price, so no comparison. Absent evidence scores 0; a 2 still fails.
+        price='Price against low: 50 on 2026-11-11 (LSEG TR.PriceClose (TEST.O)); low 90; (price - low) / low * 100 = -44.4444444444444%'
+        no_price=self.text.replace(price,'Price against low: not computed')
+        self.assertEqual(self.check(no_price.replace('Price against value: 2 (computed in code); not known',
+                                                     'Price against value: 0 (computed in code); Code price/low comparison; not computed, no price or no low value')),[])
+        self.assertTrue(self.check(no_price))
     def test_present_qualitative_evidence_is_not_treated_as_absent(self):
         self.assertTrue(self.check(self.text+'\nforced_seller | The holders have a mandate mismatch | historical | [10-K.txt:L1]'))
         self.assertTrue(self.check(self.text.replace('Criterion 3 — Price against value','Criterion 3 — Load pushed in')))

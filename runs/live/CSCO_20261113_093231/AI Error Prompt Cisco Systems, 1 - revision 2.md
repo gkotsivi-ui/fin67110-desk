@@ -1,6 +1,6 @@
 # AI Error Prompt Cisco Systems, 1 - revision 2
 
-Run folder: /Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live/CSCO_20261113_093231
+Run folder: runs/live/CSCO_20261113_093231
 Record type: live
 Review time: 2026-11-17T20:10:08.316415+00:00
 Model: OpenAI Codex (session model identifier unavailable)

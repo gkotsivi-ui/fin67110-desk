@@ -20,6 +20,7 @@ filing's own section header, never by the model.
 """
 from __future__ import annotations
 
+import bisect
 import json
 from pathlib import Path
 import re
@@ -53,7 +54,8 @@ UNIT_WORDS = (r"percent|percentage points?|basis points?|bps|trillion|billion|mi
 IDENTIFIER_END=r'(?![\w%$€£]|\.\d|\s*(?:'+UNIT_WORDS+r')\b)'
 LINE_REF=re.compile('(?:'+LINE_REF.pattern+')'+IDENTIFIER_END,re.I)
 TEXT_DATE=re.compile('(?:'+TEXT_DATE.pattern+')'+IDENTIFIER_END)
-YEAR = re.compile(r'\b(?:fiscal(?:\s+year)?|year|in|for|during|the|from|since|through|versus|vs\.?|with)\s+(?:19|20)\d{2}\b(?!\s*(?:'+UNIT_WORDS+r')\b)|(?<![\w$.,])(?:19|20)\d{2}(?=\s+(?:net\s+(?:sales|income)|gross\s+margin|fiscal\s+year|revenue|results)\b)',re.I)
+# "fy 2025": the Verifier quotes facts.json's fy field (2026-11-19), a fiscal-year label like "fiscal 2025".
+YEAR = re.compile(r'\b(?:fiscal(?:\s+year)?|fy|year|in|for|during|the|from|since|through|versus|vs\.?|with)\s+(?:19|20)\d{2}\b(?!\s*(?:'+UNIT_WORDS+r')\b)|(?<![\w$.,])(?:19|20)\d{2}(?=\s+(?:net\s+(?:sales|income)|gross\s+margin|fiscal\s+year|revenue|results)\b)',re.I)
 PERIOD_SEQUENCE=re.compile(r'\b(?:the|years?|fiscal\s+years?|periods?)\s+(?:19|20)\d{2}(?:\s*(?:,|and)\s*(?:19|20)\d{2})+\s+(?:sequence|years?|periods?)\b',re.I)
 YEAR_END=re.compile(r'\b(?:end|beginning)\s+of\s+(?:(?:fiscal\s+)?year\s+)?(?:19|20)\d{2}\b'+IDENTIFIER_END,re.I)
 YEAR_METRIC=re.compile(r'(?<![\w$.,])(?:19|20)\d{2}(?=\s+(?:(?:long|short)[- ]term\s+debt|operating\s+income|cash\s+flow|capital\s+spending|membership\s+fees?)\b)',re.I)
@@ -322,6 +324,12 @@ def check(output: dict[str, Any], texts: dict[str, str], facts: dict[str, Any] |
             result.errors.append(
                 f"{cid}: value {value!r} must be copied exactly from the quote; it is not in it.")
             continue
+        if not re.search(r'\d|\b(?:'+NUMBER_WORDS+r')\b',value,re.I):
+            # 2026-11-19: "sixth consecutive quarter" was sent back three times as "a substring of a larger
+            # value", a message the model could not act on, and its whole paragraph was then left out.
+            result.errors.append(f'{cid}: value {value!r} holds no number. A claim is a number copied from the cited line; '
+                                 'state this fact in words without a claim, or cite the number.')
+            continue
         if not complete_value(_norm(value),_norm(quote),source_line):
             result.errors.append(f'{cid}: value must be a complete amount and unit copied from the cited line, not a substring of a larger value.')
             continue
@@ -383,12 +391,112 @@ def verify_saved(run, data: dict[str, Any],role=None) -> list[str]:
     return result.errors
 
 
+CLAIM_ERROR = re.compile(r"^\{?(c\d+)\}?(?::| is never used| is used in the draft)")
+LINE_ERROR = re.compile(r"^draft line (\d+):")
+
+
+def _failing(errors):
+    """The claim ids and draft line numbers the errors name, or None when an error is of another kind."""
+    ids, lines = set(), set()
+    for error in errors:
+        if match := LINE_ERROR.match(error):
+            lines.add(int(match[1]))
+        elif match := CLAIM_ERROR.match(error):
+            ids.add(match[1])
+        else:
+            return None
+    return ids, lines
+
+
+def _by_number(ids):
+    return sorted(ids, key=lambda cid: int(cid[1:]) if re.fullmatch(r"c\d+", str(cid)) else 0)
+
+
+# What stands in a Verifier mark's reason when the reason itself failed the code's check after its repairs.
+LEFT_OUT_REASON = "The Verifier's reason for this mark failed the code's check after its repairs and is left out."
+
+
+def _text_of_each_line(texts):
+    """For "\\n".join(texts), split into lines as check() splits a draft: the index of the text each line is in."""
+    starts, position = [], 0
+    for text in texts:
+        starts.append(position)
+        position += len(text) + 1
+    owners, offset = [], 0
+    for line in "\n".join(texts).splitlines(keepends=True):
+        owners.append(bisect.bisect_right(starts, offset) - 1)
+        offset += len(line)
+    return owners
+
+
+def verifier_without_failing(raw, errors):
+    """A Verifier reply whose failing reasons and corrections are left out, and the claims only they used.
+
+    The Verifier's prose is checked as one draft: each check's reason, then its correction. A text that holds
+    a failing line or a failing claim is replaced (a reason by LEFT_OUT_REASON, a correction by nothing); every
+    mark stays. Returns (reply, claim ids left out, prose line numbers left out), or None.
+    """
+    checks, claims = raw.get("checks"), raw.get("claims", [])
+    if not isinstance(checks, list) or not isinstance(claims, list) or not all(isinstance(c, dict) for c in checks):
+        return None
+    failing = _failing(errors)
+    if failing is None:
+        return None
+    ids, lines = failing
+    where = [(i, key) for i in range(len(checks)) for key in ("reason", "correction")]
+    texts = [checks[i].get(key, "") for i, key in where]
+    if not all(isinstance(text, str) for text in texts):
+        return None
+    owners = _text_of_each_line(texts)
+    bad = {owners[n - 1] for n in lines if 0 < n <= len(owners)}
+    bad |= {k for k, text in enumerate(texts) if ids & set(PLACEHOLDER.findall(text))}
+    mended = [dict(check) for check in checks]
+    for k in bad:
+        i, key = where[k]
+        mended[i][key] = LEFT_OUT_REASON if key == "reason" else ""
+    used = set(PLACEHOLDER.findall("\n".join(mended[i].get(key, "") for i, key in where)))
+    kept = [c for c in claims if isinstance(c, dict) and c.get("id") in used and c.get("id") not in ids]
+    left_out = ids | {c.get("id") for c in claims if isinstance(c, dict)} - {c["id"] for c in kept}
+    return {**raw, "checks": mended, "claims": kept}, _by_number(left_out), sorted(lines)
+
+
+def without_failing(raw, errors):
+    """The reply with each failing claim left out, and every draft line that failed or uses a failing claim.
+
+    Returns (reply, claim ids left out, draft line numbers left out). Returns None when an error is of
+    another kind, such as the reply's shape, which only a new reply can mend, or when no line would be left.
+    A Verifier's reply has checks in place of a draft; verifier_without_failing mends it.
+    """
+    if isinstance(raw, dict) and "draft" not in raw and isinstance(raw.get("checks"), list):
+        return verifier_without_failing(raw, errors)
+    if not isinstance(raw, dict) or not isinstance(raw.get("claims"), list) or not isinstance(raw.get("draft"), str):
+        return None
+    failing = _failing(errors)
+    if failing is None:
+        return None
+    ids, lines = failing
+    kept, dropped = [], []
+    for n, line in enumerate(raw["draft"].splitlines(), 1):
+        if n in lines or ids & set(PLACEHOLDER.findall(line)):
+            dropped.append(n)
+        else:
+            kept.append(line)
+    if not any(line.strip() for line in kept):
+        return None
+    used = set(PLACEHOLDER.findall("\n".join(kept)))
+    claims = [c for c in raw["claims"] if isinstance(c, dict) and c.get("id") in used and c.get("id") not in ids]
+    left_out = ids | {c.get("id") for c in raw["claims"] if isinstance(c, dict)} - {c["id"] for c in claims}
+    return {**raw, "claims": claims, "draft": "\n".join(kept)}, _by_number(left_out), dropped
+
+
 def with_repairs(ask, texts: dict[str, str], facts: dict[str, Any], repairs: int = 2,on_attempt=None,validator=None):
     """Call ask(feedback) until the claims pass, sending each failure back once.
 
     ask(None) is the first call; ask(message) is a repair call. Returns
     (final_output_dict, attempts) where attempts lists every raw output and its errors.
-    Raises ValueError with the remaining errors when repairs run out.
+    When repairs run out, the latest reply is published without its failing claims and lines, and the
+    record of what was left out is the last attempt. Raises ValueError with the remaining errors when the
+    reply has the wrong shape or nothing would be left.
     """
     attempts, feedback = [], None
     for _ in range(repairs + 1):
@@ -406,4 +514,21 @@ def with_repairs(ask, texts: dict[str, str], facts: dict[str, Any], repairs: int
             return {"claims": raw["claims"], "template": raw["draft"], "draft": result.rendered,
                     "claim_attempts": len(attempts)}, attempts
         feedback = result.repair_message()
+    # One claim of forty that still fails stopped a whole run on 2026-11-19. A missing claim costs nothing in
+    # the audit, and a run that stops publishes nothing, so the latest reply that can be mended this way is
+    # checked again without its failing claims and lines.
+    for number in range(len(attempts), 0, -1):
+        trimmed = without_failing(attempts[number - 1]["output"], attempts[number - 1]["errors"])
+        if trimmed is None:
+            continue
+        reply, left_out, lines = trimmed
+        checked = validator(reply) if validator else check(reply, texts, facts)
+        if not checked.ok:
+            continue
+        attempts.append({"output": reply, "errors": [], "left_out": left_out, "left_out_lines": lines,
+                         "from_attempt": number})
+        if on_attempt:on_attempt(attempts)
+        if hasattr(checked,'output'):return {**checked.output,'claim_attempts':len(attempts)},attempts
+        return {"claims": reply["claims"], "template": reply["draft"], "draft": checked.rendered,
+                "claim_attempts": len(attempts)}, attempts
     raise ValueError("Role claims still fail after repairs:\n- " + "\n- ".join(result.errors))

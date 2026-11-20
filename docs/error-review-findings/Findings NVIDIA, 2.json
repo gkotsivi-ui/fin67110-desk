@@ -4,7 +4,7 @@
     "company": "NVIDIA",
     "ticker": "NVDA",
     "record_number": 2,
-    "run_folder": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live/NVDA_20261118_084439",
+    "run_folder": "runs/live/NVDA_20261118_084439",
     "run_time": "Run time: 2026-11-18 08:44:39 US Eastern Standard Time (UTC-0500); model claude-opus-5-5; price: $155.46, the close of 2026-11-17, the last close before 2026-11-17 16:20:51 ET, when the release was accepted, from financialdatasets.ai",
     "outcome": "completed",
     "outcome_limit": "Artifact state only; historical stops need a saved log or separate attestation.",
@@ -148,10 +148,10 @@
     "history/NVDA_20261118_084439/Error Documentation NVIDIA, 2.md": 73,
     "history/Error Documentation NVIDIA, 2.md": 73
   },
-  "history_folder": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live",
+  "history_folder": "runs/live",
   "outputs": {
-    "human": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live/NVDA_20261118_084439/Error Documentation NVIDIA, 2.md",
-    "ai": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live/NVDA_20261118_084439/AI Error Prompt NVIDIA, 2.md",
-    "findings": "/Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/docs/error-review-findings/Findings NVIDIA, 2.json"
+    "human": "runs/live/NVDA_20261118_084439/Error Documentation NVIDIA, 2.md",
+    "ai": "runs/live/NVDA_20261118_084439/AI Error Prompt NVIDIA, 2.md",
+    "findings": "docs/error-review-findings/Findings NVIDIA, 2.json"
   }
 }

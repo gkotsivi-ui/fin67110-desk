@@ -423,8 +423,67 @@ A server test checks that the page serves the joined report only after completio
   Verifier sees around a citation.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-19: leave out what fails, and the same desk on Windows as on a Mac
+
+- **What the team decided.** Greg chose that a claim the Verifier does not mark correct is left out of the
+  published report instead of stopping the run, that the Verifier sees more lines around each citation, and
+  that the worksheet uses the agent team's own `MODEL` and `API_KEY`.
+- **What changed.** A line that holds a flagged claim is left out; the marks table still lists the claim, and
+  a line under the table names each part and claim left out. The hook rebuilds the published text from the
+  saved role files, so a left-out line cannot come back. The Verifier sees eight lines on each side of every
+  cited line. One step earlier, an analyst's claim that still fails the code's check after two repairs is left
+  out with every draft line that uses it, and `claim_attempts.json` records what was left out. A ticker run
+  with no seeker registry goes on, with its spinoff parts "not applicable".
+- **What AI got wrong: a repair message the model could not act on.** In a practice run on Lowe's, one claim
+  of 29 gave "sixth consecutive quarter" as its value. The check sent it back twice as "a substring of a
+  larger value". The model sent the same claim each time, and the whole run would have stopped. With the
+  leave-out it went on, but the paragraph that used the claim held seven good claims, and six of them left
+  the report with it (the seventh is used elsewhere). The message now says the value holds no number and
+  that the fact can be written in words. In the next run on Lowe's the model again gave "sixth" as a value,
+  got the new message, and mended it in one repair, with nothing left out.
+- **What AI got wrong: text in the Windows code page.** Code written on a Mac read and wrote files without
+  naming UTF-8. On Windows the worksheet could not find its own rule "owner cash flow ÷ 10%", and stopped.
+  We caught it when the test that copies the repository ran on Windows without UTF-8 mode. The desk's
+  programs now start themselves in Python's UTF-8 mode on Windows (`utf8_mode.py`).
+- **What AI got wrong: one sentence after the worksheet's JSON.** In the same run the agent team finished,
+  the Verifier included, and the worksheet then stopped: its one model call returned the fenced JSON and one
+  more sentence ("No Insight is offered..."), and the parser accepted nothing but the JSON. The worksheet
+  now reads the first JSON object of the reply; the whole reply stays saved in the run folder, and code
+  still checks the object's keys and that it holds no digit.
+- **What AI got wrong: a fiscal-year label read as a number.** In the run after that, the Verifier wrote
+  "fy 2025," in two of its 178 reasons and corrections, quoting the `fy` field of `facts.json`. The check
+  allowed "fiscal 2025" and "FY2025" but not "fy 2025". Unlike the analysts, the Verifier had no leave-out,
+  so the run stopped after all 89 of its marks were made. The check now reads "fy 2025" as a fiscal year,
+  and a Verifier reason that still fails after its repairs is replaced by a fixed sentence; its mark stays.
+- **What AI got wrong: no second try for a reply that never came.** The third run on Lowe's passed every
+  check, and then its connection to Anthropic dropped five minutes into the Verifier's call. Nothing in the
+  desk made the call again, so the run stopped with no report: the same failure as the Week 4 live run. Now
+  a model call whose reply never came (a dropped connection, a timeout, or the provider's server error) is
+  made once more after thirty seconds, and the role's `dropped_connections.json` records it. A reply that
+  came, however bad, is never asked again. The worksheet's one call does the same.
+- **What AI got wrong: no rule for a missing price.** In the run after that (2026-11-20), the agent team
+  finished: the Verifier flagged one claim, and its line was left out as designed. The worksheet then stopped
+  at the hook. LSEG was closed, so there was no price, and the price criterion scored 0; the hook had a rule
+  for that criterion only when both the price and the low value were known, and refused the line. It now
+  expects 0, the persona's score for absent evidence, as it does for the other five criteria; a 2 still needs
+  both, verified. So the README's "prices are optional" was not true until this fix. Two reasons the
+  worksheet's own code prints held a digit the hook cannot trace ("3 comparable fiscal years", and the count
+  of trading days for liquidity); they are now written without one, and the counts stay in the worksheet's
+  JSON. The worksheet also printed a raw `None` as its price evidence; it now says "not computed".
+- **What AI got wrong: a float read as exact.** The hook compared a return on equity saved as a binary float
+  with the exact decimal of its formula and refused a correct number. A practice run on Lowe's found it.
+- **What AI got wrong: a home folder in the public repository.** The error-review files saved one member's
+  full path to the repository. The audit found it; the paths are now relative to the repository.
+- **Tests.** On Windows 11 and Python 3.13 on 2026-11-20, with Jackson's Windows changes of that day merged
+  in, the four test folders ran 607 tests with no failure; the four that create a symlink were skipped.
+  That is the Windows run his entry asks for. A Mac run of the merged folders is still to be done.
+- **Open.** The worksheet reads its owner-cash-flow inputs from the 10-K's text and found none for Walmart.
+  Without LSEG Workspace open, the closes reader has no price, and the view is "not computed". A leave-out
+  removes the whole draft line, so good claims on the same line go with the bad one.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
-AI assistance: Claude Code. I verified the sources myself; the judgments are mine.
+AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.
 
 Any remaining errors are my own.

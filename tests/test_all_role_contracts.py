@@ -6,9 +6,9 @@ import unittest
 import subprocess
 import os
 import sys
-from desk_claims import check,load_sources,with_repairs
+from desk_claims import check,load_sources,with_repairs,LEFT_OUT_REASON
 from desk_sources import write_json,Sources
-from desk_role_contracts import validate,verify_output,report_text,verify_team_file,report_catalog,code_marks,verified_text,manager_contract
+from desk_role_contracts import validate,verify_output,report_text,verify_team_file,report_catalog,code_marks,verified_text,manager_contract,published_verified_text,LEFT_OUT_PART
 from desk_hook import Hook,HookFailure,report_errors
 from insight_layout import PART_OWNERS
 
@@ -156,6 +156,80 @@ class AllRoleContracts(unittest.TestCase):
         verified.write_text(verified.read_text().replace('$80','$81'))
         with self.assertRaisesRegex(HookFailure,'differs'):Hook(self.run,Sources(self.run,'')).check('seeded changed report',[verified])
 
+    def ledger_run(self,flag=(),two_claims=False):
+        """A seeded run through the Verifier. A (role, claim) in flag is marked wrong. With two_claims the
+        Overview holds two lines, one per claim, so that one can be left out and the other kept."""
+        if two_claims:
+            research={'claims':[{'id':'c1','file':'10-K.txt','line':1,'quote':'Income was $100.','value':'$100'},
+                                {'id':'c2','file':'10-K.txt','line':2,'quote':'Debt was $20.','value':'$20'}],
+                      'draft':'== 1. OVERVIEW ==\nIncome was {c1}.\nDebt was {c2}.\nGrowth is supported by {c1}.\nInsight: Income supports the business at {c1}.'}
+            self.save('Research Analyst',research)
+            self.save('Financial Analyst',{'claims':[{'id':'c1','computed':'free_cash_flow'}],
+                      'draft':'== 2. CASH GENERATION ==\nCash generation was {c1}.\nInsight: Cash remains after spending at {c1}.'})
+            self.save('Investment Advisor',{'claims':[{'id':'c1','from':'Financial Analyst','claim':'c1'}],
+                      'draft':'== 3. RECOMMENDATION ==\nHold. Cash generation of {c1} supports caution.\nInsight: Cash protection remains at {c1}.'})
+            r='nodes/Research_Analyst_1/draft.md'
+            refs={'Overview':{'file':r,'start':2,'end':3},'Market Positioning and Growth Outlook':{'file':r,'start':4,'end':4},
+                  'Future Developments and Strategic Recommendations':{'file':r,'start':5,'end':5},
+                  'Valuation Insights':{'file':'nodes/Financial_Analyst_1/draft.md','start':2,'end':3},
+                  'Investment Recommendation':{'file':'nodes/Investment_Advisor_1/draft.md','start':2,'end':3}}
+            self.save('Strategy Manager',{'claims':[],'failures':[],'sections':refs})
+        else:
+            self.manager()
+        write_json(self.run/'team_report.json',{'filings_line':'Filings read: seeded filing','run_time':'2026-11-17T12:00:00-05:00'})
+        report=self.run/'report.md';report.write_text(report_text(self.run))
+        checks=[{'target':c['target'],'status':'wrong' if (c['target']['role'],c['target']['claim']) in flag else 'correct',
+                 'reason':'The period label is wrong.' if (c['target']['role'],c['target']['claim']) in flag else 'Source and period agree.',
+                 'correction':''} for c in report_catalog(self.run)]
+        verifier,_=self.save('Verifier',{'claims':[],'checks':checks})
+        marks=code_marks(self.run)
+        write_json(self.run/'nodes/Verifier/output.json',{'code_checks':marks,'model_checks':verifier})
+        verified=self.run/'verified_report.md';verified.write_text(published_verified_text(self.run,marks,verifier['checks']))
+        return report,verified
+
+    def test_with_no_flag_the_published_report_is_the_report_as_before(self):
+        report,verified=self.ledger_run()
+        _,verifier=__import__('desk_role_contracts').latest(self.run,'Verifier')
+        self.assertEqual(verified.read_text(),verified_text(report.read_text(),code_marks(self.run),verifier['checks']))
+        self.assertEqual(Hook(self.run,Sources(self.run,'')).check('seeded report',[report,verified])['status'],'PASS')
+
+    def test_a_flagged_claim_is_left_out_and_the_rest_is_published(self):
+        # On 2026-11-19 one flag among 92 numbers stopped a whole run, and no report was published.
+        report,verified=self.ledger_run(flag={('Research Analyst','c2')},two_claims=True)
+        text=verified.read_text();body=text.split('## Overview',1)[1]
+        self.assertNotIn('Debt was',body)                       # the flagged line is gone from the text
+        self.assertIn('Income was $100 [10-K.txt:L1].',body)    # the line beside it stays
+        self.assertIn('Cash generation was',body)               # and every other part
+        self.assertIn('| wrong |',text)                         # the marks table still shows the mark
+        self.assertIn('Left out of the text below, because the Verifier did not mark them correct: Overview, Research Analyst c2 (wrong).',text)
+        self.assertEqual(Hook(self.run,Sources(self.run,'')).check('seeded report',[report,verified])['status'],'PASS')
+
+    def test_a_flagged_line_put_back_is_refused(self):
+        report,verified=self.ledger_run(flag={('Research Analyst','c2')},two_claims=True)
+        verified.write_text(verified.read_text().replace('Income was $100 [10-K.txt:L1].','Income was $100 [10-K.txt:L1].\nDebt was $20 [10-K.txt:L2].'))
+        with self.assertRaisesRegex(HookFailure,'differs'):Hook(self.run,Sources(self.run,'')).check('seeded changed report',[verified])
+
+    def test_a_part_whose_every_line_is_flagged_says_so(self):
+        report,verified=self.ledger_run(flag={('Financial Analyst','c1')})
+        body=verified.read_text().split('## Valuation Insights',1)[1].split('## ',1)[0]
+        self.assertEqual(body.strip(),LEFT_OUT_PART)
+        self.assertNotIn('Cash generation was',verified.read_text().split('## Overview',1)[1])
+        self.assertEqual(Hook(self.run,Sources(self.run,'')).check('seeded report',[report,verified])['status'],'PASS')
+
+    def test_in_a_ledger_run_a_verifier_file_must_be_a_checked_verification(self):
+        report,verified=self.ledger_run(flag={('Research Analyst','c2')},two_claims=True)
+        bogus=self.run/'nodes/Verifier_2/output.json'
+        write_json(bogus,{'checks':[{'claim':'invented','status':'wrong'}]})
+        with self.assertRaises(Exception):Hook(self.run,Sources(self.run,'')).check('seeded bogus verifier',[bogus])
+
+    def test_the_verifier_sees_eight_lines_each_side_of_a_citation(self):
+        # Four of the seven flags on 2026-11-19 were true numbers whose labels stood three to seven lines away.
+        from equity_research_agent_team import Runtime
+        lines='\n'.join(f'line {i}' for i in range(1,41))
+        excerpt=Runtime.cited_filing_excerpts('Sales were up [10-K.txt:L20].',{'10-K.txt':lines})['10-K.txt']
+        self.assertIn('10-K.txt:L12: line 12',excerpt);self.assertIn('10-K.txt:L28: line 28',excerpt)
+        self.assertNotIn('10-K.txt:L11:',excerpt);self.assertNotIn('10-K.txt:L29:',excerpt)
+
     def test_tampered_author_file_and_ledger_fail_downstream(self):
         _,out,_=self.manager()
         p=self.run/'nodes/Research_Analyst_1/draft.md';p.write_text(p.read_text().replace('$100','$999'))
@@ -197,6 +271,14 @@ class AllRoleContracts(unittest.TestCase):
                 self.assertTrue(feedback[1])
                 self.assertTrue(attempts[0]['errors'])
                 saved=[]
+                if role=='Verifier':
+                    # Still three model attempts. Then the reason that kept failing is replaced and every mark
+                    # stays, instead of the run stopping (2026-11-19); the fourth record says what was left out.
+                    output,_=with_repairs(lambda message:bad,{}, {},validator=lambda raw:validate(self.run,role,raw),on_attempt=lambda a:saved.append(len(a)))
+                    self.assertEqual(saved,[1,2,3,4])
+                    self.assertEqual(output['template_checks'][0]['reason'],LEFT_OUT_REASON)
+                    self.assertEqual([c['status'] for c in output['template_checks']],[c['status'] for c in bad['checks']])
+                    continue
                 with self.assertRaisesRegex(ValueError,'after repairs'):
                     with_repairs(lambda message:bad,{}, {},validator=lambda raw:validate(self.run,role,raw),on_attempt=lambda a:saved.append(len(a)))
                 self.assertEqual(saved,[1,2,3])

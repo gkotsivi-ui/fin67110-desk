@@ -16,16 +16,20 @@ python3.13 -m venv .venv-desk
 
 On Windows, use `py -3.13 -m venv .venv-desk` and `.venv-desk\Scripts\python` in place of the Mac path.
 The inherited seeker and standalone hook lock files with fcntl on macOS and Linux and with msvcrt on Windows.
-The automated tests ran on macOS and Python 3.13, and on 2026-11-19 on Windows 11 and Python 3.13.
-The November 19 Windows run had six remaining test-harness failures: three symlink permissions,
-child-process encoding, and two guards blocking event-loop sockets. The November 20 changes make symlink
-checks conditional on system permission, set child output to UTF-8, and allow loopback sockets while
-blocking external connections. The ordinary secret/excluded-file checks always run. These changes were
-checked on macOS; a new Windows run is still required to confirm the remaining failures are resolved.
+The desk's programs start themselves in Python's UTF-8 mode on Windows (`utf8_mode.py`). The filings, the
+rules and the reports are UTF-8, and Windows would otherwise read and write them in its own code page: the
+worksheet could not read its own rule "owner cash flow ÷ 10%". Run the tests there with `-X utf8` for the
+same reason. The test harness is portable (`tests/portable.py`): symlink checks run only where the system
+permits a symlink, the ordinary secret and excluded-file checks always run, and the seeded CrewAI tests
+allow loopback sockets, which Windows' event loop needs, while blocking every external connection. The
+automated tests ran on macOS and Python 3.13, and, with both sets of Windows changes, on Windows 11 and
+Python 3.13 on 2026-11-20: 607 tests in the four folders, no failure; the four that create a symlink
+were skipped.
 
 Configure only this repo's `.env`. It needs `SEC_USER_AGENT`, `API_KEY`, and an explicit `MODEL`.
 Use the CrewAI model prefix, such as `anthropic/` followed by a model ID available to your account.
-The copied worksheet supports Anthropic judgment calls only. This inherited limitation is not changed.
+The worksheet's judgment uses the same `MODEL` and `API_KEY` as the agent team. A Claude model is one HTTP
+request to Anthropic, as before; any other model goes through CrewAI's LLM, as the team's roles do.
 The closes reader uses this repo's `.env` too. No price or volume source is copied from the personal repo.
 Its optional LSEG worker defaults to this repo's `.venv-lseg`, not a workspace environment.
 The default is `.venv-lseg/bin/python` on macOS/Linux and `.venv-lseg\Scripts\python.exe` on Windows.
@@ -72,6 +76,23 @@ The command fixes this order: input snapshots, seeker, ticker pick, team with Ve
 and final report. The hook checks each stage's saved outputs. A failed stage stops later stages and
 preserves its run folder. It does not repair an inherited calculation, parsing, or judgment error.
 
+A claim the Verifier marks wrong or unsupported does not stop the run. Its line is left out of the published
+report, the marks table still lists it, and a line under the table names each part and claim left out. The
+hook rebuilds the published text from the saved role files, so a left-out line cannot come back. A missing
+claim costs nothing in the audit; a wrong one fails it; a run that stops publishes nothing. The Verifier sees
+eight lines on each side of every cited line.
+
+The same holds one step earlier. Each analyst role gets two repairs for claims that fail the code's check. If a
+claim still fails after them, the role's latest reply is kept without that claim and without every draft line
+that uses it or types its own number, and the shortened reply is checked again from the start. The role's
+`claim_attempts.json` keeps every reply, its errors, and what was left out. The Verifier's reasons and
+corrections are checked the same way: one that still fails after its repairs is replaced by a fixed sentence
+that says so, and its mark stays. A reply of the wrong shape, or one with nothing left, still stops the run.
+
+A model call whose reply never came, because the connection dropped or timed out or the provider answered
+with a server error, is made once more after thirty seconds. The role's `dropped_connections.json` records
+it. A second drop stops the run. The worksheet's one model call is tried once more in the same way.
+
 The final report is published only after the hook accepts it. `view.json` is written by code immediately when the prediction is saved. It records `up`, `down`,
 `flat`, or `not computed`, actual filing acceptance, and the intended reaction window. The report prints
 the same saved direction and timestamp. The first record is immutable; neither reaction refresh nor
@@ -111,6 +132,8 @@ research outputs or their timestamps.
 
 ## Validation
 
+On Windows, write `.venv-desk\Scripts\python -X utf8` in place of `.venv-desk/bin/python`.
+
 ```bash
 .venv-desk/bin/python -m unittest discover -s tests
 .venv-desk/bin/python -m unittest discover -s skills/us-spinoff-seeker/tests
@@ -130,6 +153,6 @@ constraints of CrewAI and the legacy environment differ; do not install both req
 
 This is a learning exercise, not financial advice.
 
-AI assistance: OpenAI Codex. Integration and offline tests only; no human source verification is claimed.
+AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.
 
 Any remaining errors are my own.

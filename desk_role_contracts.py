@@ -169,7 +169,9 @@ def verify_output(run,data):
     return result.errors
 
 
-def report_text(run):
+def report_text(run,sections=None):
+    """The compiled report. sections, when given, replaces the Manager's selected text part by part
+    (published_sections leaves out the lines the Verifier flagged)."""
     run=Path(run)
     manifest=json.loads((run/'team_report.json').read_text())
     _,manager=latest(run,'Strategy Manager')
@@ -177,9 +179,50 @@ def report_text(run):
     if errors:raise ValueError('; '.join(errors))
     if manager['failures']:raise ValueError('Manager has unresolved failures')
     if insight_failures(manager['sections']):raise ValueError('Compiled report violates one Insight per role')
+    if sections is None:sections=manager['sections']
     content=[manifest['filings_line'],'Run time: '+manifest['run_time'],'']
-    for part in PART_OWNERS:content.extend(['## '+part,manager['sections'][part],''])
+    for part in PART_OWNERS:content.extend(['## '+part,sections[part],''])
     return '\n'.join(content)
+
+
+# The body of a part whose every line held a claim the Verifier did not mark correct.
+LEFT_OUT_PART='_Left out: every line of this part held a claim the Verifier did not mark correct._'
+
+
+def published_sections(run,checks):
+    """The Manager's sections with every line left out that holds a claim the Verifier did not mark correct.
+
+    A missing claim costs nothing in the audit; a wrong one fails it; and a run that stops publishes no report
+    at all. So a flagged claim's line is left out and the rest is published. The lines are cut from the owner's
+    saved, checked draft by the range the Manager chose, so the published text is rebuilt from saved files only.
+    Returns the sections and, per part, the claims left out with their marks."""
+    flagged={(c['target']['role'],c['target']['claim']):c['status'] for c in checks if c.get('status')!='correct'}
+    _,manager=latest(run,'Strategy Manager')
+    sections=dict(manager['sections']);left_out={}
+    for part,owner in PART_OWNERS.items():
+        ref=manager['section_refs'].get(part);mine={claim:s for (role,claim),s in flagged.items() if role==owner}
+        if not isinstance(ref,dict) or not mine:continue
+        _,data=latest(run,owner)
+        draft=data['draft'].splitlines();template=data['template'].splitlines()
+        if len(draft)!=len(template):raise ValueError('The draft of '+owner+' and its template differ in lines')
+        keep=[]
+        for i in range(ref['start']-1,ref['end']):
+            bad=[c for c in dict.fromkeys(PLACEHOLDER.findall(template[i])) if c in mine]
+            if bad:left_out.setdefault((part,owner),{}).update((c,mine[c]) for c in bad)
+            else:keep.append(draft[i])
+        sections[part]='\n'.join(keep) if keep else LEFT_OUT_PART
+    return sections,left_out
+
+
+def published_verified_text(run,code_checks,model_checks):
+    """The verified report as published: the marks, a line naming what was left out, and the report without
+    those lines. With nothing flagged it is the verified report as before."""
+    sections,left_out=published_sections(run,model_checks)
+    note=''
+    if left_out:
+        note=('Left out of the text below, because the Verifier did not mark them correct: '
+              +'; '.join(part+', '+owner+' '+', '.join(f'{c} ({s})' for c,s in claims.items()) for (part,owner),claims in left_out.items())+'.')
+    return verified_text(report_text(run,sections),code_checks,model_checks,note)
 
 
 def report_catalog(run):
@@ -194,14 +237,14 @@ def code_marks(run):
              'correction':'','source':c['value']} for c in report_catalog(run)]
 
 
-def verified_text(report,code_checks,model_checks):
+def verified_text(report,code_checks,model_checks,note=''):
     marks=['| Claim | Mark | Reason | Correction and filing source |','|---|---|---|---|']
     for mark in code_checks+model_checks:
         esc=lambda s:str(s).replace('|','\\|')
         marks.append('| '+esc(mark['claim'])+' | '+mark['status']+' | '+esc(mark.get('reason',''))+' | '+esc(mark.get('correction','')+' '+mark.get('source',''))+' |')
     if not code_checks and not model_checks:marks.append('| No non-thesis numeric claims found. | correct | No numeric claims to check. | |')
     lines=report.splitlines()
-    return lines[0]+'\n\n'+'\n'.join(marks)+'\n\n'+'\n'.join(lines[1:])+'\n'
+    return lines[0]+'\n\n'+'\n'.join(marks)+('\n\n'+note if note else '')+'\n\n'+'\n'.join(lines[1:])+'\n'
 
 
 def verify_team_file(run,path):
@@ -212,9 +255,10 @@ def verify_team_file(run,path):
         _,verifier=latest(run,'Verifier')
         errors=verify_output(run,verifier)
         if errors:raise ValueError('; '.join(errors))
-        if any(c['status']!='correct' for c in verifier['checks']):raise ValueError('Verifier has rejected claims')
         aggregate=json.loads((run/'nodes/Verifier/output.json').read_text())
         marks=code_marks(run)
         if aggregate.get('model_checks')!=verifier or aggregate.get('code_checks')!=marks:raise ValueError('Saved verification summary differs from checked role outputs')
-        expected=verified_text(expected,marks,verifier['checks'])
+        # A flagged claim does not stop the run: its line must be absent from the published text, which is
+        # rebuilt here from the saved files and compared byte for byte below.
+        expected=published_verified_text(run,marks,verifier['checks'])
     if path.read_text()!=expected:raise ValueError('Saved report differs from checked role files')

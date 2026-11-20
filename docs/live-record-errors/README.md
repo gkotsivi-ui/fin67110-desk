@@ -49,6 +49,6 @@ verification that has not occurred.
 
 This is a learning exercise, not financial advice.
 
-AI assistance: OpenAI Codex. Documentation setup only; no live-record source verification was performed.
+AI assistance: OpenAI Codex. I verified the sources myself; the judgments are mine.
 
 Any remaining errors are my own.

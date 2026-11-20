@@ -17,6 +17,14 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent
+
+
+def shown(path) -> str:
+    """A path as a review prints it: relative to this repository, so a member's own folder never
+    reaches a public file; a path outside the repository by its name only."""
+    path = Path(path).resolve()
+    root = ROOT.resolve()
+    return path.relative_to(root).as_posix() if path == root or root in path.parents else path.name
 FOOTER = ("\nThis is a learning exercise, not financial advice.\n\n"
           "AI assistance: OpenAI Codex (review software); {model} (review analysis). "
           "No human source verification is claimed.\n\nAny remaining errors are my own.\n")
@@ -196,7 +204,7 @@ class Review:
         if isinstance(joined, dict) and joined.get("status") in {"complete", "failed", "running"}:
             outcome = {"complete": "completed", "failed": "stopped", "running": "incomplete"}[joined["status"]]
         return dict(company=str(company), ticker=str(ticker), record_number=record_number,
-                    run_folder=str(self.run), run_time=run_time, outcome=outcome,
+                    run_folder=shown(self.run), run_time=run_time, outcome=outcome,
                     outcome_limit="Artifact state only; historical stops need a saved log or separate attestation.",
                     record_type="practice" if practice else "live",
                     review_time=datetime.now(timezone.utc).isoformat(), model=self.model)
@@ -620,7 +628,7 @@ def write_reports(review, metadata, output_root=ROOT):
         for n in range(revision - 1, 0, -1):
             p = paths_for(n)[key]
             if p.exists():
-                previous[key] = str(p)
+                previous[key] = shown(p)
                 break
     if snapshot(review.run) != review.before:
         raise RuntimeError("The original run changed during review. Retry after the run is stable.")
@@ -697,4 +705,6 @@ def main():
 
 
 if __name__ == "__main__":
+    import utf8_mode
+    utf8_mode.ensure()
     raise SystemExit(main())

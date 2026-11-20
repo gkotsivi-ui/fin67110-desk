@@ -1,6 +1,6 @@
 # AI Error Prompt NVIDIA, 2
 
-Run folder: /Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live/NVDA_20261118_084439
+Run folder: runs/live/NVDA_20261118_084439
 Record type: live
 Review time: 2026-11-19T13:05:27.369030+00:00
 Model: OpenAI Codex (existing-report conversion; no new factual review)

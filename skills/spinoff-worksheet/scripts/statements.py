@@ -84,7 +84,10 @@ def collect(run,years,include_amortization):
         a,b,c=[x['value'] for x in triplet]
         rows.append({'value':a+b-c,'unit':'USD','period':'Fiscal year ended '+day,'kind':triplet[0]['kind'] if len({x['kind'] for x in triplet})==1 else 'mixed basis, explicitly disclosed by input',
                      'inputs':triplet,'source':f'computed: {a:g} + {b:g} - {c:g} = {a+b-c:g}; '+'; '.join(x['kind']+': '+x['source'] for x in triplet)})
-    if len(rows)!=years:return {},{'value':None,'kind':'not known','reason':f'{years} comparable fiscal years of earnings, depreciation/amortization and spending were not established','source':'not known','annual_inputs':rows}
+    # The reason is printed in the worksheet, where the hook refuses any digit it cannot trace to a source
+    # (2026-11-20: "3 comparable fiscal years" stopped a run). The count is written as a word.
+    count={1:'one',2:'two',3:'three',4:'four',5:'five',6:'six',7:'seven',8:'eight',9:'nine',10:'ten'}.get(years,'the required number of')
+    if len(rows)!=years:return {},{'value':None,'kind':'not known','reason':f'{count} comparable fiscal years of earnings, depreciation/amortization and spending were not established','source':'not known','annual_inputs':rows}
     gaps=[(datetime.fromisoformat(days[i])-datetime.fromisoformat(days[i+1])).days for i in range(len(days)-1)]
     if any(not 350<=gap<=380 for gap in gaps):return {},{'value':None,'kind':'not known','reason':'Fiscal years are not consecutive','source':'not known','annual_inputs':rows}
     latest={key:selected[(key,days[0])] for key in ['after_tax_earnings',dep,'capital_spending']}

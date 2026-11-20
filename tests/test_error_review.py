@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from portable import symlink_or_skip
-from desk_error_review import Review, review_run, snapshot, write_reports
+from desk_error_review import Review, review_run, shown, snapshot, write_reports
 from error_review_evaluation import evaluate, put
 
 
@@ -75,7 +75,10 @@ class ReviewTests(unittest.TestCase):
         self.assertEqual(a["findings"][0]["id"], b["findings"][0]["id"])
         for k in original:
             self.assertEqual(original[k], Path(a["outputs"][k]).read_bytes())
-            self.assertEqual(b["previous"][k], a["outputs"][k])
+            # The previous revision is named as a review prints a path: relative to the repository, never a
+            # member's own folder (on 2026-11-19 a full local path had reached five public files).
+            self.assertEqual(b["previous"][k], shown(a["outputs"][k]))
+            self.assertNotIn(str(Path.home()), b["previous"][k])
 
     def test_existing_record_number_is_not_reassigned(self):
         put(self.history, "old.md", f"# Error Documentation Example, 7\nSaved run: {self.run.name}\n")

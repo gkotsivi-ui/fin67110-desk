@@ -61,8 +61,11 @@ result=unittest.TextTestRunner(verbosity=0).run(unittest.defaultTestLoader.disco
 assert result.wasSuccessful()
 print('STANDALONE PASS')
 '''
-            done = subprocess.run([sys.executable, '-c', script], cwd=clone, capture_output=True,
-                                  text=True,encoding="utf-8",env={**os.environ,"PYTHONIOENCODING":"utf-8"}, timeout=90)
+            # UTF-8 mode, as desk.py starts itself on Windows (utf8_mode.py): the copied tests read UTF-8 rules and
+            # filings. macOS and Linux are UTF-8 already. A slow Windows import can pass ninety seconds.
+            done = subprocess.run([sys.executable, '-X', 'utf8', '-c', script], cwd=clone, capture_output=True,
+                                  encoding='utf-8', errors='replace', env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+                                  timeout=300)
             self.assertEqual(done.returncode, 0, done.stderr[-3000:])
             self.assertIn('STANDALONE PASS', done.stdout)
 

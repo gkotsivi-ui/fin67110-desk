@@ -136,4 +136,6 @@ def main():
 
 
 if __name__ == "__main__":
+    import utf8_mode
+    utf8_mode.ensure()
     raise SystemExit(main())

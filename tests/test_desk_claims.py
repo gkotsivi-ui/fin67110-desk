@@ -7,7 +7,8 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from desk_claims import ResponseFormatError, check, parse_response, verify_saved, with_repairs
+from desk_claims import (LEFT_OUT_REASON, ResponseFormatError, check, parse_response, verifier_without_failing,
+                         verify_saved, with_repairs)
 
 ER, K = "earnings_release_Ex99-1.txt", "10-K.txt"
 # Invented source fragments and facts. No saved company run is required.
@@ -335,6 +336,140 @@ class HookUsesClaims(SavedOutputCheck):
         from desk_hook import HookFailure
         with self.assertRaises(HookFailure):
             self.check({**self.saved, "draft": self.saved["draft"].replace("93.9", "95.9")})
+
+
+class ValueWithoutANumber(unittest.TestCase):
+    """A practice run on 2026-11-19 cited "sixth consecutive quarter" as a claim's value."""
+
+    TEXTS = {"r.txt": "We just delivered our sixth consecutive quarter of positive comp sales.\n"}
+    QUOTE = "We just delivered our sixth consecutive quarter of positive comp sales"
+
+    def test_the_repair_message_says_the_value_holds_no_number(self):
+        claim = {"id": "c1", "file": "r.txt", "line": 1, "quote": self.QUOTE, "value": "sixth consecutive quarter"}
+        result = check({"claims": [claim], "draft": "Comparable sales rose for the {c1}."}, self.TEXTS, {})
+        self.assertEqual(len(result.errors), 1)
+        self.assertIn("holds no number", result.errors[0])
+        self.assertIn("state this fact in words without a claim", result.errors[0])
+
+    def test_the_fact_in_words_passes(self):
+        result = check({"claims": [], "draft": "Comparable sales rose for the sixth consecutive quarter."}, self.TEXTS, {})
+        self.assertTrue(result.ok, result.errors)
+
+    def test_a_number_word_is_still_a_number(self):
+        texts = {"r.txt": "Sales rose for six consecutive quarters.\n"}
+        claim = {"id": "c1", "file": "r.txt", "line": 1, "quote": "Sales rose for six consecutive quarters.", "value": "six"}
+        result = check({"claims": [claim], "draft": "Sales rose for {c1} quarters in a row."}, texts, {})
+        self.assertFalse(any("holds no number" in error for error in result.errors), result.errors)
+
+
+class VerifierLeaveOut(unittest.TestCase):
+    """A practice run on 2026-11-19 stopped at the Verifier: two of its 178 reasons and corrections still typed a
+    year after two repairs. A reason is the Verifier's explanation; its mark is what the report needs."""
+
+    TEXTS = {"10-K.txt": "Income was $100.\n"}
+    A = {"role": "Research Analyst", "claim": "c1"}
+    B = {"role": "Research Analyst", "claim": "c2"}
+
+    def validator(self, raw):
+        # What validate() does with a Verifier reply, in short: its prose is one draft, reason then correction.
+        prose = "\n".join(t for c in raw["checks"] for t in (c.get("reason", ""), c.get("correction", "")))
+        result = check({"claims": raw.get("claims", []), "draft": prose}, self.TEXTS, {})
+        if result.ok:
+            result.output = {"contract": "verification", "claims": raw.get("claims", []), "template_checks": raw["checks"]}
+        return result
+
+    def test_a_reason_that_still_fails_is_replaced_and_every_mark_stays(self):
+        raw = {"claims": [], "checks": [
+            {"target": self.A, "status": "correct", "reason": "The period agrees.", "correction": ""},
+            {"target": self.B, "status": "wrong", "reason": "The filing says 1,234 for the year.", "correction": "Use the filing's line."}]}
+        output, attempts = with_repairs(lambda feedback: raw, self.TEXTS, {}, validator=self.validator)
+        checks = output["template_checks"]
+        self.assertEqual([c["status"] for c in checks], ["correct", "wrong"])
+        self.assertEqual((checks[0]["reason"], checks[1]["reason"]), ("The period agrees.", LEFT_OUT_REASON))
+        self.assertEqual(checks[1]["correction"], "Use the filing's line.")
+        self.assertEqual((attempts[-1]["left_out"], attempts[-1]["left_out_lines"]), ([], [3]))
+
+    def test_a_reason_of_two_lines_is_found_by_its_second_line(self):
+        raw = {"claims": [], "checks": [
+            {"target": self.A, "status": "correct", "reason": "The period agrees.\nThe filing says 99.", "correction": ""},
+            {"target": self.B, "status": "correct", "reason": "The unit agrees.", "correction": ""}]}
+        mended, _, lines = verifier_without_failing(raw, ["draft line 2: number '99.' is typed directly; use a {cN} claim."])
+        self.assertEqual(lines, [2])
+        self.assertEqual([c["reason"] for c in mended["checks"]], [LEFT_OUT_REASON, "The unit agrees."])
+
+    def test_a_failing_claim_of_the_verifier_takes_its_texts_with_it(self):
+        bad = {"id": "c1", "file": "10-K.txt", "line": 1, "quote": "Income was $100.", "value": "$10"}
+        raw = {"claims": [bad], "checks": [
+            {"target": self.A, "status": "wrong", "reason": "The filing says {c1}.", "correction": "Use {c1}."},
+            {"target": self.B, "status": "correct", "reason": "The unit agrees.", "correction": ""}]}
+        output, attempts = with_repairs(lambda feedback: raw, self.TEXTS, {}, validator=self.validator)
+        self.assertEqual(output["claims"], [])
+        self.assertEqual([(c["reason"], c["correction"]) for c in output["template_checks"]],
+                         [(LEFT_OUT_REASON, ""), ("The unit agrees.", "")])
+        self.assertEqual(attempts[-1]["left_out"], ["c1"])
+
+    def test_a_fiscal_year_label_is_not_a_typed_number(self):
+        text = "facts.json revenue: period_end 2026-01-30, fy 2025, filing 0000060667-26-000029."
+        self.assertTrue(check({"claims": [], "draft": text}, self.TEXTS, {}).ok)
+        self.assertTrue(check({"claims": [], "draft": "Revenue for FY 2025 rose."}, self.TEXTS, {}).ok)
+        self.assertFalse(check({"claims": [], "draft": "Revenue was 2025 million."}, self.TEXTS, {}).ok)
+
+
+class LeaveOutAfterRepairs(unittest.TestCase):
+    """On 2026-11-19 one claim of about forty still failed after two repairs, and the whole run stopped with no
+    report. A missing claim costs nothing in the audit, so the failing claims and their lines are left out."""
+
+    TEXTS = {"10-K.txt": "Income was $100.\nDebt was $20.\n"}
+    GOOD = {"id": "c1", "file": "10-K.txt", "line": 1, "quote": "Income was $100.", "value": "$100"}
+    BAD = {"id": "c2", "file": "10-K.txt", "line": 2, "quote": "Debt was $20.", "value": "$2"}  # a substring of $20
+
+    def test_a_claim_that_still_fails_is_left_out_with_its_line(self):
+        raw = {"claims": [self.GOOD, self.BAD], "draft": "Income was {c1}.\nDebt was {c2}.\nInsight: Income held at {c1}."}
+        output, attempts = with_repairs(lambda feedback: raw, self.TEXTS, {})
+        self.assertEqual([c["id"] for c in output["claims"]], ["c1"])
+        self.assertNotIn("Debt", output["draft"])
+        self.assertIn("Income was $100 [10-K.txt:L1].", output["draft"])
+        self.assertEqual(len(attempts), 4)  # three tries, then the reply with the failing claim left out
+        self.assertEqual((attempts[-1]["errors"], attempts[-1]["left_out"]), ([], ["c2"]))
+        self.assertEqual((attempts[-1]["left_out_lines"], attempts[-1]["from_attempt"]), ([2], 3))
+        self.assertEqual(output["claim_attempts"], 4)
+
+    def test_a_typed_number_leaves_out_its_line(self):
+        raw = {"claims": [self.GOOD], "draft": "Income was {c1}.\nSales rose 10 percent.\nInsight: Income held at {c1}."}
+        output, attempts = with_repairs(lambda feedback: raw, self.TEXTS, {})
+        self.assertNotIn("Sales rose", output["draft"])
+        self.assertEqual((attempts[-1]["left_out"], attempts[-1]["left_out_lines"]), ([], [2]))
+
+    def test_a_claim_used_only_beside_a_failing_one_goes_with_it(self):
+        raw = {"claims": [self.GOOD, self.BAD], "draft": "Income was {c1} and debt was {c2}.\nInsight: Debt rose."}
+        output, attempts = with_repairs(lambda feedback: raw, self.TEXTS, {})
+        self.assertEqual((output["claims"], output["draft"]), ([], "Insight: Debt rose."))
+        self.assertEqual(attempts[-1]["left_out"], ["c1", "c2"])
+
+    def test_the_latest_reply_that_can_be_mended_is_used(self):
+        replies = iter([{"claims": [self.GOOD, self.BAD], "draft": "Income was {c1}.\nDebt was {c2}."},
+                        {"claims": [self.GOOD], "draft": "Income was {c1}, up 10%.\nInsight: Income held."},
+                        {"unparsed_response": "not JSON"}])
+        output, attempts = with_repairs(lambda feedback: next(replies), self.TEXTS, {})
+        self.assertEqual(output["template"], "Insight: Income held.")
+        self.assertEqual(attempts[-1]["from_attempt"], 2)
+
+    def test_a_reply_of_the_wrong_shape_still_stops(self):
+        with self.assertRaisesRegex(ValueError, "still fail after repairs"):
+            with_repairs(lambda feedback: {"claims": "not a list", "draft": "Income."}, self.TEXTS, {})
+
+    def test_nothing_left_still_stops(self):
+        raw = {"claims": [self.BAD], "draft": "Debt was {c2}."}
+        with self.assertRaisesRegex(ValueError, "still fail after repairs"):
+            with_repairs(lambda feedback: raw, self.TEXTS, {})
+
+    def test_the_saved_output_passes_the_hooks_check(self):
+        run = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, run)
+        (run / "10-K.txt").write_text(self.TEXTS["10-K.txt"])
+        raw = {"claims": [self.GOOD, self.BAD], "draft": "Income was {c1}.\nDebt was {c2}."}
+        output, _ = with_repairs(lambda feedback: raw, self.TEXTS, {})
+        self.assertEqual(verify_saved(run, output), [])
 
 
 if __name__ == "__main__":
