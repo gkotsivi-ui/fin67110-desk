@@ -79,6 +79,13 @@ class WorksheetTests(unittest.TestCase):
         result=self.execute();self.assertIsNone(result['owner_cash_flow']['value'])
         self.assertIsNone(result['value_range']['low']['value'])
         with self.assertRaises(ValueError):w.calculate('__import__("os").system("false")',{})
+        # A value that is not known applied no rate: the rates are not printed as numbers with no source. On
+        # 2026-11-19 the hook refused that line, and the run stopped at the worksheet.
+        lines=[l for l in w.render(result).splitlines() if l.startswith(('Low value:','Mid value:'))]
+        self.assertEqual(len(lines),2)
+        for line in lines:
+            self.assertIn('rates: not applied;',line)
+            self.assertNotRegex(line.split('formula:')[0]+line.split('rates:')[1],r'\d')
     def test_model_cannot_add_number_or_receive_liquidity(self):
         result=self.execute(model=Mock(return_value={'judgment':'Worth 999 dollars.','next_filing_trigger':'Next earnings.'}))
         self.assertEqual(result['judgment']['judgment'],'not known')
@@ -121,6 +128,57 @@ class AdditionalContracts(unittest.TestCase):
         self.assertTrue(self.execute()['liquidity']['reason'])
         self.reader.daily_closes_and_volumes.return_value=[{'date':'2027-01-04','close':10,'volume':100,'currency':'CAD'}]
         self.assertTrue(self.execute()['liquidity']['reason'])
+    def test_a_model_of_another_provider_goes_through_the_teams_llm(self):
+        # Another team runs the desk with its own key. A Claude model keeps its one HTTP call to Anthropic below;
+        # any other model goes through CrewAI's LLM, as the agent team's does.
+        calls=[]
+        class FakeLLM:
+            def __init__(self,**kwargs):calls.append(kwargs)
+            def call(self,messages):
+                calls.append(messages)
+                return '```json\n'+json.dumps({'judgment':'Supported.','next_filing_trigger':'Watch earnings.'})+'\n```'
+        payload={'filing_facts':{'facts':{'earnings':{'value':10,'source':'invented filing'}}}}
+        for model,key in (('gemini/gemini-test','AIza-invented-test-key'),('openai/gpt-test','sk-invented-test-key')):
+            calls.clear();record=Mock()
+            with patch.dict('os.environ',{'MODEL':model,'API_KEY':key,'ANTHROPIC_API_KEY':''}),patch('crewai.LLM',FakeLLM),patch('requests.post') as post:
+                self.assertEqual(w.judge_once('Test persona',payload,record_response=record)['judgment'],'Supported.')
+            post.assert_not_called()
+            self.assertEqual((calls[0]['model'],calls[0]['api_key']),(model,key))
+            system,user=calls[1]
+            self.assertTrue(system['content'].startswith('Test persona'))
+            self.assertIn('Citation contract:',system['content'])
+            self.assertEqual(json.loads(user['content']),payload)
+            self.assertEqual(record.call_args.args[0]['model'],model)
+    def test_a_sentence_after_the_fenced_judgment_is_not_used(self):
+        # The shape of a real reply on 2026-11-19: a thinking block, the fenced JSON, then one more sentence.
+        judgment={'judgment':'Supported {not a fact}.','next_filing_trigger':'Watch earnings.'}
+        text='```json\n'+json.dumps(judgment,indent=2)+'\n```\n\nNo Insight is offered. The contract {allows} none.'
+        response=Mock();response.json.return_value={'stop_reason':'end_turn','content':[{'type':'thinking','thinking':''},{'type':'text','text':text}]}
+        with patch.dict('os.environ',{'MODEL':'anthropic/claude-test','API_KEY':'invented-test-key'}),patch('requests.post',return_value=response):
+            self.assertEqual(w.judge_once('Test persona',{}),judgment)
+        self.assertEqual(w.judgment_object('Here it is: '+json.dumps(judgment)),judgment)
+        with self.assertRaisesRegex(ValueError,'holds no JSON object'):w.judgment_object('No judgment {today}.')
+    def test_a_dropped_connection_is_tried_once_more_and_no_more(self):
+        import requests
+        response=Mock();response.json.return_value={'content':[{'type':'text','text':json.dumps({'judgment':'Supported.','next_filing_trigger':'Watch earnings.'})}]}
+        env={'MODEL':'anthropic/claude-test','API_KEY':'invented-test-key'}
+        with patch.dict('os.environ',env),patch.object(w,'RETRY_WAIT_SECONDS',0),patch('requests.post',side_effect=[requests.exceptions.ConnectionError('dropped'),response]) as post:
+            self.assertEqual(w.judge_once('Test persona',{})['judgment'],'Supported.')
+        self.assertEqual(post.call_count,2)
+        with patch.dict('os.environ',env),patch.object(w,'RETRY_WAIT_SECONDS',0),patch('requests.post',side_effect=requests.exceptions.ConnectionError('dropped')) as post:
+            with self.assertRaises(requests.exceptions.ConnectionError):w.judge_once('Test persona',{})
+        self.assertEqual(post.call_count,2)
+    def test_a_refused_request_is_not_sent_again(self):
+        import requests
+        refused=Mock();refused.raise_for_status.side_effect=requests.exceptions.HTTPError('400 Client Error',response=Mock(status_code=400))
+        with patch.dict('os.environ',{'MODEL':'anthropic/claude-test','API_KEY':'invented-test-key'}),patch.object(w,'RETRY_WAIT_SECONDS',0),patch('requests.post',return_value=refused) as post:
+            with self.assertRaises(requests.exceptions.HTTPError):w.judge_once('Test persona',{})
+        self.assertEqual(post.call_count,1)
+    def test_a_missing_model_or_key_says_what_to_set(self):
+        for env in ({'MODEL':'','API_KEY':'invented-test-key'},{'MODEL':'gemini/gemini-test','API_KEY':'','ANTHROPIC_API_KEY':''}):
+            with patch.dict('os.environ',env),patch('requests.post') as post,patch('crewai.LLM') as llm:
+                with self.assertRaisesRegex(ValueError,'Configure MODEL'):w.judge_once('persona',{})
+            post.assert_not_called();llm.assert_not_called()
     def test_one_http_call_and_numeric_free_response(self):
         from unittest.mock import patch
         response=Mock();response.json.return_value={'content':[{'type':'text','text':json.dumps({'judgment':'Supported.','next_filing_trigger':'Watch earnings.'})}]}

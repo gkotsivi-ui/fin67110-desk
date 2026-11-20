@@ -86,6 +86,9 @@ class ReviewPageTests(unittest.TestCase):
     def test_symlink_run_outside_allowed_folders_is_rejected(self):
         outside = self.root / "private"
         outside.mkdir()
-        (self.root / "runs/practice/link").symlink_to(outside)
+        try:
+            (self.root / "runs/practice/link").symlink_to(outside)
+        except OSError as error:  # Windows: administrator rights or Developer Mode
+            self.skipTest(f"this account cannot create a symlink: {error}")
         with self.assertRaises(ValueError):
             page.review_folder("runs/practice/link")

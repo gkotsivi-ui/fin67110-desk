@@ -101,3 +101,9 @@ Before changing a rule, change or add its made-up failing test, then implement t
 Select the latest observation date on or before the price date among counts filed on or before that price date; resolve repeated observations using the latest eligible filing, and leave same-date unresolved conflicts blank. Do this independently for child and parent. Disclose the count, its observation date, filing date and source filing. Do not estimate changes between the observation date and price date. The two requested zero weights leave the other weights unchanged; their total is 0.95 and is not normalized.
 
 Report and JSON snapshot names share exactly the same base: `Spinoffs, YYYY-MM-DD, HH-MM-SS.ffffff, start YYYY-MM-DD`. Dates and runtime come from run metadata, not file modification times. A reviewed copy retains the original run identity and adds `, reviewed` to both files. Microseconds distinguish runs started in the same second. Registry/progress files are shared state, and standalone audits retain their descriptive matching names.
+
+This is a learning exercise, not financial advice.
+
+AI assistance: OpenAI Codex. I verified the sources myself; the judgments are mine.
+
+Any remaining errors are my own.

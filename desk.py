@@ -22,7 +22,7 @@ EASTERN=ZoneInfo('America/New_York')
 
 
 def tree(run):
-    return {str(p.relative_to(run)):digest(p) for p in run.rglob('*')
+    return {p.relative_to(run).as_posix():digest(p) for p in run.rglob('*')
             if p.is_file() and not any(x.startswith('.') for x in p.relative_to(run).parts)
             and p.relative_to(run).parts[0] not in {'hook','replay_audits'} and p.name!='artifacts.json' and p.suffix!='.tmp'}
 
@@ -85,7 +85,7 @@ class DeskRun:
             changed=[self.run/p for p,h in tree(self.run).items() if before.get(p)!=h and p!='desk_run.json']
             self.audit(name,changed,**audit_args)
             self.state['parts'].append({'name':name,'seconds':time.perf_counter()-began,'status':'PASS',
-                'outputs':[{'path':str(p.relative_to(self.run)),'sha256':digest(p)} for p in changed]})
+                'outputs':[{'path':p.relative_to(self.run).as_posix(),'sha256':digest(p)} for p in changed]})
             self.save();return result
         except Exception as error:
             # Audit partial outputs too. Keep the original part failure as the
@@ -95,7 +95,7 @@ class DeskRun:
             except Exception as hook_error:self.state['failed_output_check']=str(hook_error)
             self.state.update(status='failed',failed_part=name,error=str(error))
             self.state['parts'].append({'name':name,'seconds':time.perf_counter()-began,'status':'FAIL',
-                'outputs':[{'path':str(p.relative_to(self.run)),'sha256':digest(p)} for p in changed]})
+                'outputs':[{'path':p.relative_to(self.run).as_posix(),'sha256':digest(p)} for p in changed]})
             # A stopped run must not fabricate a successful prediction or backdate one.
             ticker=self.state.get('ticker') or (self.options.selector if self.options.selector!='screen' else None)
             if ticker:
@@ -139,8 +139,8 @@ class DeskRun:
             final.write_text(self.hook.compose(verified,worksheet))
             return final
         self.part('final report',finish,verified=verified,worksheet=worksheet)
-        self.state.update(status='complete',verified_report=str(Path(verified).relative_to(self.run)),
-                          worksheet=str(Path(worksheet).relative_to(self.run)),final_report=final.name)
+        self.state.update(status='complete',verified_report=Path(verified).relative_to(self.run).as_posix(),
+                          worksheet=Path(worksheet).relative_to(self.run).as_posix(),final_report=final.name)
         self.save()
         # Seal source and output identities for offline replay. The audit log
         # and this checksum manifest are evidence, not alternative numeric claims.
@@ -275,4 +275,6 @@ def main(argv=None):
         print('Error: '+str(error),file=sys.stderr);return 1
 
 
-if __name__=='__main__':raise SystemExit(main())
+if __name__=='__main__':
+    import utf8_mode;utf8_mode.ensure()
+    raise SystemExit(main())

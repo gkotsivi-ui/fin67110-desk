@@ -48,7 +48,7 @@ class Run:
         self.code: int | None = None
         self.verified = ""
         self.lock = threading.Lock()
-        env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUNBUFFERED="1")
+        env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUNBUFFERED="1", PYTHONUTF8="1")
         self.process = subprocess.Popen([sys.executable, "-u", str(DESK_COMMAND), *args], cwd=ROOT, env=env,
                                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
         threading.Thread(target=self.read, daemon=True).start()
@@ -731,4 +731,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    import utf8_mode
+    utf8_mode.ensure()
     raise SystemExit(main())

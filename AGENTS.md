@@ -78,6 +78,6 @@ Write what AI got wrong, and how it was caught, in `docs/decision-log.md`.
 
 This is a learning exercise, not financial advice.
 
-AI assistance: Claude Code. I verified the sources myself; the judgments are mine.
+AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.
 
 Any remaining errors are my own.

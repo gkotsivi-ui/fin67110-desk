@@ -8,8 +8,8 @@ import tempfile
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 
-def denied(*args,**kwargs):raise RuntimeError('Seeded tool test cannot fetch')
-socket.socket.connect=denied
+from no_network import deny_network
+deny_network('Seeded tool test cannot fetch')
 
 with tempfile.TemporaryDirectory() as tmp:
     run=Path(tmp)

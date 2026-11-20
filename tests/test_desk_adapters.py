@@ -36,6 +36,23 @@ class AdapterTests(unittest.TestCase):
         self.parts=Parts(self.run,self.sources,self.options)
         self.started=datetime.fromisoformat('2026-11-17T09:00:00-05:00')
 
+    def test_a_ticker_run_with_no_registry_goes_on_with_its_spinoff_parts_not_applicable(self):
+        # On a fresh clone `desk.py TICKER` stopped with "No seeker registry was supplied". A name the seeker never
+        # saw must run, with its spinoff parts "not applicable" (the project page; Lab 08).
+        import desk_parts
+        missing=self.run/'no_registry_here.json'
+        self.assertEqual(parser().parse_args(['ZZZZ']).registry,desk_parts.DEFAULT_REGISTRY)  # the default the command uses
+        with patch.object(desk_parts,'DEFAULT_REGISTRY',missing):
+            self.options.registry=missing
+            with redirect_stdout(io.StringIO()):self.assertIsNone(self.parts.seeker_part())
+            self.assertEqual(json.loads((self.run/'registry.json').read_text())['candidates'],{})
+            self.assertEqual(json.loads((self.run/'seeker_status.json').read_text())['mode'],'not requested')
+            with redirect_stdout(io.StringIO()):self.parts.spinoff_status('ZZZZ')
+            self.assertEqual(json.loads((self.run/'spinoff_status.json').read_text())['spinoff'],'not applicable')
+            # A registry path that someone gave on purpose and that does not exist still stops the run.
+            self.options.registry=self.run/'a_typo.json'
+            with self.assertRaisesRegex(ValueError,'Registry does not exist'):self.parts.seeker_part()
+
     def test_team_uses_provided_folder_and_does_not_refetch_saved_filing(self):
         from equity_research_desk import Filing
         url='https://www.sec.gov/Archives/edgar/data/12345/000001234526000001/a.htm'

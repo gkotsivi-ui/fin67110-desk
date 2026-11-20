@@ -1,24 +1,96 @@
 # FIN 67110 research desk
 
-## Group-owned complete pipeline
+An AI research desk for one client: an investor who seeks absolute return. You give it the ticker of a
+U.S. company that files with SEC EDGAR. It finds the company's latest 10-K, latest 10-Q and latest
+earnings release (the 8-K's Exhibit 99.1), reads the statements as XBRL data, computes eleven core
+claims in code, and has four roles write a five-part report. A Verifier then marks every sourced number
+against the saved filings, and the worksheet gives the client's view. Nothing in the code names a
+company: the ticker is an argument.
 
-The group now has independent copies of the full pipeline and its dependencies. No run calls the personal
-repo or loads its code, credentials, skills, or runs. The main group command is `desk.py`.
+Team: gkotsivi-ui, jcleeper65 and lee4276 (the team's name is to be added). The thing we own: the
+intelligent error review application. How the parts are joined: [docs/group-pipeline.md](docs/group-pipeline.md).
 
-```bash
-python3.13 -m venv .venv-desk
-.venv-desk/bin/python -m pip install -r requirements-pipeline.txt
-.venv-desk/bin/python desk.py TICKER --refresh-screen YYYY-MM-DD
-```
+## Run the desk: the quick start
 
-Configure this repo's `.env` first. Replace the ticker and distribution start date. On a fresh checkout,
-refresh the screen; no personal registry is copied. With a saved group registry, use `--registry PATH`
-instead. New runs are practice runs unless `--live` is supplied. Start the same local command through
-`.venv-desk/bin/python page.py` or a double-click launcher.
+The desk is one command, `desk.py`. Give it the ticker of any U.S. company that files with SEC EDGAR. It
+runs the pick, the agent team with its Verifier, the worksheet and the final report, in an order that
+code fixes, with the hook checking every number each part saves. A company the spinoff seeker never saw
+runs too: its spinoff parts say "not applicable".
 
-The copied worksheet supports Anthropic judgment calls. Use Python 3.13 and an explicit provider-prefixed
-`MODEL` available to the group's own account. The original Python 3.14 `.venv` remains untouched.
-See [group pipeline setup, files, limitations, and validation](docs/group-pipeline.md).
+**What you need.** Python 3.13 (CrewAI 1.15 needs 3.10 to 3.13), git, your name and email for SEC EDGAR
+(no account), and one model key with a model of the same provider that your account can use: Anthropic,
+Google AI Studio or OpenAI. A run costs a few dollars of model use. Practice runs on 2026-11-19 took from
+about 10 to 35 minutes, the longer ones when a role needed its repairs.
+Prices are optional: without one, the report has no P/E and the worksheet's view says "not computed".
+
+1. **Get the code.** On Windows keep the folder's full path short, under about 100 characters.
+
+   ```
+   git clone https://github.com/gkotsivi-ui/fin67110-desk.git
+   cd fin67110-desk
+   ```
+
+2. **Make the environment and install the tested versions.**
+
+   Windows:
+
+   ```
+   py -3.13 -m venv .venv-desk
+   .venv-desk\Scripts\python -m pip install -r requirements-pipeline.txt -c constraints-pipeline.txt
+   ```
+
+   Mac:
+
+   ```
+   python3.13 -m venv .venv-desk
+   .venv-desk/bin/python -m pip install -r requirements-pipeline.txt -c constraints-pipeline.txt
+   ```
+
+3. **Make `.env`.** Copy `.env.example` to `.env` and fill in three lines. The key and the model must be of
+   the same provider: `anthropic/`, `gemini/` or `openai/`, then a model ID your account can use.
+
+   ```
+   SEC_USER_AGENT=Your Name your.email@university.edu
+   API_KEY=your model key
+   MODEL=anthropic/claude-opus-5-5
+   ```
+
+   Then check the setup. Every line must say `ok` (on a Mac, type `.venv-desk/bin/python`):
+
+   ```
+   .venv-desk\Scripts\python check_pipeline.py
+   ```
+
+4. **Run it on a ticker.** `LOW` is an example; use any ticker. On a Mac, type `.venv-desk/bin/python`.
+
+   ```
+   .venv-desk\Scripts\python desk.py LOW
+   ```
+
+   Each part prints its name and its seconds. The last lines give the run folder, under `runs/practice/`.
+   Read `final_report.md` there: the agent team's verified report, with the Verifier's marks under its
+   first line, and the worksheet's view under the report.
+
+   **Without a terminal:** double-click `start_page.bat` (Windows) or `start_page.command` (Mac), open
+   http://127.0.0.1:8765, type a ticker and press Run.
+
+**When something stops.** A part that fails stops the command, prints which part and the error, and keeps
+the run folder. A claim the Verifier does not mark correct does not stop it: that line is left out of the
+published report, the marks table still lists it, and a line under the table names it. A claim that still
+fails the code's check after two repairs is left out the same way, and the run prints which. A model call
+whose connection drops is made once more after thirty seconds.
+
+**The spinoff screen (optional, slow).** `desk.py screen --refresh-screen YYYY-MM-DD` runs the seeker
+first and takes the top name of its screen. By default it reads EDGAR's quarterly indexes from 1994 on,
+about 130 large files, so bound it: `--index-start 2025-10-01 --max-candidates 10` read five quarters and
+ten candidates in about six minutes on 2026-11-19. A bounded screen says that its coverage is partial.
+
+**Prices from LSEG (optional).** Start LSEG Workspace and sign in, and set `LSEG_APP_KEY` in `.env`. The
+reader runs LSEG's library in its own environment, `.venv-lseg`; or set `LSEG_PYTHON` to a Python that
+has `lseg-data` installed. An export file kept outside this folder works too: `LSEG_CLOSES_FILE`.
+
+**A live run** for the live record adds `--live`; it is saved under `runs/live/`. Read
+[runs/live/README.md](runs/live/README.md) first. More: [docs/group-pipeline.md](docs/group-pipeline.md).
 
 ## Intelligent error review
 
@@ -31,7 +103,7 @@ alone never confirms an error. A missing optional component is a review limit, n
 Review a saved run with the configured provider:
 
 ```bash
-.venv/bin/python desk_error_review.py runs/live/CSCO_20261113_093231 --history runs/live --model
+.venv-desk/bin/python desk_error_review.py runs/live/CSCO_20261113_093231 --history runs/live --model
 ```
 
 Use `--offline` instead of `--model` for code checks without network access. This leaves model checks
@@ -60,9 +132,9 @@ investment recommendation is wrong. The existing original error report and saved
 Run the checks and the labelled synthetic evaluation:
 
 ```bash
-.venv/bin/python -m unittest discover -s tests
-.venv/bin/python live_record.py --offline --no-save
-.venv/bin/python error_review_evaluation.py
+.venv-desk/bin/python -m unittest discover -s tests
+.venv-desk/bin/python live_record.py --offline --no-save
+.venv-desk/bin/python error_review_evaluation.py
 ```
 
 The evaluation prints detected errors, false alarms, missed errors, and citation validity. Confirmed
@@ -80,8 +152,8 @@ installed at `~/.codex/skills/desk-error-review`. Invoke it as `$desk-error-revi
 
 ## Hit-rate table
 
-Run `.venv/bin/python hit_rate.py runs/live` on Mac (Windows:
-`.venv\Scripts\python hit_rate.py runs/live`). Replace `runs/live` with a practice folder to score
+Run `.venv-desk/bin/python hit_rate.py runs/live` on Mac (Windows:
+`.venv-desk\Scripts\python hit_rate.py runs/live`). Replace `runs/live` with a practice folder to score
 practice runs separately. Each immediate subfolder is one run, including incomplete runs. The command
 prints one row per run and a final agreement count. Errors are reported on stderr, leave an error row,
 and produce exit status 1; other runs are still read.
@@ -123,32 +195,26 @@ Agreement means the view's direction matches the sign of the reaction (zero mean
 line counts agreements over runs with a reaction, excluding `after` rows and views `not computed`.
 Missing or invalid evidence is excluded and never counted as a correct prediction.
 
-An AI research desk for one client: an investor who seeks absolute return. You give it the ticker of a
-U.S. company that files with SEC EDGAR. It finds the company's latest 10-K, latest 10-Q and latest
-earnings release (the 8-K's Exhibit 99.1), reads the statements as XBRL data, computes eleven core
-claims in code, and has four roles write a five-part report. A Verifier then marks every sourced number
-against the saved filings. Nothing in the code names a company: the ticker is an argument.
-
-Team: to be added. The thing we own: the intelligent error review application. The joins: implemented locally in `desk.py`; real-provider validation is still pending.
-
 ## What works today, and what does not
 
-Checked on 2026-11-11 and 2026-11-12.
+Checked on 2026-11-19, on Windows 11.
 
 | Part | State |
 |---|---|
-| The seven data steps, from SEC EDGAR, with no model | ran on six companies; see the known limits |
-| The agent team: three analyst roles, a Strategy Manager in code, a Verifier on every run | ran end to end on one company, on 2026-11-11 and again on 2026-11-12 |
-| The page: run the desk and read the report without a terminal | ran one company end to end from the page on 2026-11-12, and showed the verified report |
-| The closes reader, for one price | built; tested on made-up files. On 2026-11-12 LSEG Workspace was not running, and the price came from financialdatasets.ai |
-| The live record table | built and tested on a made-up repository; no live report yet |
-| The hit-rate table | built; accepts the copied worksheet view format; historical runs without saved views remain unscored |
-| The intelligent error review | built; code and HTTP tests; one saved-run review; synthetic evaluation only |
-| Group-local seeker, worksheet, hook, one command, and replay | copied and adapted; synthetic and isolation tests; no new live run claimed |
+| The one command, `desk.py`: the pick, the agent team with its Verifier, the worksheet, the final report, and the hook after each part | practice runs on Lowe's (LOW) ran the agent team and its Verifier to the end; each stop they found is fixed and has a test, as the decision log records |
+| The page: run the desk and read the report without a terminal | starts and serves; a whole run from the page on this command is not checked yet |
+| The closes reader, for one price | reads LSEG only. With LSEG Workspace closed there is no price: the report has no P/E and the worksheet's view is "not computed" |
+| The live record | two reports inside their 24-hour windows, Week 4 (Cisco) and Week 5 (NVIDIA), both written by the legacy desk below |
+| The hit-rate table | runs; both live reports predate the worksheet and have no view, so it scores none yet |
+| The intelligent error review | built; a review of each live report is saved beside it |
+| Tests | 600 in four folders, no failure; three symlink tests skipped. The macOS run is to be redone |
 
 Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them before you trust a number.
 
-## What you need
+## What the legacy desk needs
+
+The sections from here to [Read the report](#read-the-report) are the base desk that produced the Week 4
+and Week 5 live reports, kept to reproduce them. To run the desk, use the [quick start](#run-the-desk-the-quick-start).
 
 - A computer with Python 3.11 or newer, and git.
 - Your name and your email. SEC EDGAR asks every program for them. You need no account.
@@ -335,19 +401,28 @@ Known limits, as of 2026-11-11. The details are in [docs/decision-log.md](docs/d
 
 ## Tests
 
-The tests need no network and no key.
+The tests need no network and no key. They run in the group's `.venv-desk`, in four folders.
 
-Windows:
+Windows (`-X utf8` makes Python read the tests' UTF-8 files as the desk itself does; see `utf8_mode.py`):
 
 ```
-.venv\Scripts\python -m unittest discover -s tests
+.venv-desk\Scripts\python -X utf8 -m unittest discover -s tests
+.venv-desk\Scripts\python -X utf8 -m unittest discover -s hooks/tests
+.venv-desk\Scripts\python -X utf8 -m unittest discover -s skills/spinoff-worksheet/tests
+.venv-desk\Scripts\python -X utf8 -m unittest discover -s skills/us-spinoff-seeker/tests
 ```
 
 Mac:
 
 ```
-.venv/bin/python -m unittest discover -s tests
+.venv-desk/bin/python -m unittest discover -s tests
+.venv-desk/bin/python -m unittest discover -s hooks/tests
+.venv-desk/bin/python -m unittest discover -s skills/spinoff-worksheet/tests
+.venv-desk/bin/python -m unittest discover -s skills/us-spinoff-seeker/tests
 ```
+
+On Windows 11 on 2026-11-19 the four folders ran 600 tests with no failure. Three tests that create a
+symlink were skipped: Windows lets an account create one only with administrator rights or Developer Mode.
 
 They cover the XBRL tag choice, the full-year filter, the release's table text, the quote and number
 checks, the calculator, the fixed order of the parts, the single send-back, and the Verifier's marks on
@@ -374,6 +449,6 @@ of `.venv\Scripts\python`):
 
 This is a learning exercise, not financial advice.
 
-AI assistance: Claude Code. I verified the sources myself; the judgments are mine.
+AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.
 
 Any remaining errors are my own.

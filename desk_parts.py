@@ -16,6 +16,9 @@ from dotenv import dotenv_values
 
 from desk_sources import ROOT,WORKSPACE,skill,inside,write_json,digest
 
+# Where desk.py looks for a seeker registry when --registry is not given (its parser default). A fresh clone has none.
+DEFAULT_REGISTRY=ROOT/'spinoff_output'/'registry.json'
+
 
 def json_path(path):
     path=Path(path)
@@ -104,7 +107,12 @@ class Parts:
         if options.registry:
             source=json_path(options.registry)
             if source.is_file():copy_saved_json(source,self.run/'registry.json')
-            elif options.selector!='screen' and not options.refresh_screen:raise ValueError('Registry does not exist: '+str(source))
+            elif options.selector!='screen' and not options.refresh_screen:
+                if Path(options.registry).resolve()!=DEFAULT_REGISTRY.resolve():raise ValueError('Registry does not exist: '+str(source))
+                # A run on a ticker needs no seeker (Lab 08: "the seeker when asked"). With no registry the ticker is in
+                # none, so its spinoff parts are "not applicable" and the rest runs. A fresh clone has no registry.
+                write_json(self.run/'registry.json',{'candidates':{},'complete':False,'pending_ciks':[],
+                           'note':'No seeker registry was supplied; this run did not establish whether the ticker is a spinoff.'})
         if options.refresh_screen:
             args=SimpleNamespace(start=options.refresh_screen,factors=str(self.run/'inputs/spinoff_factors.json'),
                  output=str(self.run),index_start=options.index_start,as_of=options.as_of,

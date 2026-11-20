@@ -29,7 +29,7 @@ def main():
         for key in ("SEC_USER_AGENT", "API_KEY", "MODEL"):
             value = (config.get(key) or "").strip()
             report(bool(value) and not value.startswith(("YOUR_", "FILL")), "Set " + key + " in this repository's .env.")
-        print("note  The copied worksheet supports Anthropic judgment calls. Other providers remain an inherited limitation.")
+        print("note  The agent team and the worksheet both use MODEL with API_KEY: the model and the key must be of the same provider.")
     except ImportError:
         report(False, "Install python-dotenv to check this repository's .env.")
     return int(problems > 0)

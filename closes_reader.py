@@ -180,6 +180,13 @@ def _lseg_rows(instrument, start, end, app_key, include_volume=False):
                 pass
 
 
+def lseg_python(system: str = '') -> Path:
+    """The default Python of the LSEG worker: this folder's .venv-lseg, on Windows as on a Mac or Linux.
+    LSEG_PYTHON in .env names another one. system is os.name unless a test gives one."""
+    venv = Path(__file__).resolve().parent / '.venv-lseg'
+    return venv / 'Scripts' / 'python.exe' if (system or os.name) == 'nt' else venv / 'bin' / 'python'
+
+
 def daily_closes(ticker: str, start_date: str, end_date: str, *, include_volume=False):
     """Inclusive dates; list of dated closes or the literal 'not available'."""
     start, end = date.fromisoformat(start_date), date.fromisoformat(end_date)
@@ -207,7 +214,7 @@ def daily_closes(ticker: str, start_date: str, end_date: str, *, include_volume=
             _diagnostic(config, ticker, start_date, end_date, 'configuration', 'LSEG_APP_KEY and LSEG_CLOSES_FILE are both absent or blank.')
             return NOT_AVAILABLE
         instrument = json.loads(config.get('LSEG_RIC_MAP') or '{}').get(ticker, ticker)
-        python = config.get('LSEG_PYTHON') or str(Path(__file__).resolve().parent / '.venv-lseg/bin/python')
+        python = config.get('LSEG_PYTHON') or str(lseg_python())
         stage = 'worker_launch'
         worker = subprocess.run([python, str(Path(__file__).resolve()), '--worker-volume' if include_volume else '--worker', instrument,
                                  start.isoformat(), end.isoformat()],

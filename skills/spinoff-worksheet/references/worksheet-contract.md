@@ -70,3 +70,9 @@ The financial report's graph, roles and CLI remain unchanged. No live services a
 The current Markdown file explicitly includes depreciation and amortization; its three-year average therefore uses both. The depreciation-only selector example applies only to an explicit alternate JSON method. Do not change the authored file or switch its method. The saved raw model output is a separate companion; a rejected response never supplies worksheet numbers.
 
 The default authored rules are read-only inputs. The implementation leaves their placeholder portfolio assumption exactly as written, records the parsed arithmetic, and never treats it as a verified fact about a client. The model receives only filing facts/criterion evidence, the value range and the single price comparison; daily price/volume inputs and purchase size remain out of its envelope.
+
+This is a learning exercise, not financial advice.
+
+AI assistance: OpenAI Codex. I verified the sources myself; the judgments are mine.
+
+Any remaining errors are my own.

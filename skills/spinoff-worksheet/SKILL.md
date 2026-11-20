@@ -31,7 +31,7 @@ Use `closes_reader.daily_closes_and_volumes` for liquidity. It adds optional `TR
 
 ## The single model call
 
-Read the user's persona, then make one Claude Messages HTTP request using the configured `MODEL` and `API_KEY` or `ANTHROPIC_API_KEY` in `.env`. The implementation supports the current team's Claude provider; unsupported providers fail as an unavailable judgment without a second call. There are no tools, provider fallbacks, automatic retries or repair calls.
+Read the user's persona, then make one model call with the configured `MODEL` and `API_KEY` (or `ANTHROPIC_API_KEY`) in `.env`, the same settings as the agent team. A Claude model is one Claude Messages HTTP request; any other model goes through CrewAI's LLM, as the agent team's roles do. There are no tools, provider fallbacks or repair calls. A call whose reply never came (a dropped connection, a timeout, or the provider's server error) is made once more, as the agent team's calls are; a reply that came is never asked again.
 
 Save the persona and sole input envelope before the call. Its only data keys are `filing_facts`, `value_range`, and `price_vs_low`. No volume, liquidity history, purchase size or other raw reader output goes to the model. Compute all six criterion scores in code and supply them as evidence assessments; the model explains them without generating score numbers. Request JSON prose plus the persona Insight, with digit-free `[fact:field_name]` citations. Code validates the aliases, expands the original filing/section/line citations, and prints the numeric score list itself. Reject numeric or malformed model output without a repair call. An Insight without a valid source alias is unknown. Save both the sole input envelope and raw output for review. This validation checks provenance and numeric boundaries; the supported meaning and importance of a qualitative Insight still need human review.
 
@@ -70,3 +70,9 @@ The command writes only a new reaction record. It never rewrites the view. Saved
 include the view hash, and later changes to that view stop scoring. `after` means the view was saved
 strictly later than the first post-filing close. Exclude late, not-computed, and unavailable-reaction
 rows from the agreement count. Historical records without a timestamped view remain unscored.
+
+This is a learning exercise, not financial advice.
+
+AI assistance: OpenAI Codex. I verified the sources myself; the judgments are mine.
+
+Any remaining errors are my own.

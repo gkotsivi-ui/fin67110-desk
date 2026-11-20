@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shutil
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Type
@@ -22,7 +23,7 @@ from equity_research_desk import Desk
 from desk_files import AssignedFiles, file_tool
 from desk_timing import timed_role, elapsed
 from desk_claims import load_sources, parse_response, with_repairs
-from desk_role_contracts import validate as validate_role,latest,report_text,report_catalog,code_marks as ledger_marks,verified_text,manager_contract
+from desk_role_contracts import validate as validate_role,latest,report_text,report_catalog,code_marks as ledger_marks,verified_text,manager_contract,published_sections,published_verified_text
 
 
 SECTIONS = (
@@ -33,6 +34,26 @@ SECTIONS = (
     "Investment Recommendation",
 )
 ROLES_DIR = Path(__file__).with_name("pipeline_roles")
+
+# A model call that failed on the way, not because of what the model said: the connection dropped or timed out,
+# or the provider answered with a server error. Names, not classes, so no provider's SDK is imported here.
+CONNECTION_ERRORS = {"APIConnectionError", "APITimeoutError", "ConnectError", "ConnectTimeout", "ReadError",
+                     "ReadTimeout", "WriteError", "RemoteProtocolError", "ProtocolError", "ConnectionError",
+                     "InternalServerError", "ServiceUnavailableError", "OverloadedError"}
+RETRY_WAIT_SECONDS = 30
+
+
+def dropped_connection(error: BaseException | None) -> bool:
+    """True when a model call failed because its reply never arrived, through the whole chain of causes."""
+    seen = set()
+    while error is not None and id(error) not in seen:
+        seen.add(id(error))
+        if isinstance(error, (ConnectionError, TimeoutError)) or type(error).__name__ in CONNECTION_ERRORS:
+            return True
+        if getattr(error, "status_code", None) in (500, 502, 503, 504, 529):
+            return True
+        error = error.__cause__ or error.__context__
+    return False
 # Roles whose numbers come from a checked claims ledger instead of typed prose.
 ROLE_CONTRACTS={'research_analyst.md':'Research Analyst','financial_analyst.md':'Financial Analyst',
                 'investment_advisor.md':'Investment Advisor','strategy_manager.md':'Strategy Manager','verifier.md':'Verifier'}
@@ -246,9 +267,31 @@ class Runtime:
         print(f"Node starting: {node}", flush=True)
         self.save_node(node, "input", envelope)
         raw_replies: list[str] = []
+        dropped: list[dict[str, str]] = []
 
         def ask(current: dict[str, Any]) -> dict[str, Any]:
             prompt = json.dumps(current, ensure_ascii=False)
+            try:
+                result = kickoff(prompt)
+            except Exception as error:
+                if not dropped_connection(error):
+                    raise
+                # 2026-11-19: the Verifier's call lost its connection to the provider after five minutes, and the
+                # whole run stopped with no report. No reply arrived, so the same call is made once more.
+                dropped.append({"time": datetime.now().astimezone().isoformat(timespec="seconds"),
+                                "error": f"{type(error).__name__}: {error}"})
+                self.save_node(node, "dropped_connections", dropped)
+                print(f"{node}: the connection to the model dropped ({type(error).__name__}: {error}); "
+                      f"trying once more in {RETRY_WAIT_SECONDS} seconds.", flush=True)
+                time.sleep(RETRY_WAIT_SECONDS)
+                result = kickoff(prompt)
+            # Save every reply verbatim before parsing, so a malformed one can be inspected.
+            raw_replies.append(str(result.raw))
+            self.save_node(node, "raw_responses", [{"attempt": i + 1, "raw": r} for i, r in enumerate(raw_replies)])
+            if store:store.verify()
+            return parse_response(raw_replies[-1], role)
+
+        def kickoff(prompt: str) -> Any:
             agent = Agent(
                 role=role,
                 goal="{role_task}",
@@ -278,15 +321,10 @@ class Runtime:
             )
             # Interpolate these fields once. Claims placeholders and JSON in
             # their values must not become CrewAI input-variable names.
-            result = crew.kickoff(inputs={"payload": prompt,"role_task":envelope['task'],
+            return crew.kickoff(inputs={"payload": prompt,"role_task":envelope['task'],
                 "role_instructions":(self.instructions(instruction_file) if contract_role!='Legacy Verifier' else
                     'Verify the supplied historical report. Return checks with claim, status, reason, correction and source. Preserve exact saved source values; never calculate or invent them.'),
                 "role_expected_output":envelope['expected_output']})
-            # Save every reply verbatim before parsing, so a malformed one can be inspected.
-            raw_replies.append(str(result.raw))
-            self.save_node(node, "raw_responses", [{"attempt": i + 1, "raw": r} for i, r in enumerate(raw_replies)])
-            if store:store.verify()
-            return parse_response(raw_replies[-1], role)
 
         if claims_mode:
             texts, facts = load_sources(self.output_dir)
@@ -300,6 +338,11 @@ class Runtime:
             output, attempts = with_repairs(attempt, texts, facts,
                 on_attempt=lambda attempts:self.save_node(node,'claim_attempts',attempts),
                 validator=lambda raw:validate_role(self.output_dir,contract_role,raw))
+            if 'left_out' in attempts[-1]:
+                # claim_attempts.json keeps every reply, its errors, and what was left out.
+                print(f"{node}: left out claim(s) {', '.join(attempts[-1]['left_out']) or 'none'} and line(s) "
+                      f"{', '.join(map(str, attempts[-1]['left_out_lines'])) or 'none'} of reply "
+                      f"{attempts[-1]['from_attempt']}, which still failed after repairs.", flush=True)
         else:
             output = ask(envelope)
         if claims_mode and contract_role in ('Research Analyst','Financial Analyst','Investment Advisor'):
@@ -500,7 +543,9 @@ class Runtime:
         return checks
 
     @staticmethod
-    def cited_filing_excerpts(report: str, texts: dict[str, str], radius: int = 2) -> dict[str, str]:
+    def cited_filing_excerpts(report: str, texts: dict[str, str], radius: int = 8) -> dict[str, str]:
+        # Eight lines each side: a filing's text puts table cells and parts of a sentence on lines of their
+        # own, and a label can stand several lines from the cited figure (seven lines, on 2026-11-19).
         references = re.findall(r"([A-Za-z0-9_.-]+\.txt):L(\d+)", report)
         wanted: dict[str, set[int]] = {}
         for filename, number in references:
@@ -584,7 +629,10 @@ class Runtime:
             'Read the saved verifier input and role files. Check every published claim exactly once for meaning, period and definition. Select targets by role and claim ID. Use claims placeholders for any amounts in reasons or corrections; never type numbers.',
             {'input_file':'verifier_input.json'},'JSON with claims and checks.'))
         self.save_node('Verifier','output',{'code_checks':marks,'model_checks':result,'verified_report':str(output_path)})
-        output_path.write_text(verified_text(full,marks,result['checks']))
+        # A claim the Verifier did not mark correct is left out with its line; the rest is published.
+        _,left_out=published_sections(self.output_dir,result['checks'])
+        if left_out:print(f"Verifier: left out {sum(len(c) for c in left_out.values())} flagged claim(s) from {len(left_out)} part(s); the marks table lists them",flush=True)
+        output_path.write_text(published_verified_text(self.output_dir,marks,result['checks']))
         return output_path
 
 

@@ -8,8 +8,8 @@ import tempfile
 from types import SimpleNamespace
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-def denied(*a,**k):raise RuntimeError('Seeded all-role test cannot fetch')
-socket.socket.connect=denied
+from no_network import deny_network
+deny_network('Seeded all-role test cannot fetch')
 
 with tempfile.TemporaryDirectory() as tmp:
     run=Path(tmp);os.environ['CREWAI_STORAGE_DIR']=str(run/'framework')

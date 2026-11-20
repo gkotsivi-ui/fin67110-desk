@@ -164,7 +164,11 @@ def check_calculations(run,path):
         if not expression:raise ValueError('Calculated fact has no printed formula: '+name)
         expected=arithmetic(expression)
         if metric.get('unit')=='%' and not re.search(r'\*\s*100\b',expression):expected*=100
-        if not rounded_equal(format(metric['value'],'.15g'),expected):
+        # The desk saves the value as a float; the formula is redone here exactly. A float carries about sixteen
+        # significant digits, so its last printed digit can differ from the exact result's, and a correct value
+        # was refused (2026-11-19). A wrong input or formula moves the value far more than one part in 10**12.
+        saved=Decimal(repr(float(metric['value'])))
+        if abs(saved-expected)>max(abs(expected),Decimal(1))*Decimal('1e-12'):
             raise ValueError('Calculated fact differs from its input arithmetic: '+name)
 
 
@@ -212,10 +216,16 @@ class Hook:
                     if path.name=='calculated_facts.json':check_calculations(self.run,path)
                     if isinstance(data,dict) and isinstance(data.get('registry'),dict) and data.get('run_time'):
                         check_screen(self.run,path)
+                    ledger=(self.run/'team_report.json').exists()
                     if 'nodes/' in relative and path.name=='output.json' and isinstance(data,dict) and path.parent.name.startswith('Verifier_') and path.parent.name!='Verifier_Code':
-                        for check in data.get('checks',[]):
-                            if check.get('status')!='correct':raise ValueError('Verifier rejected a claim: '+str(check.get('claim','unknown')))
-                    if isinstance(data,dict) and 'model_checks' in data:
+                        if ledger:
+                            # A claims-ledger run leaves a flagged claim's line out of the published text
+                            # (published_sections), so a flag does not stop it. The file must be a checked verification.
+                            if data.get('contract')!='verification':raise ValueError('Verifier output is not a checked verification')
+                        else:
+                            for check in data.get('checks',[]):
+                                if check.get('status')!='correct':raise ValueError('Verifier rejected a claim: '+str(check.get('claim','unknown')))
+                    if isinstance(data,dict) and 'model_checks' in data and not ledger:
                         if any(c.get('status')!='correct' for c in data['model_checks'].get('checks',[])):
                             raise ValueError('Team verifier has wrong or unsupported claims')
                     if path.name=='view.json':

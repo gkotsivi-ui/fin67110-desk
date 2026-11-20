@@ -40,3 +40,9 @@ an intentional omission, or a later stock price movement into an error. Explain 
 Use `Review.packet()` to inspect the exact allowlist and numbered model context. Long documents use
 selected windows. The metadata records omitted material. Read necessary saved evidence directly when
 performing an agent review; state the review's actual scope in the published limits.
+
+This is a learning exercise, not financial advice.
+
+AI assistance: OpenAI Codex. I verified the sources myself; the judgments are mine.
+
+Any remaining errors are my own.

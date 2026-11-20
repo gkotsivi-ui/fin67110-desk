@@ -7,14 +7,14 @@ Conclusion effects are stated per finding; this review does not certify the repo
 - **Company:** Cisco Systems
 - **Ticker:** CSCO
 - **Record Number:** 1
-- **Run Folder:** /Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/runs/live/CSCO_20261113_093231
+- **Run Folder:** runs/live/CSCO_20261113_093231
 - **Run Time:** Run time: 2026-11-13 09:32:31 US Eastern Standard Time (UTC-0500); model claude-opus-5-5; price: $102.01, the close of 2026-11-12, the last close before 2026-11-12 16:06:24 ET, when the release was accepted, from financialdatasets.ai
 - **Outcome:** completed
 - **Outcome Limit:** Artifact state only; historical stops need a saved log or separate attestation.
 - **Record Type:** live
 - **Review Time:** 2026-11-17T20:10:08.316415+00:00
 - **Model:** OpenAI Codex (session model identifier unavailable)
-- **Previous revision:** /Users/jacksonleeper/Documents/Purdue_MSBAIM/Mod 2/AI for Finance/Repos/fin67110-desk/docs/live-record-errors/Error Documentation Cisco Systems, 1.md
+- **Previous revision:** docs/live-record-errors/Error Documentation Cisco Systems, 1.md
 
 ## Confirmed errors
 

@@ -85,3 +85,9 @@ Do not claim human source verification. Use the course footer with the tools act
 The evaluation uses labelled synthetic practice runs. It does not establish live or model semantic accuracy.
 The existing `page.py` accepts saved-run folders, shows both groups and evidence, and downloads both documents.
 The page has no repair action. Do not add one as part of a review.
+
+This is a learning exercise, not financial advice.
+
+AI assistance: OpenAI Codex. I verified the sources myself; the judgments are mine.
+
+Any remaining errors are my own.

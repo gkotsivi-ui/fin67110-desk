@@ -85,3 +85,9 @@ Tests cover individual rules, the complete six-factor report, and bounded/resume
 - [SEC Form 4 transaction codes and amendments](https://www.sec.gov/files/form4.pdf)
 
 Report and JSON snapshot names share exactly the same base: `Spinoffs, YYYY-MM-DD, HH-MM-SS.ffffff, start YYYY-MM-DD`. Dates and runtime come from run metadata, not file modification times. A reviewed copy retains the original run identity and adds `, reviewed` to both files. Microseconds distinguish runs started in the same second. Registry/progress files are shared state, and standalone audits retain their descriptive matching names.
+
+This is a learning exercise, not financial advice.
+
+AI assistance: OpenAI Codex. I verified the sources myself; the judgments are mine.
+
+Any remaining errors are my own.
