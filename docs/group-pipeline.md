@@ -23,7 +23,7 @@ same reason. The test harness is portable (`tests/portable.py`): symlink checks 
 permits a symlink, the ordinary secret and excluded-file checks always run, and the seeded CrewAI tests
 allow loopback sockets, which Windows' event loop needs, while blocking every external connection. The
 automated tests ran on macOS and Python 3.13, and, with both sets of Windows changes, on Windows 11 and
-Python 3.13 on 2026-11-20: 607 tests in the four folders, no failure; the four that create a symlink
+Python 3.13 on 2026-11-21: 635 tests in the four folders, no failure; the four that create a symlink
 were skipped.
 
 Configure only this repo's `.env`. It needs `SEC_USER_AGENT`, `API_KEY`, and an explicit `MODEL`.

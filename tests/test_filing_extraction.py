@@ -9,7 +9,7 @@ from typing import Any
 def helpers():
     source = Path(__file__).resolve().parents[1] / 'equity_research_agent_team.py'
     tree = ast.parse(source.read_text())
-    functions = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name in ('numbered_section', 'missing_fact_filing_lines')]
+    functions = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name in ('cross_reference', 'numbered_section', 'missing_fact_filing_lines')]
     scope = {'Path': Path, 'Any': Any, 're': re}
     exec(compile(ast.fix_missing_locations(ast.Module(body=functions, type_ignores=[])), str(source), 'exec'), scope)
     return scope
@@ -30,6 +30,23 @@ class FilingExtractionTests(unittest.TestCase):
             self.assertIn('10-K.txt:L2: Business text.', business)
             self.assertNotIn('Item 2', business)
             self.assertIn('10-K.txt:L5: Discussion text.', mda)
+
+    def test_a_split_cross_reference_is_not_a_heading(self):
+        # Lowe's 10-K on 2026-11-20: 'see Item 7, "Management's Discussion...", of this Annual Report' was split so
+        # that "Item 7" and "Item 8" stood alone, and the desk took Business and risk-factor text as Item 7.
+        self.path.write_text('\n'.join([
+            'Item 1. Business', 'Business text.', 'Seasonality is discussed in', 'Item 7',
+            ', “Management’s Discussion and Analysis”, of this Annual Report.',
+            'More business text that runs long. ' * 30, 'Read the risk factors with', 'Item 7',
+            'and our financial statements in', 'Item 8', '.  There also may be other factors.',
+            'Item 7 - Management’s Discussion and Analysis of Financial Condition', 'Net sales rose.', 'See',
+            'Item 8', ', “Financial Statements and Supplementary Data”, of this Annual Report.',
+            'Liquidity text.', 'Item 8. Financial Statements and Supplementary Data', 'Statements.']))
+        mda = self.functions['numbered_section'](self.path, 7, 8)
+        self.assertIn('Net sales rose.', mda)
+        self.assertIn('Liquidity text.', mda)
+        self.assertNotIn('More business text', mda)
+        self.assertNotIn('Statements.', mda)
 
     def test_body_selected_over_contents_and_7a_kept(self):
         self.path.write_text('Item 7. MD&A\n24\nItem 8. Statements\nItem 7—MD&A\nFull discussion with substantial detail.\nItem 7A—Market risk\nRisk detail.\nItem 8—Statements')

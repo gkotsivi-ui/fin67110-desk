@@ -25,6 +25,16 @@ from dotenv import load_dotenv
 SEC_BASE = "https://www.sec.gov"
 DATA_BASE = "https://data.sec.gov"
 COMPANY_TICKERS_URL = f"{SEC_BASE}/files/company_tickers.json"
+# Claim 7 divides long-term debt, with its current portion, by equity. A balance sheet holds that debt in two lines.
+# Each pair is one definition, the noncurrent line then the current line, and both come from the same 10-K. The total
+# tag is never the amount: filers use it for other measures (docs/decision-log.md, entry 9; on 2026-11-20 Lowe's
+# LongTermDebt was its maturity schedule's total, not the balance sheet's). It only shows that there is no current
+# portion, when it equals the noncurrent line and no current line is filed. This is the base desk's rule (lab02_desk.py).
+DEBT_PAIRS = (
+    ("LongTermDebtNoncurrent", "LongTermDebtCurrent"),
+    ("LongTermDebtAndCapitalLeaseObligations", "LongTermDebtAndCapitalLeaseObligationsCurrent"),
+)
+DEBT_TOTAL = "LongTermDebt"
 CONCEPTS: dict[str, dict[str, Any]] = {
     # Prefer total Revenues when a filer reports it. Fall back to other
     # standard revenue concepts when that tag is unavailable for a peer.
@@ -35,9 +45,13 @@ CONCEPTS: dict[str, dict[str, Any]] = {
     "net_income_attributable_to_parent": {"tags": ["NetIncomeLossAttributableToParent", "NetIncomeLoss"], "kind": "duration", "unit": "USD"},
     "diluted_eps": {"tags": ["EarningsPerShareDiluted"], "kind": "duration", "unit": "USD/shares"},
     "stockholders_equity": {"tags": ["StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"], "kind": "instant", "unit": "USD"},
-    "long_term_debt": {"tags": ["LongTermDebt", "LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities", "LongTermDebtNoncurrent", "LongTermDebtAndFinanceLeaseObligationsNoncurrent"], "kind": "instant", "unit": "USD"},
-    "current_portion_of_long_term_debt": {"tags": ["LongTermDebtCurrent", "LongTermDebtAndFinanceLeaseObligationsCurrent"], "kind": "instant", "unit": "USD"},
-    "short_term_borrowings": {"tags": ["ShortTermBorrowings"], "kind": "instant", "unit": "USD"},
+    # The balance sheet's two lines of long-term debt; compile_facts reads them as one pair (DEBT_PAIRS).
+    "long_term_debt": {"tags": ["LongTermDebtNoncurrent", "LongTermDebtAndCapitalLeaseObligations"], "kind": "instant", "unit": "USD",
+                       "label": "long-term debt, excluding current maturities (balance sheet)"},
+    "current_portion_of_long_term_debt": {"tags": ["LongTermDebtCurrent", "LongTermDebtAndCapitalLeaseObligationsCurrent"], "kind": "instant", "unit": "USD",
+                                          "label": "current maturities of long-term debt (balance sheet)"},
+    "short_term_borrowings": {"tags": ["ShortTermBorrowings"], "kind": "instant", "unit": "USD",
+                              "label": "short-term borrowings; not part of debt to equity"},
     "cash_from_operations": {"tags": ["NetCashProvidedByUsedInOperatingActivities"], "kind": "duration", "unit": "USD"},
     "additions_to_property_and_equipment": {"tags": ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets", "PaymentsForProceedsFromProductiveAssets"], "kind": "duration", "unit": "USD"},
 }
@@ -54,6 +68,121 @@ class Filing:
     document_url: str = ""
     release_document: str = ""
     release_url: str = ""
+    report_date: str = ""
+
+
+DATE_CELL = re.compile(r"[A-Z][a-z]+\.?\s+\d{1,2},?\s+(20\d{2})")
+YEAR_CELL = re.compile(r"(20\d{2})")
+NUMBER_CELL = re.compile(r"\$?\s*\d[\d,]*(?:\.\d+)?")
+REVENUE_TIERS = (r"total\s+(?:net\s+)?revenues?|revenues?,?\s+total", r"(?:net\s+)?revenues?", r"total\s+net\s+sales|net\s+sales")
+
+
+def read_quarter_table(rows: list[list[str]]) -> dict[str, Any] | None:
+    """The latest three months' revenue, the same quarter's revenue a year before, and GAAP diluted EPS, from one
+    release table whose period columns carry dates or years under a "Three Months Ended" header.
+
+    On 2026-11-20 step 6 read no quarter from Lowe's or Walmart: Lowe's dates its columns and pairs each amount with
+    its percentage of sales, and Walmart's year cells do not line up with its merged header cells. Total revenues
+    come before revenues, and revenues before net sales. None when the table does not give all three.
+    """
+    texts = [" ".join(row) for row in rows]
+    head = next((i for i, text in enumerate(texts) if re.search(r"(?:Three|3)\s+Months\s+Ended|Quarter\s+Ended|(?:Thirteen|13)\s+Weeks\s+Ended", text, re.I)), None)
+    if head is None:
+        return None
+    groups = max(1, len(re.findall(r"\b(?:Months|Weeks|Quarter|Year)s?\s+Ended", texts[head], re.I)))
+
+    def year(cell: str) -> int | None:
+        match = DATE_CELL.fullmatch(cell.strip()) or YEAR_CELL.fullmatch(cell.strip())
+        return int(match.group(1)) if match else None
+
+    period_row = next((i for i in range(head, min(head + 4, len(rows))) if sum(year(c) is not None for c in rows[i]) >= 2), None)
+    if period_row is None:
+        return None
+    labels = [c.strip() for c in rows[period_row] if year(c) is not None]
+    if len(labels) % groups:
+        return None
+    count, first = len(labels), labels[:len(labels) // groups]
+    years = [year(c) for c in first]
+    latest = years.index(max(years))
+    prior = years.index(max(years) - 1) if max(years) - 1 in years else None
+
+    def amounts(row: list[str]) -> list[str] | None:
+        cells = [c.strip() for c in row[1:]]
+        values = [cell.replace("$", "").strip() for k, cell in enumerate(cells)
+                  if NUMBER_CELL.fullmatch(cell) and not (k + 1 < len(cells) and cells[k + 1].startswith("%"))]
+        if len(values) == 2 * count:
+            values = values[::2]  # each period's amount, then its percentage of sales
+        return values if len(values) == count else None
+
+    revenue: dict[int, tuple[str, list[str]]] = {}
+    eps = None
+    heading = ""
+    for row in rows[period_row + 1:]:
+        if not row:
+            continue
+        label = row[0].strip().rstrip(":").strip()
+        values = amounts(row)
+        if not values:
+            heading = label or heading
+            continue
+        for tier, pattern in enumerate(REVENUE_TIERS):
+            if tier not in revenue and re.fullmatch(pattern, label, re.I):
+                revenue[tier] = (label, values)
+        if eps is None and not re.search(r"adjusted|non-?gaap", label, re.I) and (
+                re.match(r"diluted\s+(?:net\s+)?(?:earnings|income)(?:\s+\(loss\))?\s+per\s+(?:common\s+)?share", label, re.I)
+                or (re.fullmatch(r"diluted", label, re.I) and re.search(r"(?:earnings|income).*per\s+(?:common\s+)?share|per\s+share", heading, re.I))):
+            eps = (label, values)
+    if not revenue or eps is None:
+        return None
+    label, values = revenue[min(revenue)]
+    return {"revenue": values[latest], "prior_revenue": values[prior] if prior is not None else None, "eps": eps[1][latest],
+            "revenue_label": label, "eps_label": eps[0], "latest": first[latest], "prior": first[prior] if prior is not None else None}
+
+
+def table_unit(table: Any, rows: list[list[str]]) -> str:
+    """A release table's unit: "in millions" in one of its cells, or else in the lines printed just above it.
+
+    On 2026-11-21 Lowe's printed "In Millions, Except Per Share and Percentage Data" above its table, not in it, and
+    the desk called its net sales "USD as shown"; an analyst who guessed the unit would write a wrong claim.
+    """
+    pattern = r"\bin (millions|thousands|billions)\b"
+    found = re.search(pattern, " ".join(cell for row in rows for cell in row), re.I)
+    if not found and table is not None:
+        above: list[str] = []
+        for text in table.find_all_previous(string=True, limit=40):
+            if text.find_parent("table") is not None:
+                break  # an earlier table: its unit is not this one's
+            if text.strip():
+                above.append(text.strip())
+            if len(above) == 4:  # the table's own heading lines
+                break
+        found = re.search(pattern, " ".join(above), re.I)
+    return f"USD {found.group(1).lower()}" if found else "USD as shown"
+
+
+def filings_line(filings: dict[str, Any], cik: str) -> str:
+    """A report's first line: the filings the desk read, the earnings release by its exhibit, each EDGAR Accepted
+    time and the CIK, in the base desk's form. live_record.py reads the 8-K, its exhibit, its Accepted time and the
+    CIK from this line; on 2026-11-20 a line with no CIK made it read no 8-K at all."""
+    def accepted(filing: Any) -> str:
+        stamp = getattr(filing, "accepted", "") or ""
+        return f"accepted {stamp} ET" if re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", stamp) else ""
+    entries = []
+    for form, period in (("10-K", "fiscal year ended"), ("10-Q", "quarter ended"), ("8-K", "")):
+        filing = filings.get(form)
+        if not filing:
+            continue
+        if period:
+            when = getattr(filing, "report_date", "") or ""
+            details = [f"{period} {when}" if when else "", accepted(filing)]
+        else:
+            exhibit = getattr(filing, "release_document", "") or ""
+            details = ["Item 2.02 earnings release" + (f", Exhibit 99.1 {exhibit}" if exhibit else ""), accepted(filing)]
+        details = [d for d in details if d]
+        entries.append(f"{form} {filing.accession}" + (f" ({', '.join(details)})" if details else ""))
+    if cik:
+        entries.append(f"XBRL company facts, CIK {str(cik).zfill(10)}")
+    return "Filings read: " + "; ".join(entries)
 
 
 class Desk:
@@ -162,7 +291,8 @@ class Desk:
             root = self.archive_root(self.cik, accession)
             primary = row.get("primaryDocument", "")
             doc_url = f"{root}/{primary}" if primary else ""
-            filing = Filing(form, accession, row.get("filingDate", ""), primary, accepted, f"{root}/{accession}-index.html", doc_url)
+            filing = Filing(form, accession, row.get("filingDate", ""), primary, accepted, f"{root}/{accession}-index.html", doc_url,
+                            report_date=row.get("reportDate", ""))
             if form == "8-K":
                 primary_text = BeautifulSoup(self.get(doc_url).content, "html.parser").get_text(" ", strip=True) if doc_url else ""
                 if not re.search(r"Item\s*2\.02\b", primary_text, re.I):
@@ -290,6 +420,10 @@ class Desk:
             current = self.get_fy_fact(rows, target_end) if rows else None
             prior = self.get_fy_fact(rows, target_end, previous=True, target_fy=target_fy) if rows else None
             output[metric] = {"tag": tag, "period_end": current.get("end") if current else target_end, "fy": target_fy, "filing": current.get("accn") if current else None, "value": current.get("val") if current else None, "prior_period_end": prior.get("end") if prior else None, "prior_filing": prior.get("accn") if prior else None, "prior_value": prior.get("val") if prior else None}
+            if spec.get("label"):
+                output[metric]["label"] = spec["label"]
+        output["long_term_debt"], output["current_portion_of_long_term_debt"] = self.debt_pair(
+            facts, target_end, target_fy, output["long_term_debt"], output["current_portion_of_long_term_debt"])
         parent = output["net_income_attributable_to_parent"]
         if parent["value"] is None:
             consolidated = output["net_income"]
@@ -311,6 +445,35 @@ class Desk:
                 # consolidated net income as parent-attributable net income.
                 parent.update({"value": consolidated["value"], "tag": f"{consolidated['tag']} (no NCI income fact reported)", "period_end": consolidated["period_end"], "filing": consolidated["filing"], "prior_value": consolidated["prior_value"], "prior_period_end": consolidated["prior_period_end"], "prior_filing": consolidated["prior_filing"]})
         return output, target_end, target_fy
+
+    def debt_pair(self, facts: dict[str, Any], target_end: str, target_fy: int,
+                  noncurrent_default: dict[str, Any], current_default: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+        """The balance sheet's two lines of long-term debt, read as one pair from the same filing (DEBT_PAIRS).
+
+        When no pair is filed, the first pair's noncurrent line stands alone only if the total tag holds the same
+        amount: then there is no current portion. Otherwise the defaults are kept, and debt to equity is not stated.
+        A missing current line is never read as zero.
+        """
+        def entry(tag: str, metric: str) -> dict[str, Any]:
+            rows = self.fact_rows(facts, tag, "USD", "instant")
+            current = self.get_fy_fact(rows, target_end) if rows else None
+            prior = self.get_fy_fact(rows, target_end, previous=True, target_fy=target_fy) if rows else None
+            return {"tag": tag if rows else None, "period_end": current.get("end") if current else target_end, "fy": target_fy,
+                    "filing": current.get("accn") if current else None, "value": current.get("val") if current else None,
+                    "prior_period_end": prior.get("end") if prior else None, "prior_filing": prior.get("accn") if prior else None,
+                    "prior_value": prior.get("val") if prior else None, "label": CONCEPTS[metric]["label"]}
+        for noncurrent, current in DEBT_PAIRS:
+            pair = entry(noncurrent, "long_term_debt"), entry(current, "current_portion_of_long_term_debt")
+            if pair[0]["value"] is not None and pair[1]["value"] is not None and pair[0]["filing"] == pair[1]["filing"]:
+                pair[0]["debt_basis"] = "pair"
+                return pair
+        alone, total = entry(DEBT_PAIRS[0][0], "long_term_debt"), entry(DEBT_TOTAL, "long_term_debt")
+        if alone["value"] is not None and total["value"] == alone["value"] and total["filing"] == alone["filing"]:
+            alone["debt_basis"] = "no current portion"
+            alone["note"] = f"no current portion: {DEBT_TOTAL} holds the same amount as {DEBT_PAIRS[0][0]}, and no current line is filed"
+            return alone, {**current_default, "tag": None, "value": None, "filing": None}
+        # No pair and no proof of a zero current portion: the lines stay as facts, and debt to equity is not stated.
+        return noncurrent_default, current_default
 
     @staticmethod
     def number(value: Any) -> str:
@@ -409,26 +572,20 @@ class Desk:
         prior_equity_sourced = self.has_fact_source(f["stockholders_equity"], prior=True)
         debt_item = f["long_term_debt"]
         current_debt_item = f["current_portion_of_long_term_debt"]
-        short_debt_item = f["short_term_borrowings"]
+        # Claim 7: long-term debt with its current portion, the balance sheet's two lines as one pair (compile_facts).
+        # Short-term borrowings are not part of that definition, so they are never added (on 2026-11-20 they would
+        # have moved Walmart's ratio from 0.383 to 0.449).
         debt_components: list[dict[str, Any]] = []
-        long_tag = debt_item.get("tag")
-        if self.has_fact_source(debt_item):
-            if long_tag in {"LongTermDebt", "LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities"}:
-                # These concepts are complete totals; do not add current maturities again.
-                debt_components.append(debt_item)
-            elif self.has_fact_source(current_debt_item):
-                debt_components.extend((debt_item, current_debt_item))
-        # Short-term borrowings alone are only a partial funding measure.
-        # Report D/E only when the long-term debt base is available.
+        if debt_item.get("debt_basis") == "pair" and self.has_fact_source(debt_item) and self.has_fact_source(current_debt_item):
+            debt_components = [debt_item, current_debt_item]
+        elif debt_item.get("debt_basis") == "no current portion" and self.has_fact_source(debt_item):
+            debt_components = [debt_item]
         long_term_base_complete = bool(debt_components)
-        if long_term_base_complete and self.has_fact_source(short_debt_item):
-            debt_components.append(short_debt_item)
         debt_inputs_sourced = bool(debt_components) and all(self.has_fact_source(item) for item in debt_components)
-        separate_short_term_included = any(item is short_debt_item for item in debt_components)
-        debt_definition = "long-term debt, with the current portion included once, divided by year-end stockholders' equity"
-        if separate_short_term_included:
-            debt_definition = "long-term debt, with the current portion included once, plus separately reported short-term borrowings, divided by year-end stockholders' equity"
-        debt_definition += "; excludes repos, secured financings, and lease liabilities not included in the selected XBRL debt tags"
+        debt_definition = ("long-term debt with its current portion, the balance sheet's noncurrent and current lines filed as one "
+                           "pair in the same 10-K, divided by year-end stockholders' equity; short-term borrowings are not included")
+        if debt_item.get("debt_basis") == "no current portion":
+            debt_definition += "; " + debt_item["note"]
         cfo_sourced = self.has_fact_source(f["cash_from_operations"])
         capex_sourced = self.has_fact_source(f["additions_to_property_and_equipment"])
         eps_sourced = self.has_fact_source(f["diluted_eps"])
@@ -446,6 +603,8 @@ class Desk:
             "operating_margin": {"formula": f"{op} / {rev}", "value": op_margin * 100 if op_margin is not None else None, "unit": "%", "sources": [self.fact_source(f["operating_income"]), self.fact_source(f["revenue"])]},
             "return_on_average_equity": {"formula": f"{parent_net} / (({eq} + {prev_eq}) / 2)", "value": roe * 100 if roe is not None else None, "unit": "%", "method": "reported net income fact divided by the simple average of current and prior year-end stockholders' equity", "sources": [self.fact_source(f["net_income_attributable_to_parent"]), self.fact_source(f["stockholders_equity"]), self.fact_source(f["stockholders_equity"], prior=True)]},
             "debt_to_equity": {"formula": f"({' + '.join(str(item.get('value')) for item in debt_components) or 'n/a'}) / {eq}", "value": debt_equity, "unit": "ratio", "definition": debt_definition, "sources": [self.fact_source(item) for item in debt_components] + [self.fact_source(f["stockholders_equity"])]},
+            # The amount the analysts call long-term debt: both balance-sheet lines, never one line or the total tag.
+            "long_term_debt_with_current_portion": {"formula": " + ".join(str(item.get("value")) for item in debt_components) or "n/a", "value": total_debt, "unit": "USD", "definition": "long-term debt with its current portion: the balance sheet's noncurrent and current lines, one pair in the same 10-K", "sources": [self.fact_source(item) for item in debt_components]},
             "free_cash_flow": {"formula": f"{cfo} - {capex}", "value": fcf, "unit": "USD", "sources": [self.fact_source(f["cash_from_operations"]), self.fact_source(f["additions_to_property_and_equipment"])]},
             "pe": {"formula": f"{self.price} / {diluted_eps}", "value": pe, "unit": "ratio", "price_source": self.price_source, "sources": [self.price_source, self.fact_source(f["diluted_eps"])]},
         }
@@ -461,7 +620,7 @@ class Desk:
         debt_formula = " + ".join(self.input_value(item) for item in debt_components) if debt_components else "n/a"
         debt_sources = "; ".join(self.fact_source(item) for item in debt_components) if debt_components else "source unavailable"
         if not long_term_base_complete:
-            print(f"  Computed debt to equity = n/a (complete long-term debt base unavailable; short-term borrowings alone are not reported as total debt) | inputs: long-term debt [{self.fact_source(debt_item)}]; current portion [{self.fact_source(current_debt_item)}]")
+            print(f"  Computed debt to equity = n/a (long-term debt with its current portion is not established: no balance-sheet pair of debt lines, and no proof of a zero current portion) | inputs: long-term debt [{self.fact_source(debt_item)}]; current portion [{self.fact_source(current_debt_item)}]")
         else:
             print(f"  Computed debt to equity = ({debt_formula}) / {self.input_value(f['stockholders_equity'])} = {self.number(debt_equity)} | inputs: borrowings [{debt_sources}]; equity [{self.fact_source(f['stockholders_equity'])}]; definition: {debt_definition}")
         print(f"  Computed free cash flow = {self.input_value(f['cash_from_operations'])} - {self.input_value(f['additions_to_property_and_equipment'])} = {self.number(fcf)} | inputs: cash from operations [{self.fact_source(f['cash_from_operations'])}]; additions to property and equipment [{self.fact_source(f['additions_to_property_and_equipment'])}]")
@@ -559,8 +718,7 @@ class Desk:
                 quarter_ordinal = [year for _, year in year_cols].index(latest_year)
                 prior_year_col = next(((i, year) for i, year in year_cols if year == latest_year - 1), None)
                 prior_quarter_ordinal = [year for _, year in year_cols].index(prior_year_col[1]) if prior_year_col else None
-                unit_match = re.search(r"\bin (millions|thousands|billions)\b", " ".join(cell for row in table_rows for cell in row), re.I)
-                quarter_unit = f"USD {unit_match.group(1).lower()}" if unit_match else "USD as shown"
+                quarter_unit = table_unit(table, table_rows)
                 local_revenue_hit = None
                 local_prior_revenue_hit = None
                 local_eps_hit = None
@@ -612,8 +770,7 @@ class Desk:
                 latest_date = quarter_dates[quarter_ordinal][1]
                 prior_date = next((date for _, date in quarter_dates if date.year == latest_date.year - 1), None)
                 prior_quarter_ordinal = next((i for i, (_, date) in enumerate(quarter_dates) if prior_date and date == prior_date), None)
-                unit_match = re.search(r"\bin (millions|thousands|billions)\b", " ".join(cell for row in table_rows for cell in row), re.I)
-                quarter_unit = f"USD {unit_match.group(1).lower()}" if unit_match else "USD as shown"
+                quarter_unit = table_unit(table, table_rows)
                 local_revenue_hit = None
                 local_prior_revenue_hit = None
                 local_eps_hit = None
@@ -641,6 +798,22 @@ class Desk:
                     table_prior_revenue_hit = local_prior_revenue_hit
                     break
 
+        # Dated or year columns with merged headers, and amount/percentage pairs (read_quarter_table).
+        revenue_label = r"total\s+revenues?"
+        if not (table_revenue_hit and table_eps_hit):
+            for table in soup.find_all("table"):
+                table_rows = [[cell.get_text(" ", strip=True) for cell in row.find_all(["th", "td"])] for row in table.find_all("tr")]
+                found = read_quarter_table(table_rows)
+                if not found:
+                    continue
+                quarter_unit = table_unit(table, table_rows)
+                table_revenue_hit = f"Reported revenue, {found['revenue_label']} (three months ended {found['latest']}, {quarter_unit}): {found['revenue']}"
+                table_prior_revenue_hit = (f"Prior-year reported revenue, {found['revenue_label']} (three months ended {found['prior']}, {quarter_unit}): {found['prior_revenue']}"
+                                           if found["prior_revenue"] else None)
+                table_eps_hit = f"GAAP diluted EPS, {found['eps_label']} (three months ended {found['latest']}): ${found['eps']}"
+                revenue_label = re.escape(found["revenue_label"])
+                break
+
         revenue_hits = [] if table_revenue_hit else [line for line in lines if not re.search(r"fiscal year|annual|forecast|guidance|expect|project", line, re.I) and (re.search(r"quarter(?:ly)?\s+(?:net\s+)?revenue", line, re.I) or re.search(r"(?:net\s+)?revenues?\s+of\s+\$\s*[\d,.]+\s*(?:billion|million)", line, re.I)) and re.search(r"\$\s*[\d,.]+", line)]
         eps_hits = [] if table_eps_hit else [line for line in lines if not re.search(r"forecast|guidance|expect|project", line, re.I) and (re.search(r"diluted", line, re.I) and re.search(r"earnings\s+per\s+share|per\s+diluted\s+share|per-share", line, re.I) or re.search(r"\bEPS\s+of\s+\$", line, re.I)) and re.search(r"\$\s*[\d,.]+|\b\d+\.\d+\b", line)]
         hits = ([table_revenue_hit] if table_revenue_hit else revenue_hits) + ([table_eps_hit] if table_eps_hit else eps_hits)
@@ -659,14 +832,19 @@ class Desk:
                 return "source unavailable"
             token = f"{value:,.0f}" if value.is_integer() else f"{value:,.2f}"
             normalized = token.replace(",", "")
-            value_index = next((i for i, line in enumerate(lines) if re.sub(r"[^\d.]", "", line) == normalized), None)
-            if value_index is None:
-                value_index = next((i for i, line in enumerate(lines) if re.search(rf"(?<![\d.])\$?{re.escape(token)}(?![\d.])", line)), None)
-            if value_index is None:
+            found = [i for i, line in enumerate(lines) if re.sub(r"[^\d.]", "", line) == normalized]
+            if not found:
+                found = [i for i, line in enumerate(lines) if re.search(rf"(?<![\d.])\$?{re.escape(token)}(?![\d.])", line)]
+            if not found:
                 return "source unavailable"
-            start_index = value_index
-            if label_pattern:
-                start_index = next((i for i in range(value_index - 1, max(-1, value_index - 6), -1) if re.search(label_pattern, lines[i], re.I)), value_index)
+
+            def label_above(index: int) -> int | None:
+                return next((i for i in range(index - 1, max(-1, index - 6), -1) if re.search(label_pattern, lines[i], re.I)), None) if label_pattern else None
+            # The first line with the value under its own label: Walmart's basic and diluted EPS were both 0.62 on
+            # 2026-11-20, and the first 0.62 in the release was the basic one.
+            value_index = next((i for i in found if label_above(i) is not None), found[0])
+            start_index = label_above(value_index)
+            start_index = value_index if start_index is None else start_index
             quoted = "\n".join(lines[start_index:value_index + 1])
             return f"{self.quarter_results.get('release_file', 'earnings_release_Ex99-1.txt')}:L{start_index + 1}-L{value_index + 1}; quote: {json.dumps(quoted, ensure_ascii=False)}"
 
@@ -675,8 +853,8 @@ class Desk:
         quarter_revenue_growth = None
         if current_quarter_revenue is not None and prior_quarter_revenue not in (None, 0):
             quarter_revenue_growth = (current_quarter_revenue - prior_quarter_revenue) / prior_quarter_revenue * 100
-            current_source = exact_quote(current_quarter_revenue, r"total\s+revenues?")
-            prior_source = exact_quote(prior_quarter_revenue, r"total\s+revenues?")
+            current_source = exact_quote(current_quarter_revenue, revenue_label)
+            prior_source = exact_quote(prior_quarter_revenue, revenue_label)
             growth_source = [current_source, prior_source]
             self.computed_metrics["quarter_revenue_growth"] = {
                 "formula": f"({current_quarter_revenue} - {prior_quarter_revenue}) / {prior_quarter_revenue} * 100",
@@ -718,8 +896,8 @@ class Desk:
             "total_revenue": current_quarter_revenue,
             "prior_year_total_revenue": prior_quarter_revenue,
             "quarter_revenue_growth_percent": quarter_revenue_growth,
-            "revenue_source": exact_quote(current_quarter_revenue, r"total\s+revenues?"),
-            "prior_revenue_source": exact_quote(prior_quarter_revenue, r"total\s+revenues?"),
+            "revenue_source": exact_quote(current_quarter_revenue, revenue_label),
+            "prior_revenue_source": exact_quote(prior_quarter_revenue, revenue_label),
             "diluted_eps": diluted_eps_value,
             "diluted_eps_source": exact_quote(diluted_eps_value, r"diluted|per\s+diluted\s+share") if diluted_eps_value is not None else "source unavailable",
             # Label this separately: the latest 10-Q can cover a different

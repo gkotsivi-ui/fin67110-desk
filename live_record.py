@@ -14,6 +14,7 @@ Before a push (exit code 1 when a report is late):    python live_record.py --ch
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import subprocess
@@ -38,7 +39,8 @@ WEEKS = {
     7: (date(2026, 11, 30), date(2026, 12, 6)),
 }
 NEEDED = 3  # The top tier needs a report inside its window in three of the four weeks.
-REPORTS = ("verified_report.md", "report.md")  # the verified report, when the run has one
+# The group desk's final report first, then the verified report, then the base desk's report.
+REPORTS = ("final_report.md", "verified_report.md", "report.md")
 ACCESSION = r"\d{10}-\d{2}-\d{6}"
 PAUSE = 0.3  # seconds between requests to SEC EDGAR, well under its limit of 10 a second
 STAMP = "%Y-%m-%d %H:%M:%S"
@@ -52,17 +54,21 @@ def eastern() -> ZoneInfo:
         raise SystemExit("No time-zone data. Install the packages: python -m pip install -r requirements.txt") from None
 
 
-def release_named(first_line: str) -> dict[str, str] | None:
-    """What a report's first line says about the earnings 8-K it read. None when the line names no 8-K."""
+def release_named(first_line: str, cik_fallback: str = "") -> dict[str, str] | None:
+    """What a report's first line says about the earnings 8-K it read. None when the line names no 8-K.
+
+    cik_fallback is the run's own CIK (facts.json), for a first line that names the 8-K but not the CIK: the group
+    desk wrote such lines until 2026-11-20."""
     filing = re.search(rf"8-K ({ACCESSION})([^;]*)", first_line)
-    cik = re.search(r"CIK (\d{1,10})\b", first_line)
+    found = re.search(r"CIK (\d{1,10})\b", first_line)
+    cik = found.group(1) if found else cik_fallback
     if not filing or not cik:
         return None
     exhibit = re.search(r"Exhibit (99(?:\.\d+)?) ([^,)\s]+)", filing.group(2))
     accepted = re.search(r"accepted (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) ET", filing.group(2))
     return {
         "accession": filing.group(1),
-        "cik": cik.group(1).zfill(10),
+        "cik": str(cik).zfill(10),
         "exhibit_label": exhibit.group(1) if exhibit else "",
         "exhibit": exhibit.group(2) if exhibit else "",
         "accepted": accepted.group(1) if accepted else "",
@@ -126,7 +132,12 @@ def read_run(folder: Path, desk: Desk | None, now: datetime, root: Path = ROOT) 
     if report is None:
         return {**row, "problem": "the folder holds no report"}
     with report.open(encoding="utf-8", errors="replace") as handle:
-        named = release_named(handle.readline())
+        first_line = handle.readline()
+    try:
+        run_cik = str(json.loads((folder / "facts.json").read_text(encoding="utf-8")).get("cik") or "")
+    except (OSError, ValueError, AttributeError):
+        run_cik = ""
+    named = release_named(first_line, run_cik)
     if named is None:
         return {**row, "problem": f"the first line of {report.name} names no 8-K"}
     row.update(named, report=report.relative_to(root).as_posix())

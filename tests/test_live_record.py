@@ -54,6 +54,24 @@ class FirstLine(unittest.TestCase):
         self.assertIsNone(live.release_named("# A report with no filings line"))
         self.assertIsNone(live.release_named("Filings read: 10-K 0000000001-26-000010; XBRL company facts, CIK 0000000001"))
 
+    def test_the_group_desk_writes_this_same_line(self) -> None:
+        # On 2026-11-20 the group desk wrote "Filings read: 10-K ..., 10-Q ..., 8-K ..." with no CIK, and this
+        # program read no 8-K from it. Both desks now write one line.
+        from equity_research_desk import Filing, filings_line
+        filings = {"10-K": Filing("10-K", "0000000001-26-000010", "2026-08-20", "k.htm", "2026-08-20 16:30:00", report_date="2026-06-30"),
+                   "10-Q": Filing("10-Q", "0000000001-26-000007", "2026-05-05", "q.htm", "2026-05-05 16:30:00", report_date="2026-03-31"),
+                   "8-K": Filing("8-K", "0000000001-26-000020", "2026-11-12", "e.htm", "2026-11-12 16:07:06", release_document="ex991release.htm")}
+        self.assertEqual(filings_line(filings, "1"), FIRST_LINE)
+
+    def test_an_earlier_group_line_takes_the_cik_from_the_run(self) -> None:
+        line = "Filings read: 10-K 0000000001-26-000010, 10-Q 0000000001-26-000007, 8-K 0000000001-26-000020"
+        self.assertIsNone(live.release_named(line))
+        self.assertEqual(live.release_named(line, "1")["accession"], "0000000001-26-000020")
+        self.assertEqual(live.release_named(line, "1")["cik"], "0000000001")
+
+    def test_the_final_report_is_read_first(self) -> None:
+        self.assertEqual(live.REPORTS[0], "final_report.md")
+
     def test_a_time_that_is_not_eastern_is_not_taken(self) -> None:
         line = FIRST_LINE.replace("accepted 2026-11-12 16:07:06 ET);", "accepted 2026-11-12T21:07:06.000Z UTC);")
         self.assertEqual(live.release_named(line)["accepted"], "")

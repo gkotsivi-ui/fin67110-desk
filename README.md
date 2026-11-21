@@ -18,9 +18,10 @@ code fixes, with the hook checking every number each part saves. A company the s
 runs too: its spinoff parts say "not applicable".
 
 **What you need.** Python 3.13 (CrewAI 1.15 needs 3.10 to 3.13), git, your name and email for SEC EDGAR
-(no account), and one model key with a model of the same provider that your account can use: Anthropic,
-Google AI Studio or OpenAI. A run costs a few dollars of model use. Practice runs on 2026-11-19 took from
-about 10 to 35 minutes, the longer ones when a role needed its repairs.
+(no account), and one model key with a model of the same provider that your account can use. Anthropic has
+been run end to end; Google AI Studio and OpenAI keys go through the same CrewAI calls but have not been run end
+to end yet. A run costs a few dollars of model use. Practice runs on 2026-11-19 and 2026-11-20 took from about
+10 to 35 minutes, the longer ones when a role needed its repairs.
 Prices are optional: without one, the report has no P/E and the worksheet's view says "not computed".
 
 1. **Get the code.** On Windows keep the folder's full path short, under about 100 characters.
@@ -87,7 +88,9 @@ ten candidates in about six minutes on 2026-11-19. A bounded screen says that it
 
 **Prices from LSEG (optional).** Start LSEG Workspace and sign in, and set `LSEG_APP_KEY` in `.env`. The
 reader runs LSEG's library in its own environment, `.venv-lseg`; or set `LSEG_PYTHON` to a Python that
-has `lseg-data` installed. An export file kept outside this folder works too: `LSEG_CLOSES_FILE`.
+has `lseg-data` installed, for example `LSEG_PYTHON=.venv\Scripts\python.exe`. An export file kept outside
+this folder works too: `LSEG_CLOSES_FILE`. With a price, the worksheet compares it with its low and mid
+values and saves a view; without one, the view is "not computed".
 
 **A live run** for the live record adds `--live`; it is saved under `runs/live/`. Read
 [runs/live/README.md](runs/live/README.md) first. More: [docs/group-pipeline.md](docs/group-pipeline.md).
@@ -197,17 +200,19 @@ Missing or invalid evidence is excluded and never counted as a correct predictio
 
 ## What works today, and what does not
 
-Checked on 2026-11-19, on Windows 11.
+Checked on 2026-11-19 to 2026-11-21, on Windows 11.
 
 | Part | State |
 |---|---|
-| The one command, `desk.py`: the pick, the agent team with its Verifier, the worksheet, the final report, and the hook after each part | practice runs on Lowe's (LOW) ran the agent team and its Verifier to the end; each stop they found is fixed and has a test, as the decision log records |
-| The page: run the desk and read the report without a terminal | starts and serves; a whole run from the page on this command is not checked yet |
+| The one command, `desk.py`: the pick, the agent team with its Verifier, the worksheet, the final report, and the hook after each part | a practice run on Lowe's (LOW) reached its final report on 2026-11-20, before the audit's fixes; each stop the earlier runs found is fixed and has a test, as the decision log records. With the fixes, the data steps have run on Lowe's (2026-11-21); the roles, the Verifier and the worksheet have not run since |
+| The 11 core claims | printed by code under the Overview from the saved facts; the quarter's three from the release's table. Tested; not yet seen in a whole run's report |
+| The worksheet's values | reads three years of owner cash flow and the cover page's share count from the filings; Lowe's and Walmart's low and mid values pass the hook (2026-11-21) |
+| The page: run the desk and read the report without a terminal | starts a run. On 2026-11-21 two runs from the page on Lowe's passed the inputs, the pick, the seven data steps and every hook check, then stopped at the first model call: the provider refused it because the model account was out of credit. A whole run from the page is still to be checked |
 | The closes reader, for one price | reads LSEG only. With LSEG Workspace closed there is no price: the report has no P/E and the worksheet's view is "not computed" |
 | The live record | two reports inside their 24-hour windows, Week 4 (Cisco) and Week 5 (NVIDIA), both written by the legacy desk below |
 | The hit-rate table | runs; both live reports predate the worksheet and have no view, so it scores none yet |
 | The intelligent error review | built; a review of each live report is saved beside it |
-| Tests | 607 in four folders, no failure; four symlink tests skipped. The macOS run is to be redone |
+| Tests | 635 in four folders, no failure; four symlink tests skipped. The macOS run is to be redone |
 
 Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them before you trust a number.
 
@@ -374,12 +379,14 @@ Keep export files outside this folder. `.gitignore` refuses data files as a seco
 
 ## What can go wrong
 
-Run `check_env.py` first. It checks Python, the packages, `.env`, SEC EDGAR and the model key.
+Run the setup check first. For the group desk it is `check_pipeline.py`: Python, the packages, the desk's
+files and the settings in `.env`, with no network call. For the legacy desk it is `check_env.py`, which also
+checks SEC EDGAR and the model key.
 
 | What you see | What to do |
 |---|---|
 | `There is no .env file` | Do step 3 of the setup, and run the commands from the repository folder. If Windows saved the file as `.env.txt`, rename it to `.env`. |
-| `API_KEY ... is an OpenAI key` | The roles run on Anthropic or Google. Use a key that starts with `sk-ant-` or `AIza`. |
+| `API_KEY ... is an OpenAI key` (the legacy desk) | The legacy desk's roles run on Anthropic or Google. Use a key that starts with `sk-ant-` or `AIza`. |
 | `Could not install packages due to an OSError`, with a hint about Windows Long Path support | The folder's path is too long for Windows. Move the folder to a short path, for example `C:\fin67110-desk`, and do step 2 of the setup again. |
 | `ModuleNotFoundError` | The command did not use the virtual environment. Start the command with `.venv\Scripts\python` (Windows) or `.venv/bin/python` (Mac). |
 | `python` is not found, or the Microsoft Store opens | On Windows, type `py`. On a Mac, type `python3`. |
@@ -421,7 +428,7 @@ Mac:
 .venv-desk/bin/python -m unittest discover -s skills/us-spinoff-seeker/tests
 ```
 
-On Windows 11 on 2026-11-20 the four folders ran 607 tests with no failure. Four tests that create a
+On Windows 11 on 2026-11-21 the four folders ran 635 tests with no failure. Four tests that create a
 symlink were skipped: Windows lets an account create one only with administrator rights or Developer Mode.
 
 They cover the XBRL tag choice, the full-year filter, the release's table text, the quote and number

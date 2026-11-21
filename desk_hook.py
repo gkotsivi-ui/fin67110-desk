@@ -285,5 +285,8 @@ class Hook:
 
     def compose(self,verified,worksheet):
         report=verified.read_text().splitlines()
-        body='\n'.join(report[1:]) if report and report[0].startswith('Filings read:') else '\n'.join(report)
-        return self.sources.filing_line()+'\n'+body.rstrip()+'\n\n## Worksheet view and evidence\n\n'+worksheet.read_text().rstrip()+'\n'
+        # The final report keeps the verified report's first line (the filings, the release's exhibit, the Accepted
+        # times and the CIK, as the team saved them), so one run has one first line; live_record.py reads it.
+        if report and report[0].startswith('Filings read:'):first,body=report[0],'\n'.join(report[1:])
+        else:first,body=self.sources.filing_line(),'\n'.join(report)
+        return first+'\n'+body.rstrip()+'\n\n## Worksheet view and evidence\n\n'+worksheet.read_text().rstrip()+'\n'
