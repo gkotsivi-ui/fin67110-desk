@@ -1,5 +1,59 @@
 # Decision log
 
+## 2026-11-21: independent LSEG environments for Mac and Windows
+
+- The user requested shared setup, local provisioning, readiness checks, and Windows teammate instructions.
+  The NVIDIA practice had confirmed FileNotFoundError for the absent group-local LSEG interpreter.
+- Updated requirements-lseg.txt from its old same-environment installation guidance to an isolated
+  Python 3.13 worker, pinning the SDK and installed dependencies. Created .venv-lseg on this Mac;
+  installation, pip check, SDK import, and timezone import passed. The desk environment was not modified.
+- Created a private, ignored group-local .env from the previously authorized credential source, copying
+  only SEC_USER_AGENT, API_KEY, MODEL, and LSEG_APP_KEY. No credential values were displayed. Runtime
+  commands now use the independent local copy; no runtime path was added to the personal repository.
+- Added check_lseg.py: offline executable/import/version/timezone checks by default; --session opens
+  and closes a desktop connection without requesting prices. SDK logs and raw errors are not printed.
+  The process deadline is 45 seconds. check_pipeline.py reports the optional offline reader readiness.
+- The Mac desktop session opened and closed successfully. This is not a price or entitlement test.
+- The hit-rate command's legacy closes reader still imported the SDK in the main desk Python. It now
+  delegates its unchanged query to the selected LSEG worker when that Python lacks the SDK. Tests
+  check the date/source protocol, secret handling, and prevention of recursive worker launches.
+  CSV behavior and cached reactions were not changed.
+- Windows Python 3.13 binary dependency resolution passed. Windows execution and member-specific
+  Workspace access still require each teammate's local validation. docs/lseg-setup.md contains exact
+  Mac and Windows commands and notes the distinction between session readiness and price availability.
+- Validation on macOS/Python 3.13: main 443, hooks 74, worksheet 38, seeker 103 tests passed (658 total).
+  The required live_record.py --offline --no-save check and git diff --check passed. Existing saved
+  records, views, and error reports were not changed. No research rerun was launched for this setup.
+- AI assistance: OpenAI Codex. No human verification is claimed.
+
+
+## 2026-11-21: Walmart required reads and guidance endpoints
+
+- User authorized corrections for E-7d2edb79c27e and E-a057b27e8b54 after the Walmart practice stop.
+  Original run: runs/practice/WMT_practice_20261121_145335/WMT_2026-11-21_14-53-35.304376.
+  No original Walmart artifacts or error reports were changed and no new paid run was launched.
+- The model's reasons for skipping the structured outputs and selecting a spending-increase figure
+  remain unknown. These corrections address the observed behavior without assuming a hidden cause.
+- AssignedFiles still rejects unread or changed files. A dedicated missing-read exception lets the
+  caller send the exact omitted filenames back for one correction. Raw replies and read failures
+  are saved. Repeated omissions and all other access failures still stop the run.
+- Synthetic tests first reproduced rejection of drafts-only access and the absence of recovery.
+  A seeded real CrewAI tool loop now reads three drafts, receives feedback, reads the three JSON
+  files, and passes the unchanged completeness check. No provider or SEC call is needed.
+- Literal citations previously allowed two individually real values to be assembled into a false
+  guidance range. Synthetic tests first showed the mixed-endpoint range was accepted. Code now
+  requires an explicit guidance pair to occur as a range on the same saved source line. It rejects
+  mixed metrics, unrelated same-line values, reversed endpoints, and unsupported inherited claims.
+  The existing repair loop can correct the range or omit the failing line. Actual period-to-period
+  comparisons outside guidance sentences remain allowed.
+- Scope limit: this checks explicit placeholder pairs in guidance/projection/outlook sentences.
+  Valid ranges split across source lines may be rejected. It is not a general semantic verifier.
+- Validation on macOS/Python 3.13: main 433, hooks 74, worksheet 38, and seeker 103 tests passed.
+  The required live_record.py --offline --no-save check and git diff --check passed.
+  No real-model rerun was used to claim that every future response will be correct.
+- AI assistance for this change: OpenAI Codex. No human source verification is claimed.
+
+
 ## 2026-11-20: remaining Windows portability issues
 
 - The November 19 teammate run documented six remaining Windows test failures. The Mac-only LSEG worker

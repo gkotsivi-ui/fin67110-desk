@@ -215,6 +215,40 @@ def format_fact(key: str, fact: dict, which: str) -> str:
     return sign+'$'+exact(value)
 
 
+def guidance_range_errors(draft, rendered, texts):
+    """Check explicit guidance endpoint relationships, beyond literal value matching.
+
+    Scope: placeholder pairs joined by to/dashes or between/and in a guidance sentence.
+    Both values must occur as one range on one saved filing line. This is conservative:
+    split-line or unsupported ranges must be omitted or quoted without assembling endpoints.
+    """
+    errors = []
+    guidance = re.compile(r'\b(?:guidance|guides?|project(?:ed|s|ion)?|forecast(?:s|ed)?|outlook)\b', re.I)
+    pairs = (re.compile(r'\{(c\d+)\}\s*(?:to|[-–—])\s*\{(c\d+)\}', re.I),
+             re.compile(r'between\s+\{(c\d+)\}\s+and\s+\{(c\d+)\}', re.I))
+    citation = re.compile(r'(.+?) \[([^]\n]+):L(\d+)\]')
+    for number, line in enumerate(draft.splitlines(), 1):
+        for sentence in re.split(r'(?<=[.!?])\s+', line):
+            if not guidance.search(sentence):
+                continue
+            for pattern in pairs:
+                for match in pattern.finditer(sentence):
+                    left, right = (citation.fullmatch(rendered.get(cid, '')) for cid in match.groups())
+                    valid = False
+                    if left and right and left.groups()[1:] == right.groups()[1:] and left[2] in texts:
+                        lines = texts[left[2]].splitlines()
+                        index = int(left[3]) - 1
+                        if 0 <= index < len(lines):
+                            source = _norm(lines[index])
+                            relation = re.escape(_norm(left[1])) + r'\s*(?:to|[-–—])\s*' + re.escape(_norm(right[1]))
+                            between = r'between\s+' + re.escape(_norm(left[1])) + r'\s+and\s+' + re.escape(_norm(right[1]))
+                            valid = bool(re.search(relation, source, re.I) or re.search(between, source, re.I))
+                    if not valid:
+                        errors.append(f'draft line {number}: guidance range endpoints {{{match[1]}}} and {{{match[2]}}} '
+                                      'must form one range on the same cited filing line. Use that source range or omit the range.')
+    return errors
+
+
 def check(output: dict[str, Any], texts: dict[str, str], facts: dict[str, Any] | None = None,origins=None,reference_only=False) -> Result:
     result = Result()
     identifiers=source_identifier_pattern(texts,facts,origins)
@@ -365,6 +399,7 @@ def check(output: dict[str, Any], texts: dict[str, str], facts: dict[str, Any] |
             result.errors.append(
                 f"draft line {n}: written amount {match.group(0)!r} must be a {{cN}} claim.")
 
+    result.errors.extend(guidance_range_errors(draft, rendered, texts))
     if result.ok:
         result.values=rendered
         result.rendered = PLACEHOLDER.sub(lambda m: rendered[m.group(1)], draft)

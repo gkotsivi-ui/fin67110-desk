@@ -47,6 +47,31 @@ with tempfile.TemporaryDirectory() as tmp:
     unread_raw=json.loads((run/'nodes/Seeded_Reader_2/raw_responses.json').read_text())
     assert unread_raw[0]['raw']=='{"draft":"No read."}'
 
+    # A manager reads only drafts, then uses one feedback call to read the missing JSON.
+    drafts=[];structured=[]
+    for author in ('Research Analyst','Financial Analyst','Investment Advisor'):
+        folder=run/'nodes'/(author.replace(' ','_')+'_1');folder.mkdir(parents=True,exist_ok=True)
+        (folder/'output.json').write_text('{}')
+        (folder/'draft.md').write_text('Synthetic checked draft.')
+        drafts.append((folder/'draft.md').relative_to(run).as_posix())
+        structured.append((folder/'output.json').relative_to(run).as_posix())
+    runtime.llm=StubLLM(emit_events=False,responses=[
+        *[tool_call('read_assigned_file',{'file':name}) for name in drafts],
+        'Final Answer: {"draft":"First unaccepted reply."}',
+        *[tool_call('read_assigned_file',{'file':name}) for name in structured],
+        'Final Answer: {"draft":"Read all required files."}'])
+    result=runtime.role_call('Strategy Manager','legacy.md',packet)
+    assert result['draft']=='Read all required files.'
+    manager=run/'nodes/Strategy_Manager_1'
+    assert len(json.loads((manager/'raw_responses.json').read_text()))==2
+    assert len(json.loads((manager/'files_read.json').read_text())['reads'])==6
+    assert json.loads((manager/'read_failures.json').read_text())[0]['missing']==sorted(structured)
+    assert runtime.role_call_counts['Strategy Manager']==1
+    # Remove synthetic role ledgers before the independent claims tests below.
+    import shutil
+    for name in ('Research_Analyst_1','Financial_Analyst_1','Investment_Advisor_1'):
+        shutil.rmtree(run/'nodes'/name)
+
     # Test the real ToolFailure path with strict CrewAI failure policy.
     runtime.llm=StubLLM(emit_events=False,responses=[tool_call('read_assigned_file',{'file':'secret.env'})])
     try:runtime.role_call('Denied Reader','legacy.md',packet)

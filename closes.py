@@ -16,6 +16,8 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
+import subprocess
 import math
 import os
 import sys
@@ -91,11 +93,44 @@ def rics_for(ticker: str) -> list[str]:
     return [ticker + suffix for suffix in SUFFIXES]
 
 
+def worker_closes(ticker, start, end):
+    """Keep the legacy query in the isolated SDK environment when this Python lacks it."""
+    from closes_reader import worker_python, _settings
+    root = Path(__file__).resolve().parent
+    code = """
+import contextlib, io, json, sys
+from datetime import date
+import closes
+with contextlib.redirect_stdout(io.StringIO()):
+    rows, source = closes.lseg_closes(sys.argv[1], date.fromisoformat(sys.argv[2]), date.fromisoformat(sys.argv[3]))
+print(json.dumps({'rows': [(day.isoformat(), price) for day, price in rows], 'source': source}))
+"""
+    try:
+        result = subprocess.run([worker_python(_settings()), '-c', code, ticker, start.isoformat(), end.isoformat()],
+                                cwd=root, env={**os.environ, 'LSEG_APP_KEY':setting('LSEG_APP_KEY'),
+                                               'DESK_LSEG_WORKER':'1', 'PYTHONIOENCODING':'utf-8'},
+                                capture_output=True, text=True, encoding='utf-8', timeout=180)
+        if result.returncode:
+            raise ValueError('Worker failed')
+        payload = json.loads(result.stdout)
+        rows = [(date.fromisoformat(day), float(price)) for day,price in payload['rows']]
+        if any(not math.isfinite(price) or price <= 0 or not start <= day <= end for day,price in rows):
+            raise ValueError('Invalid closes')
+        if not isinstance(payload['source'], str) or (rows and not payload['source']):
+            raise ValueError('Missing price source')
+        return rows, payload['source']
+    except (OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired):
+        print('Closes reader: isolated LSEG worker unavailable. Run check_lseg.py --session.', file=sys.stderr)
+        return [], ''
+
+
 def lseg_closes(ticker: str, start: date, end: date) -> tuple[list[tuple[date, float]], str]:
     """Daily closes from LSEG Workspace, through a desktop session opened with the App Key."""
     try:
         import lseg.data as ld
     except ImportError:
+        if os.environ.get('DESK_LSEG_WORKER') != '1':
+            return worker_closes(ticker, start, end)
         print("Closes reader: lseg-data is not installed. Install it with: python -m pip install lseg-data", file=sys.stderr)
         return [], ""
     field = setting("LSEG_CLOSE_FIELD") or CLOSE_FIELD

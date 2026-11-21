@@ -1,3 +1,29 @@
-# Only for prices from LSEG Workspace. Install it after requirements.txt, into the same environment.
-# It moves httpx from 0.28.1 to 0.27.2. The desk ran end to end with that version on 2026-11-12.
+# Isolated LSEG worker: Python 3.13, macOS or Windows.
+# Versions installed and checked on macOS; Windows execution still needs validation.
+anyio==4.16.0
+appdirs==1.4.4
+certifi==2026.11.20
+charset-normalizer==3.5.2
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.27.2
+idna==3.20
+Jinja2==3.1.6
 lseg-data==2.1.1
+MarkupSafe==3.0.4
+numpy==2.5.5
+pandas==2.3.3
+pyee==12.0.0
+pyhumps==3.8.0
+python-dateutil==4.0.0
+pytz==2026.6
+requests==2.34.2
+scipy==1.18.1
+simplejson==4.3.0
+sniffio==1.3.1
+tenacity==9.2.1
+typing_extensions==4.16.0
+tzdata==2026.6
+urllib3==2.8.0
+watchdog==7.1.1
+websocket-client==1.9.2

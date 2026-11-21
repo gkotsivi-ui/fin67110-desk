@@ -20,7 +20,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from insight_layout import insight_failures
 from report_naming import create_run, report_number
 from equity_research_desk import Desk
-from desk_files import AssignedFiles, file_tool
+from desk_files import AssignedFiles, file_tool, reply_with_required_reads
 from desk_timing import timed_role, elapsed
 from desk_claims import load_sources, parse_response, with_repairs
 from desk_role_contracts import validate as validate_role,latest,report_text,report_catalog,code_marks as ledger_marks,verified_text,manager_contract,published_sections,published_verified_text
@@ -276,28 +276,39 @@ class Runtime:
         self.save_node(node, "input", envelope)
         raw_replies: list[str] = []
         dropped: list[dict[str, str]] = []
+        read_failures: list[dict[str, Any]] = []
 
         def ask(current: dict[str, Any]) -> dict[str, Any]:
-            prompt = json.dumps(current, ensure_ascii=False)
-            try:
-                result = kickoff(prompt)
-            except Exception as error:
-                if not dropped_connection(error):
-                    raise
-                # 2026-11-19: the Verifier's call lost its connection to the provider after five minutes, and the
-                # whole run stopped with no report. No reply arrived, so the same call is made once more.
-                dropped.append({"time": datetime.now().astimezone().isoformat(timespec="seconds"),
-                                "error": f"{type(error).__name__}: {error}"})
-                self.save_node(node, "dropped_connections", dropped)
-                print(f"{node}: the connection to the model dropped ({type(error).__name__}: {error}); "
-                      f"trying once more in {RETRY_WAIT_SECONDS} seconds.", flush=True)
-                time.sleep(RETRY_WAIT_SECONDS)
-                result = kickoff(prompt)
-            # Save every reply verbatim before parsing, so a malformed one can be inspected.
-            raw_replies.append(str(result.raw))
-            self.save_node(node, "raw_responses", [{"attempt": i + 1, "raw": r} for i, r in enumerate(raw_replies)])
-            if store:store.verify()
-            return parse_response(raw_replies[-1], role)
+            def request(read_feedback):
+                packet = current if read_feedback is None else {
+                    **current, 'task': current['task'] + '\n\n' + read_feedback
+                    + '\nPrevious unaccepted reply:\n' + raw_replies[-1]}
+                prompt = json.dumps(packet, ensure_ascii=False)
+                try:
+                    result = kickoff(prompt)
+                except Exception as error:
+                    if not dropped_connection(error):
+                        raise
+                    # 2026-11-19: the Verifier's call lost its connection to the provider after five minutes, and the
+                    # whole run stopped with no report. No reply arrived, so the same call is made once more.
+                    dropped.append({"time": datetime.now().astimezone().isoformat(timespec="seconds"),
+                                    "error": f"{type(error).__name__}: {error}"})
+                    self.save_node(node, "dropped_connections", dropped)
+                    print(f"{node}: the connection to the model dropped ({type(error).__name__}: {error}); "
+                          f"trying once more in {RETRY_WAIT_SECONDS} seconds.", flush=True)
+                    time.sleep(RETRY_WAIT_SECONDS)
+                    result = kickoff(prompt)
+                # Save every reply verbatim before parsing, so a malformed one can be inspected.
+                raw_replies.append(str(result.raw))
+                self.save_node(node, "raw_responses", [{"attempt": i + 1, "raw": r} for i, r in enumerate(raw_replies)])
+                return result
+
+            def record_missing(attempt, missing):
+                read_failures.append({'attempt': attempt, 'missing': missing})
+                self.save_node(node, 'read_failures', read_failures)
+
+            result = reply_with_required_reads(store, request, record_missing)
+            return parse_response(str(result.raw), role)
 
         def kickoff(prompt: str) -> Any:
             agent = Agent(

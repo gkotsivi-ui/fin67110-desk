@@ -4,6 +4,33 @@ from threading import RLock
 from desk_sources import digest,inside,write_json
 
 
+class MissingAssignedReads(ValueError):
+    def __init__(self, missing):
+        self.missing = sorted(missing)
+        super().__init__('Role did not read assigned files: '+', '.join(self.missing))
+
+
+def reply_with_required_reads(store, request, on_missing=None):
+    """One bounded correction for unread files; all other read failures remain fatal."""
+    feedback = None
+    for attempt in range(2):
+        reply = request(feedback)
+        if store is None:
+            return reply
+        try:
+            store.verify()
+        except MissingAssignedReads as error:
+            if on_missing:
+                on_missing(attempt + 1, error.missing)
+            if attempt:
+                raise
+            feedback = ('Your reply is not accepted. Use read_assigned_file to read each missing file: '
+                        + ', '.join(error.missing)
+                        + '. Then return a complete response. Do not bypass this requirement.')
+        else:
+            return reply
+
+
 class AssignedFiles:
     def __init__(self,run,paths,log):
         self.run=Path(run).resolve();self.log=Path(log)
@@ -40,7 +67,7 @@ class AssignedFiles:
     def verify(self):
         if self.failure:raise ValueError(self.failure)
         missing=set(self.files)-{r['file'] for r in self.reads}
-        if missing:raise ValueError('Role did not read assigned files: '+', '.join(sorted(missing)))
+        if missing:raise MissingAssignedReads(missing)
         for name,sha in self.files.items():
             if digest(inside(self.run,name))!=sha:raise ValueError('Assigned file changed: '+name)
 

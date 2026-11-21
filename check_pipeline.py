@@ -23,6 +23,7 @@ def main():
                      "skills/us-spinoff-seeker/scripts/seeker.py", "skills/spinoff-worksheet/scripts/worksheet.py",
                      "spinoff_factors.json", "spinoff-rules.md", "persona-why-cheap.md"):
         report((ROOT / relative).is_file(), "Local component: " + relative)
+    config = {}
     try:
         from dotenv import dotenv_values
         config = dotenv_values(ROOT / ".env")
@@ -32,6 +33,9 @@ def main():
         print("note  The agent team and the worksheet both use MODEL with API_KEY: the model and the key must be of the same provider.")
     except ImportError:
         report(False, "Install python-dotenv to check this repository's .env.")
+    from check_lseg import check as check_reader
+    reader = check_reader(config)
+    print(('ok    ' if reader['ok'] else 'note  ') + 'Optional LSEG: ' + reader['message'])
     return int(problems > 0)
 
 

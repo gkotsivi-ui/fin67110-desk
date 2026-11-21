@@ -28,8 +28,8 @@
       "source": "Repos/Analyst/desk_files.py",
       "destination": "desk_files.py",
       "source_sha256": "f3cfe7f774ed105c423d6996af61c0b2eb2606c76b315e8cfebadfcf7933ecb6",
-      "group_sha256": "f3cfe7f774ed105c423d6996af61c0b2eb2606c76b315e8cfebadfcf7933ecb6",
-      "adapted": false
+      "group_sha256": "d755b47e93f9f6b865a322f7f27138d095a4d04528966bdc6c9aa55e94bb891a",
+      "adapted": true
     },
     {
       "source": "Repos/Analyst/desk_timing.py",
@@ -49,8 +49,8 @@
       "source": "Repos/Analyst/desk_claims.py",
       "destination": "desk_claims.py",
       "source_sha256": "675164e9660e7587098b14d1ae5eb2097ec09e987bbac4a7ba0f88944b9cbb08",
-      "group_sha256": "675164e9660e7587098b14d1ae5eb2097ec09e987bbac4a7ba0f88944b9cbb08",
-      "adapted": false
+      "group_sha256": "f4c7aa5552ee8b70115f962aae6a378dfe30e263bbfb1c877aa5cf8542dfb628",
+      "adapted": true
     },
     {
       "source": "Repos/Analyst/desk_role_contracts.py",
@@ -77,7 +77,7 @@
       "source": "Repos/Analyst/equity_research_agent_team.py",
       "destination": "equity_research_agent_team.py",
       "source_sha256": "77220ac751a43e598f41a6d5645838b67583d002ca618e18fae713a0c3cc5a8a",
-      "group_sha256": "1b800e74e473f90609bf279984496d89d467f4964b0df1ccee4fe708ff199fa8",
+      "group_sha256": "fdafb62ff7df159c8aa095c6e592cae164d5dcef85be4db9bccfc8abd0be98cb",
       "adapted": true
     },
     {
@@ -315,7 +315,7 @@
       "source": "Repos/Analyst/tests/test_desk_adapters.py",
       "destination": "tests/test_desk_adapters.py",
       "source_sha256": "deb6ba97a00b267476e62a3269b2cef6ea1e4f8445631bdea5dfcc237ba27874",
-      "group_sha256": "cffa19388227a6d67264dc0dbbbc33dc32ed1cd54e122e4376b59f8699bf4c65",
+      "group_sha256": "2a19bac9d1695119ad5d263c8c8425b7e2262b1734e80dce09d968c35ed46bc7",
       "adapted": true
     },
     {
@@ -413,14 +413,16 @@
       "source": "Repos/Analyst/tests/desk_tool_smoke.py",
       "destination": "tests/desk_tool_smoke.py",
       "source_sha256": "8ae4a577193a961139a43afce84fbef3b1858613db078a107a3d1b9f70c36784",
-      "group_sha256": "5f27b9e857dd81f1220fe0d349d26486c9953dc337dbda96584f3fafccfaec40",
+      "group_sha256": "a9d0199adab8928946551d6a54c4a59a86395828dad2ec179021dfda02843a1f",
       "adapted": true
     }
   ],
   "group_only_files": [
-    "view_record.py"
+    "view_record.py",
+    "check_lseg.py"
   ],
   "group_only_hashes": {
-    "view_record.py": "87263c293c9d46e0260cc6f5bb54bc2c7d3fb7d0feb22184bade0bed5edf20e5"
+    "view_record.py": "87263c293c9d46e0260cc6f5bb54bc2c7d3fb7d0feb22184bade0bed5edf20e5",
+    "check_lseg.py": "b508f5f1ba39fb1edffb487cd1f95a2ff113b5dbf575f37d690f2503200d1943"
   }
 }

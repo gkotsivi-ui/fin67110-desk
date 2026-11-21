@@ -33,7 +33,7 @@ request to Anthropic, as before; any other model goes through CrewAI's LLM, as t
 The closes reader uses this repo's `.env` too. No price or volume source is copied from the personal repo.
 Its optional LSEG worker defaults to this repo's `.venv-lseg`, not a workspace environment.
 The default is `.venv-lseg/bin/python` on macOS/Linux and `.venv-lseg\Scripts\python.exe` on Windows.
-Create that environment and install `lseg-data`, or set `LSEG_PYTHON` in `.env` to an existing Python
+Create that environment and install `requirements-lseg.txt`, or set `LSEG_PYTHON` in `.env` to an existing Python
 that has the package, for example `.venv\Scripts\python.exe` on Windows. The override takes precedence. The reader has no other price source: with LSEG Workspace closed, a run has no close, and its worksheet view is "not computed".
 
 ```bash
@@ -116,6 +116,22 @@ Existing Cisco and NVIDIA research artifacts remain unchanged. Human and AI revi
 beside each record's files. Shared review findings remain in `docs/error-review-findings/`.
 The Intelligent Review Assistant can read new pipeline status and node outputs; absent independent
 checks remain explicit limits. It does not treat a failed worksheet as a completed desk run.
+
+See [LSEG setup for Mac and Windows](lseg-setup.md) for exact commands and the offline/session checks.
+
+## Required reads and guidance ranges
+
+A role response is accepted only after every assigned file has been read and its saved hash checked.
+If the response omits files, the desk names the missing files and permits one additional response.
+Both raw replies and the missing-file list are saved. A second omission, an access violation, or a
+changed file still stops the run. This correction does not remove files from the assignment.
+
+The claims checker also checks explicit guidance ranges written with two claim placeholders joined
+by `to`, a dash, or `between ... and`. Both endpoints must form one range on the same cited filing
+line. Unsupported endpoints go through the existing claim repair and omission rules. A real number
+from a different metric cannot become an endpoint merely because its quote and value match.
+This conservative check can reject a valid range split across source lines. It does not establish
+that every metric, period, or conclusion is correct, and does not change the authored personas.
 
 ## Page and replay
 

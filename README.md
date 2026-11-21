@@ -86,11 +86,12 @@ first and takes the top name of its screen. By default it reads EDGAR's quarterl
 about 130 large files, so bound it: `--index-start 2025-10-01 --max-candidates 10` read five quarters and
 ten candidates in about six minutes on 2026-11-19. A bounded screen says that its coverage is partial.
 
-**Prices from LSEG (optional).** Start LSEG Workspace and sign in, and set `LSEG_APP_KEY` in `.env`. The
-reader runs LSEG's library in its own environment, `.venv-lseg`; or set `LSEG_PYTHON` to a Python that
-has `lseg-data` installed, for example `LSEG_PYTHON=.venv\Scripts\python.exe`. An export file kept outside
-this folder works too: `LSEG_CLOSES_FILE`. With a price, the worksheet compares it with its low and mid
-values and saves a view; without one, the view is "not computed".
+**Prices from LSEG (optional).** Follow [the Mac and Windows setup instructions](docs/lseg-setup.md).
+Install `requirements-lseg.txt` in a local `.venv-lseg`; the reader selects its platform-specific Python.
+Set your own `LSEG_APP_KEY` in `.env`, start Workspace, and sign in. Run `check_lseg.py` for the offline
+import check and `check_lseg.py --session` for the desktop connection check. `LSEG_PYTHON` is only needed
+for an intentional custom interpreter. An export file outside this folder can use `LSEG_CLOSES_FILE`.
+Missing prices or valuation inputs produce a `not computed` view.
 
 **A live run** for the live record adds `--live`; it is saved under `runs/live/`. Read
 [runs/live/README.md](runs/live/README.md) first. More: [docs/group-pipeline.md](docs/group-pipeline.md).

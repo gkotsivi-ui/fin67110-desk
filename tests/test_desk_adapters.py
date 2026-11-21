@@ -16,7 +16,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from desk import parser,snapshot_inputs
 from desk_parts import Parts
 from desk_sources import Sources,write_json
-from desk_files import AssignedFiles
+from desk_files import AssignedFiles, reply_with_required_reads
 from desk_timing import timed_role
 from desk_claims import parse_response
 import re
@@ -127,7 +127,7 @@ class AdapterTests(unittest.TestCase):
                 captured['read_text']=captured['store'].read('pick.json')
                 return SimpleNamespace(raw='{"draft":"No figures."}')
         def tool(store):captured['store']=store;return store
-        scope={'Any':Any,'Path':Path,'json':json,'re':re,'AssignedFiles':AssignedFiles,'file_tool':tool,'timed_role':timed_role,'CLAIMS_ROLES':{'research_analyst.md'},'ROLE_CONTRACTS':{},
+        scope={'Any':Any,'Path':Path,'json':json,'re':re,'AssignedFiles':AssignedFiles,'reply_with_required_reads':reply_with_required_reads,'file_tool':tool,'timed_role':timed_role,'CLAIMS_ROLES':{'research_analyst.md'},'ROLE_CONTRACTS':{},
                'Agent':lambda **k:None,'Task':lambda **k:None,
                'Crew':FakeCrew,'Process':SimpleNamespace(sequential='sequential'),'parse_response':parse_response}
         exec(compile(ast.fix_missing_locations(ast.Module(body=[numbered,method],type_ignores=[])),str(source),'exec'),scope)

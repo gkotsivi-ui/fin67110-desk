@@ -123,11 +123,13 @@ class LsegTests(unittest.TestCase):
         self.assertEqual([c[1] for c in calls if c[0] == "history"], ["EXM.O", "EXM.N"])
         self.assertEqual(calls[-1], ("close",))
 
-    def test_without_the_library_the_reader_says_how_to_install_it(self) -> None:
-        err = io.StringIO()
-        with sources(LSEG_APP_KEY="test-app-key"), mock.patch.dict(sys.modules, {"lseg": None, "lseg.data": None}), contextlib.redirect_stderr(err):
+    def test_without_the_library_the_reader_uses_the_isolated_worker(self) -> None:
+        with sources(LSEG_APP_KEY="test-app-key"), \
+             mock.patch.dict(sys.modules, {"lseg": None, "lseg.data": None}), \
+             mock.patch.object(closes, "worker_closes", return_value=([], "")) as worker:
             self.assertEqual(closes.daily_closes("EXM", date(2026, 10, 1), date(2026, 10, 6)), closes.NOT_AVAILABLE)
-        self.assertIn("python -m pip install lseg-data", err.getvalue())
+        worker.assert_called_once_with("EXM", date(2026, 10, 1), date(2026, 10, 6))
+
 
 
 class PriceTests(unittest.TestCase):
