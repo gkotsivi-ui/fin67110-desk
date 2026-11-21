@@ -3,12 +3,31 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-HEADER=re.compile(r'^(?:(?:PRO FORMA|UNAUDITED|CONDENSED)\s+)*(?:CONSOLIDATED|COMBINED)(?:\s+AND\s+(?:CONSOLIDATED|COMBINED))?\s+STATEMENTS?\s+OF\s+(INCOME|OPERATIONS|CASH FLOWS)\s*$',re.I)
+HEADER=re.compile(r'^(?:(?:PRO FORMA|UNAUDITED|CONDENSED)\s+)*(?:CONSOLIDATED|COMBINED)(?:\s+AND\s+(?:CONSOLIDATED|COMBINED))?\s+STATEMENTS?\s+OF\s+(INCOME|OPERATIONS|EARNINGS|CASH FLOWS)\s*$',re.I)
 DATE=r'(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}'
-LABELS={'after_tax_earnings':r'(?:NET INCOME|NET EARNINGS)(?: ATTRIBUTABLE TO (?!NONCONTROLLING)[^\n]+)?',
+LABELS={'after_tax_earnings':r'(?:CONSOLIDATED\s+)?(?:NET INCOME|NET EARNINGS)(?: ATTRIBUTABLE TO (?!NONCONTROLLING)[^\n]+)?',
  'depreciation_and_amortization':r'Depreciation and amortization',
  'depreciation':r'Depreciation(?: expense)?',
- 'capital_spending':r'(?:Additions to|Purchases of|Payments (?:for|to acquire)) property(?:,| and)? (?:plant(?:,| and)? )?(?:and )?equipment'}
+ 'capital_spending':r'(?:(?:Additions to|Purchases of|Payments (?:for|to acquire)) property(?:,| and)? (?:plant(?:,| and)? )?(?:and )?equipment|Capital expenditures)'}
+MONTHS=['january','february','march','april','may','june','july','august','september','october','november','december']
+# 2026-11-20: Lowe's names its statement "of Earnings", pairs each amount with a "% Sales" figure and labels its
+# spending "Capital expenditures"; Walmart prints "Fiscal Years Ended January 31," above columns of years and labels its
+# earnings "Consolidated net income attributable to Walmart". hooks/worksheet_format.py reads statements the same way.
+
+def period_dates(intro):
+    """The statement's column dates: full dates, or one month and day printed above columns of years."""
+    dates=[]
+    for match in re.finditer(DATE,intro,re.I):
+        raw=re.sub(r'\s+',' ',match[0]);raw=re.sub(r'(\d),? (\d{4})$',r'\1, \2',raw)
+        day=datetime.strptime(raw,'%B %d, %Y').date().isoformat()
+        if day not in dates:dates.append(day)
+    if dates:return dates
+    part=re.search(r'\b('+'|'.join(MONTHS)+r')\s+(\d{1,2}),?(?!\s*\d{4})',intro,re.I)
+    if not part:return []
+    for year in re.findall(r'(?<![\d,.$])(20\d{2})(?![\d,.])',intro[part.end():]):
+        day=datetime(int(year),MONTHS.index(part[1].lower())+1,int(part[2])).date().isoformat()
+        if day not in dates:dates.append(day)
+    return dates
 
 def amounts(lines,start):
     values=[];negative=False
@@ -18,6 +37,9 @@ def amounts(lines,start):
             if text==')':negative=False
             continue
         if text=='(':negative=True;continue
+        if text in {'%','%)',')%'}:
+            if values:values.pop()  # the number before it was a percentage of sales
+            continue
         if not re.fullmatch(r'\(?-?\d[\d,]*(?:\.\d+)?\)?',text):break
         v=float(text.replace(',','').replace('(','-').replace(')',''))
         values.append(-abs(v) if negative else v)
@@ -33,11 +55,7 @@ def parse(path,run):
         if not metric_positions:continue
         intro=' '.join(block[:min(metric_positions)])
         if not re.search(r'(?:years?|(?:52|53)\s*weeks?)\s+ended',intro,re.I):continue
-        dates=[]
-        for match in re.finditer(DATE,intro,re.I):
-            raw=re.sub(r'\s+',' ',match[0]);raw=re.sub(r'(\d),? (\d{4})$',r'\1, \2',raw)
-            day=datetime.strptime(raw,'%B %d, %Y').date().isoformat()
-            if day not in dates:dates.append(day)
+        dates=period_dates(intro)
         if not dates:continue
         scale=1000000 if re.search(r'in millions',intro,re.I) else 1000 if re.search(r'in thousands',intro,re.I) else 1
         # Dollar-bearing US team statements are USD; explicit foreign units
@@ -54,6 +72,7 @@ def parse(path,run):
                 if parent:positions=parent
             if len(positions)!=1:continue
             i=positions[0];values=amounts(block,i+1)
+            if len(values)==2*len(dates) and re.search(r'%\s*(?:of\s+)?(?:net\s+)?sales',intro,re.I):values=values[::2]  # amount, % sales
             if len(values)!=len(dates):continue
             for day,val in zip(dates,values):
                 reported=val*scale;value=abs(reported) if key=='capital_spending' else reported
@@ -110,6 +129,23 @@ def shares_outstanding(run,asof):
             value=float(match[2].replace(',',''))
             observations.append({'value':value,'unit':'shares','kind':'historical','as_of':day,'period':'As of '+day,
               'source':f"[{path.relative_to(run)}:L{text[:match.start()].count(chr(10))+1}] section Cover page; as of {day}; quote: "+' '.join(match[0].split()),'reason':None})
+        # Two more cover-page layouts (2026-11-20): Walmart's "The registrant had / N / shares of common stock outstanding
+        # as of March 11, 2026." and Lowe's "OUTSTANDING AT 3/19/2026 / Common Stock, $0.50 par value / N". The source
+        # quotes the dated line and names the count; hooks/worksheet_format.py checks both against the saved text.
+        lines=text.splitlines()
+        for n,line in enumerate(lines):
+            label=' '.join(line.split());day=None;count=None
+            dated=re.match(r"shares of (?:the registrant[’']s )?(?:Class A )?common stock[^\n]{0,60}?outstanding (?:as of|at) ("+DATE+r")\.?$",label,re.I)
+            if dated and n>0 and re.fullmatch(r'\d{1,3}(?:,\d{3})+',lines[n-1].strip()):
+                raw=re.sub(r'(\d),? (\d{4})$',r'\1, \2',' '.join(dated[1].split()))
+                day=datetime.strptime(raw,'%B %d, %Y').date().isoformat();count=lines[n-1].strip()
+            heading=re.fullmatch(r'OUTSTANDING AT (\d{1,2})/(\d{1,2})/(\d{4})',label,re.I)
+            if heading:
+                found=next((lines[k].strip() for k in range(n+1,min(n+4,len(lines))) if re.fullmatch(r'\d{1,3}(?:,\d{3})+',lines[k].strip())),None)
+                if found:day=datetime(int(heading[3]),int(heading[1]),int(heading[2])).date().isoformat();count=found
+            if day and count and day<=asof:
+                observations.append({'value':float(count.replace(',','')),'unit':'shares','kind':'historical','as_of':day,'period':'As of '+day,
+                  'source':f"[{path.relative_to(run)}:L{n+1}] section Cover page; as of {day}; quote: {label}; shares: {count}",'reason':None})
     if not observations:return {'value':None,'source':'not known','kind':'not known','reason':'An eligible actual shares-outstanding count was not established'}
     latest=max(x['as_of'] for x in observations);latest=[x for x in observations if x['as_of']==latest]
     if len({x['value'] for x in latest})!=1:return {'value':None,'source':'not known','kind':'not known','reason':'Conflicting shares-outstanding counts'}

@@ -201,15 +201,18 @@ def format_fact(key: str, fact: dict, which: str) -> str:
     if value is None:
         raise ValueError(f"facts.json {key}.{which} is empty")
     value=Decimal(str(value))
+    # The sign goes before the dollar sign: "-$9.917 billion", not "$-9.917 billion" (a deficit, 2026-11-20).
+    sign='-' if value<0 else ''
+    value=abs(value)
     def exact(value):
         text=format(value,',f')
         return text.rstrip('0').rstrip('.') if '.' in text else text
     if "eps" in key or "per_share" in key:
-        return '$'+exact(value)
+        return sign+'$'+exact(value)
     for size, word in ((Decimal('1e12'), "trillion"), (Decimal('1e9'), "billion"), (Decimal('1e6'), "million")):
-        if abs(value) >= size:
-            return '$'+exact(value/size)+f' {word}'
-    return '$'+exact(value)
+        if value >= size:
+            return sign+'$'+exact(value/size)+f' {word}'
+    return sign+'$'+exact(value)
 
 
 def check(output: dict[str, Any], texts: dict[str, str], facts: dict[str, Any] | None = None,origins=None,reference_only=False) -> Result:
@@ -274,8 +277,10 @@ def check(output: dict[str, Any], texts: dict[str, str], facts: dict[str, Any] |
                 if not math.isclose(float(expected),float(entry['value']),rel_tol=1e-12,abs_tol=1e-12):raise ValueError('saved calculation does not match its formula')
                 unit=entry.get('unit')
                 if unit=='USD':shown=format_fact(key,entry,'value')
-                elif unit=='%':shown=str(entry['value'])+'%'
-                elif unit=='ratio':shown=str(entry['value'])+' times'
+                # A client reads these: two decimals for a percentage, three for a ratio, not the float's sixteen
+                # digits ("11.766682891778505%" on 2026-11-20). The saved value keeps full precision for the hook.
+                elif unit=='%':shown=f"{float(entry['value']):.2f}%"
+                elif unit=='ratio':shown=f"{float(entry['value']):.3f} times"
                 else:raise ValueError('saved calculation has no supported unit')
                 sources=entry.get('sources',[])
                 if not sources or any(s=='not available' for s in sources):raise ValueError('saved calculation has no source evidence')

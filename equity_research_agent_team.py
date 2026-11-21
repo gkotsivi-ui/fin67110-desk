@@ -107,6 +107,14 @@ def numbered_lines(path: Path) -> str:
     )
 
 
+def cross_reference(lines: list[str], index: int) -> bool:
+    """True for "Item N" that a sentence continues on the next line: a reference such as 'see Item 7, "Management's
+    Discussion...", of this report' that the text extraction split, not a heading. On 2026-11-20 such lines in
+    Lowe's 10-K made the desk take Business and risk-factor text as Item 7, and cut the real Item 7 short."""
+    following = lines[index + 1].lstrip() if index + 1 < len(lines) else ""
+    return bool(following) and (following[0] in ",.;:)”’" or following[0].islower())
+
+
 def numbered_section(path: Path, item: int, next_item: int) -> str:
     lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
     # Require a boundary after the item number, but allow attached punctuation.
@@ -114,8 +122,8 @@ def numbered_section(path: Path, item: int, next_item: int) -> str:
     end_re = re.compile(rf"^\s*Item\s+{next_item}(?=\s|[.\-–—:]|$)", re.I)
     candidates = []
     for first, line in enumerate(lines):
-        if start_re.search(line):
-            last = next((i for i in range(first + 1, len(lines)) if end_re.search(lines[i])), len(lines))
+        if start_re.search(line) and not cross_reference(lines, first):
+            last = next((i for i in range(first + 1, len(lines)) if end_re.search(lines[i]) and not cross_reference(lines, i)), len(lines))
             candidates.append((first, last))
     if not candidates:
         return f"{path.name}: Item {item} section was not found in the supplied extraction; this does not establish that the filing omits it."
@@ -812,9 +820,8 @@ class EquityResearchFlow(Flow):
         if remaining:
             self.runtime.save_node("Strategy Manager", "output", {"failures": remaining})
             raise ValueError("Report still fails review after the permitted correction: " + "; ".join(item["feedback"] for item in remaining))
-        filings_line = "Filings read: " + ", ".join(
-            f"{form} {self.runtime.desk.filings[form].accession}" for form in ("10-K", "10-Q", "8-K")
-        )
+        from equity_research_desk import filings_line as first_line
+        filings_line = first_line(self.runtime.desk.filings, getattr(self.runtime.desk, "cik", "") or "")
         from desk_sources import write_json
         write_json(self.runtime.output_dir/'team_report.json',{'filings_line':filings_line,'run_time':self.runtime.desk.run_timestamp})
         self.report_path = self.runtime.output_dir / "report.md"

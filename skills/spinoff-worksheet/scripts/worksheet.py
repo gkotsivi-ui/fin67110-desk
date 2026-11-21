@@ -256,7 +256,10 @@ def value_range(config,facts,ocf):
             if 'owner_cash_flow' in names:inputs.append(ocf['source'])
             supplied={**variables,**rates}
             arithmetic=re.sub(r'\b[A-Za-z_][A-Za-z_0-9]*\b',lambda m:'('+format(supplied[m[0]],'.15g')+')' if m[0] in supplied and supplied[m[0]] is not None else m[0],method['formula'])
-            result[case]={'value':value,'unit':'USD/share','formula':method['formula'],'arithmetic':arithmetic+' = '+format(value,'.15g'),'rates':rates,'sources':inputs,'reason':None}
+            # A per-share value prints to the cent. Printed to 15 digits, a value computed from an exact three-year average
+            # could differ in its last digit from the same equation redone with the printed, rounded average (Lowe's,
+            # 2026-11-20). The stored value keeps full precision for the price comparison.
+            result[case]={'value':value,'unit':'USD/share','formula':method['formula'],'arithmetic':arithmetic+' = '+format(value,'.2f'),'rates':rates,'sources':inputs,'reason':None}
         except (KeyError,ValueError,TypeError):result[case]={**unknown('Worksheet method, rates or sourced valuation inputs are unavailable'),'rates':method.get('rates',{}),'formula':method.get('formula')}
     return result
 
@@ -498,10 +501,10 @@ def render(result):
     lines+=['',f"Owner cash flow: {fmt(result['owner_cash_flow']['value'])}; {result['owner_cash_flow']['source']}"]
     # A value that is not known applied no rate, so its rates are not printed as numbers: a number with no source
     # in the worksheet stops the run at the hook.
-    for case,ob in result['value_range'].items():lines.append(f"{case.title()} value: {fmt(ob['value'])}; formula: {ob.get('arithmetic') or ob.get('formula')}; rates: {json.dumps(ob.get('rates',{})) if ob['value'] is not None else 'not applied'}; sources: {'; '.join(ob.get('sources',[]))}")
+    for case,ob in result['value_range'].items():lines.append(f"{case.title()} value: {fmt(ob['value']) if ob['value'] is None else format(ob['value'],'.2f')}; formula: {ob.get('arithmetic') or ob.get('formula')}; rates: {json.dumps(ob.get('rates',{})) if ob['value'] is not None else 'not applied'}; sources: {'; '.join(ob.get('sources',[]))}")
     if str(result['value_range']['mid'].get('reason','')).startswith('Worksheet specifies no mid operating value'):
         lines.append('Operating value: none under the negative-owner-cash-flow rule; low uses net cash only; mid is not known.')
-    price=result['price_vs_low'];lines.append('Price against low: '+('not computed' if price['comparison']=='not computed' else f"{fmt(price['price'])} on {price['price_date']} ({price['price_source']}); low {fmt(price['low_value'])}; (price - low) / low * 100 = {fmt(price.get('percent_price_minus_low'))}%"))
+    price=result['price_vs_low'];lines.append('Price against low: '+('not computed' if price['comparison']=='not computed' else f"{fmt(price['price'])} on {price['price_date']} ({price['price_source']}); low {format(price['low_value'],'.2f')}; (price - low) / low * 100 = {format(price['percent_price_minus_low'],'.2f') if isinstance(price.get('percent_price_minus_low'),(int,float)) else fmt(price.get('percent_price_minus_low'))}%"))
     lines+=['',f"Judgment: {result['judgment']['judgment']}",f"Next filing: {result['judgment']['next_filing_trigger']}"]
     for row in result.get('criteria_scores',[]):lines.append(f"Criterion {row['criterion']} — {row['name']}: {row['score']} (computed in code); {row['source']}")
     if 'insight' in result['judgment']:lines.append('Insight: '+result['judgment']['insight'])

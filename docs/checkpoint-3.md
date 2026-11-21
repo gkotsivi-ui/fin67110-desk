@@ -28,7 +28,7 @@ EDGAR, and the time of the commit that first added the report ([docs/live-record
 
 This is a learning exercise, not financial advice.
 
-AI assistance: [the tools the team used: Claude Code and OpenAI Codex, and any other]. I verified the sources myself; the judgments are mine.
+AI assistance: Claude Code. I verified the sources myself; the judgments are mine.
 
 Any remaining errors are my own.
 

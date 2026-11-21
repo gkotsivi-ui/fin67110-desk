@@ -11,14 +11,15 @@
 Can an AI research desk our team built read any company's filings and its earnings release correctly,
 serve one client's decision, and prove it live?
 
-The client is an investor seeking absolute return. The desk's last step, the worksheet, gives a view on the
-report: worth more or less than the price, with the evidence.
+The client is an investor seeking absolute return. The desk's last step, the worksheet, values the company from
+three years of owner cash flow in its filings and compares that value with the price: worth more or less than
+the price, with the evidence. It needs a price from LSEG Workspace; without one, its view is "not computed".
 
 ## Run the desk
 
 The [README](README.md) is the manual for running it: one Python environment, a `.env` with three lines,
 then one command, `desk.py TICKER`, or the page (`start_page.bat` on Windows, `start_page.command` on a Mac)
-for a person who does not use a terminal. Practice runs on 2026-11-19 took from about 10 to 35 minutes. It reads the company's latest
+for a person who does not use a terminal. Practice runs on 2026-11-19 and 2026-11-20 took from about 10 to 35 minutes. It reads the company's latest
 10-K, 10-Q and earnings release (the 8-K's Exhibit 99.1) from SEC EDGAR, and it runs on any U.S. company
 that files them, whether or not the seeker has seen it.
 

@@ -199,7 +199,7 @@ class JoinedDeskTests(unittest.TestCase):
         with redirect_stdout(io.StringIO()),local_sockets_only():
             result=runner.execute()
         self.assertEqual(json.loads((runner.run/'desk_run.json').read_text())['status'],'complete')
-        self.assertIn('Low value: 90;',result.read_text())
+        self.assertIn('Low value: 90.00;',result.read_text())  # a per-share value prints to the cent
         self.assertEqual(sum(line.startswith('Liquidity day |') for line in result.read_text().splitlines()),60)
         with redirect_stdout(io.StringIO()):self.assertEqual(desk.replay(runner.run),result)
 

@@ -338,6 +338,30 @@ class HookUsesClaims(SavedOutputCheck):
             self.check({**self.saved, "draft": self.saved["draft"].replace("93.9", "95.9")})
 
 
+class ReaderFormats(unittest.TestCase):
+    """2026-11-20: a client report printed "11.766682891778505%", "-4.015226378945245 times" and "$-9.917 billion"."""
+
+    def saved(self, **metrics):
+        return {"calculated_facts.json": json.dumps({"metrics": metrics})}
+
+    def test_computed_percentages_and_ratios_are_rounded_for_the_reader(self):
+        texts = self.saved(
+            operating_margin={"formula": "10153000000 / 86286000000", "value": 11.766682891778505, "unit": "%", "sources": ["XBRL tag A"]},
+            debt_to_equity={"formula": "(37490000000 + 2431000000) / -9917000000", "value": -4.025511747504286, "unit": "ratio", "sources": ["XBRL tag B"]})
+        result = check({"claims": [{"id": "c1", "computed": "operating_margin"}, {"id": "c2", "computed": "debt_to_equity"}],
+                        "draft": "Margin {c1}; leverage {c2}."}, texts, {})
+        self.assertTrue(result.ok, result.errors)
+        self.assertTrue(result.rendered.startswith("Margin 11.77% ["), result.rendered)
+        self.assertIn("; leverage -4.026 times [", result.rendered)
+        self.assertNotIn("11.7666", result.rendered)
+
+    def test_a_deficit_puts_its_sign_before_the_dollar(self):
+        from desk_claims import format_fact
+        self.assertEqual(format_fact("stockholders_equity", {"value": -9917000000}, "value"), "-$9.917 billion")
+        self.assertEqual(format_fact("diluted_eps", {"value": -1.25}, "value"), "-$1.25")
+        self.assertEqual(format_fact("revenue", {"value": 86286000000}, "value"), "$86.286 billion")
+
+
 class ValueWithoutANumber(unittest.TestCase):
     """A practice run on 2026-11-19 cited "sixth consecutive quarter" as a claim's value."""
 

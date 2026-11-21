@@ -482,6 +482,54 @@ A server test checks that the page serves the joined report only after completio
   removes the whole draft line, so good claims on the same line go with the bad one.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-20: an audit of the whole desk, and what it found
+
+Greg asked for a full audit after the merge. It read the newest complete report (a practice run on Lowe's)
+against its filings, re-checked the live record on EDGAR, and read the code behind each defect.
+
+- **What AI got wrong: a rule the team had already written down.** Debt to equity used the `LongTermDebt` total
+  tag. For Lowe's that was its debt maturity schedule's total, $39,819 million; the balance sheet's two lines
+  give $39,921 million. The report printed -4.015 where the course's definition gives -4.03: an auditor marks
+  that claim wrong, and one wrong claim fails the "Adopted" gate. Entry 9 of this log already said that the
+  total tag is never the amount; the joined desk had not carried the rule over. It also added short-term
+  borrowings, which the course's definition leaves out (Walmart: 0.449 where it should be 0.383). The desk now
+  reads the balance sheet's noncurrent and current lines as one pair, as the base desk does.
+- **What AI got wrong: a first line the live record could not read.** The joined desk wrote
+  "Filings read: 10-K ..., 10-Q ..., 8-K ..." with no CIK, and `live_record.py` read no 8-K from it; the
+  final report had a second, different first line. A Week 6 live run would have shown "names no 8-K". Both
+  desks now write one line, with the release's exhibit, each Accepted time and the CIK.
+- **What AI got wrong: reading the filings.** Three readers failed on real filings, each found by reading a
+  report against its sources: the MD&A extractor took a split cross-reference ("see Item 7, ...") for the
+  heading and gave the analysts Lowe's risk factors as Item 7; the release reader read no quarter for any
+  company, because Lowe's says "Net sales" and Walmart's years sit under merged headers; and the worksheet
+  read no owner cash flow, because Lowe's statement is "of Earnings" with a "% Sales" figure after each amount
+  and Walmart prints "January 31," above columns of years. Each reader now handles those layouts, with tests
+  on the filings' own shapes, and the hook reads the statements the same way the worksheet does.
+- **What AI got wrong: a report that chose its own core claims.** The base desk printed the 11 core claims
+  from code; the joined desk left them to the roles, and a report left out revenue growth that the desk had
+  computed. The 11 are printed by code again, under the Overview.
+- **Smaller fixes.** A client report printed "11.766682891778505%" and "$-9.917 billion"; percentages now
+  show two decimals, ratios three, and a deficit "-$9.917 billion". A per-share value prints to the cent.
+  `.env.example` names `MODEL` and the group desk's LSEG settings. The release readers took a table's unit
+  only from its own cells; Lowe's prints "In Millions" just above its table, so the desk gave the analysts
+  its net sales as "USD as shown" and left the unit to a guess. They now read the lines just above the
+  table too, but never an earlier table's.
+- **Not changed, on purpose.** The role prompts, the persona and the worksheet rules carry no course footer:
+  members wrote them, the desk sends them to the model word for word, and a test checks that they are
+  unchanged copies. A member's home folder path stays in commits made before 2026-11-19; removing it would
+  rewrite `main`'s history, which this team does not do. Table values such as "(10,055)" keep the unit the
+  filing prints beside them, because one release table mixes dollars, share counts and percentages.
+- **The page, end to end.** On 2026-11-21 two runs started from the page passed the inputs, the pick and
+  the seven data steps on Lowe's, with every hook check: debt to equity (37,490 + 2,431) / -9,917, in USD
+  millions, from the balance sheet's two lines, and the quarter's net sales of 22,756 and 20,813 (USD
+  millions) and diluted EPS of $2.98, each quoted from the release's table. Both stopped at the first model
+  call, which the provider refused because the model account was out of credit. The roles, the Verifier,
+  the worksheet and the final report have not run since the fixes.
+- **Tests.** On Windows 11 and Python 3.13 on 2026-11-21, the four test folders ran 635 tests with no
+  failure; the four that create a symlink were skipped. The new tests copy the layouts above from Lowe's and
+  Walmart's filings. A Mac run is still to be done, and no Google or OpenAI key has run the desk end to end.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.

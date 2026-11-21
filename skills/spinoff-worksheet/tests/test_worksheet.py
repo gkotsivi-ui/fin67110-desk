@@ -179,6 +179,27 @@ class AdditionalContracts(unittest.TestCase):
         thin=w.liquidity(rows,settings)
         self.assertEqual((thin['required'],thin['supplied']),(20,1))
         for reason in (ocf['reason'],thin['reason']):self.assertNotRegex(reason,r'\d')
+    def test_lowes_and_walmart_statements_and_covers_are_read(self):
+        # 2026-11-20: the parser read no owner cash flow and no share count for Lowe's or Walmart. Amounts are the 10-Ks'.
+        spec=importlib.util.spec_from_file_location('statements_layouts',P.with_name('statements.py'))
+        s=importlib.util.module_from_spec(spec);spec.loader.exec_module(s)
+        run=Path(tempfile.mkdtemp())
+        dates=['Fiscal Years Ended','January 30, 2026','January 31, 2025','February 2, 2024']
+        lines=['Consolidated Statements of Earnings','(In millions, except per share and percentage data)',*dates,'Amount','% Sales',
+               'Net earnings','$','6,654','7.71','$','6,957','8.31','$','7,726','8.94',
+               'Consolidated Statements of Cash Flows','(In millions)',*dates,'Net earnings','$','6,654','$','6,957','$','7,726',
+               'Depreciation and amortization','2,194','1,972','1,923','Capital expenditures','(2,213)','(1,927)','(1,964)',
+               'Consolidated Balance Sheets','CLASS','OUTSTANDING AT 3/19/2026','Common Stock, $0.50 par value','560,063,429']
+        (run/'10-K.txt').write_text('\n'.join(lines),encoding='utf-8')
+        _,ocf=s.collect(run,3,True)
+        self.assertEqual([r['value'] for r in ocf['annual_inputs']],[6635e6,7002e6,7685e6])
+        self.assertAlmostEqual(ocf['value'],21322e6/3)
+        shares=s.shares_outstanding(run,'2026-11-20')
+        self.assertEqual((shares['value'],shares['as_of']),(560063429.0,'2026-03-19'))
+        self.assertTrue(shares['source'].endswith('quote: OUTSTANDING AT 3/19/2026; shares: 560,063,429'))
+        (run/'10-Q.txt').write_text('The registrant had\n7,933,746,241\nshares of common stock outstanding as of August 26, 2026.',encoding='utf-8')
+        self.assertEqual(s.shares_outstanding(run,'2026-11-20')['value'],7933746241.0)
+        self.assertEqual(s.period_dates('Fiscal Years Ended January 31, (Amounts in millions) 2026 2025 2024'),['2026-01-31','2025-01-31','2024-01-31'])
     def test_with_no_price_the_price_criterion_says_so_in_words(self):
         spec=importlib.util.spec_from_file_location('scores_tested',P.with_name('evidence_scores.py'))
         e=importlib.util.module_from_spec(spec);spec.loader.exec_module(e)

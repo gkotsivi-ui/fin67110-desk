@@ -18,12 +18,34 @@ from worksheet_numbers import NUMBER, NUM, amount, rounded_equal, within
 
 N = '('+NUMBER+')'
 DATE = r'\d{4}-\d{2}-\d{2}'
-HEADER = re.compile(r'^(?:(?:PRO FORMA|UNAUDITED|CONDENSED)\s+)*(?:CONSOLIDATED|COMBINED)\s+STATEMENTS?\s+OF\s+(?:INCOME|OPERATIONS|CASH FLOWS)\s*$', re.I)
+HEADER = re.compile(r'^(?:(?:PRO FORMA|UNAUDITED|CONDENSED)\s+)*(?:CONSOLIDATED|COMBINED)\s+STATEMENTS?\s+OF\s+(?:INCOME|OPERATIONS|EARNINGS|CASH FLOWS)\s*$', re.I)
+MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december']
+NUMERIC_DATE = re.compile(r'\b(\d{1,2})/(\d{1,2})/(\d{4})\b')
+COUNT_LINE = re.compile(r'\d{1,3}(?:,\d{3})+')
 MONTH_DATE = re.compile(r'\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b', re.I)
 SOURCE = re.compile(r'\[(?P<file>[^\]\n]+\.txt):L(?P<line>\d+)\] section (?P<section>[^;\n]+); year ended (?P<period>'+DATE+r'); units (?P<scale>'+NUMBER+r'); (?P<label>[^;=\n]+?) = (?P<reported>'+NUMBER+r')')
 SPENDING = re.compile(r'; spending = -\((?P<input>'+NUMBER+r')\) = (?P<result>'+NUMBER+r')')
 SHARES = re.compile(r'\[(?P<file>[^\]\n]+\.txt):L(?P<line>\d+)\] section Cover page; as of (?P<period>'+DATE+r'); quote: (?P<label>The number of shares outstanding[^;\n]*?was)\s+(?P<value>'+NUMBER+r')', re.I)
+# Two more cover-page layouts, as the worksheet's statements.py cites them: the dated line, then the count it names.
+SHARES_LINE = re.compile(r'\[(?P<file>[^\]\n]+\.txt):L(?P<line>\d+)\] section Cover page; as of (?P<period>'+DATE+r'); quote: (?P<label>[^;\n]+); shares: (?P<value>'+NUMBER+r')', re.I)
 EQUATION = re.compile(r'computed:\s*(?P<expr>[\d,.eE+*/()\s−-]+?)\s*=\s*(?P<result>'+NUMBER+r')')
+
+
+def column_dates(intro):
+    """A statement's column dates: full dates, or one month and day printed above columns of years (Walmart,
+    2026-11-20). The worksheet's statements.period_dates reads them the same way."""
+    dates=[]
+    for x in MONTH_DATE.finditer(intro):
+        raw=re.sub(r'\s+',' ',x[0]);raw=re.sub(r'(\d),? (\d{4})$',r'\1, \2',raw)
+        day=datetime.strptime(raw,'%B %d, %Y').date().isoformat()
+        if day not in dates:dates.append(day)
+    if dates:return dates
+    part=re.search(r'\b('+'|'.join(MONTHS)+r')\s+(\d{1,2}),?(?!\s*\d{4})',intro,re.I)
+    if not part:return []
+    for year in re.findall(r'(?<![\d,.$])(20\d{2})(?![\d,.])',intro[part.end():]):
+        day=datetime(int(year),MONTHS.index(part[1].lower())+1,int(part[2])).date().isoformat()
+        if day not in dates:dates.append(day)
+    return dates
 METRICS = {'after_tax_earnings':'after_tax_earnings','depreciation_and_amortization':'depreciation_and_amortization','depreciation':'depreciation','capital_spending':'capital_spending',
            'after-tax earnings':'after_tax_earnings','depreciation and amortization':'depreciation_and_amortization','capital spending':'capital_spending'}
 
@@ -59,6 +81,9 @@ def number_row(lines, start):
             if s==')': negative=False
             continue
         if s=='(':negative=True;continue
+        if s in ('%','%)',')%'):
+            if result:result.pop()  # the number before it was a percentage of sales
+            continue
         if not re.fullmatch(r'\(?[−-]?\d[\d,]*(?:\.\d+)?\)?',s):break
         value=amount(s.strip('()'))
         result.append(-abs(value) if negative or s.startswith('(') else value)
@@ -132,16 +157,13 @@ class WorksheetFormat:
         intro=' '.join(lines[h+1:idx])
         if not re.search(r'(?:years?|weeks?)\s+ended',intro,re.I):raise ValueError('Annual column header is missing')
         # Only the header before the first data label supplies periods/units.
-        period_matches=list(MONTH_DATE.finditer(intro))
-        dates=[]
-        for x in period_matches:
-            raw=re.sub(r'\s+',' ',x[0]);raw=re.sub(r'(\d),? (\d{4})$',r'\1, \2',raw)
-            day=datetime.strptime(raw,'%B %d, %Y').date().isoformat()
-            if day not in dates:dates.append(day)
+        dates=column_dates(intro)
         if m['period'] not in dates:raise ValueError('Claimed period is absent from filing columns')
-        scale=Decimal(1000000) if re.search(r'amounts? in millions',intro,re.I) else Decimal(1000) if re.search(r'amounts? in thousands',intro,re.I) else Decimal(1)
+        # "(In millions)" as well as "(Amounts in millions)", as the worksheet's parser reads it (Lowe's, 2026-11-20).
+        scale=Decimal(1000000) if re.search(r'\bin millions',intro,re.I) else Decimal(1000) if re.search(r'\bin thousands',intro,re.I) else Decimal(1)
         if amount(m['scale'])!=scale:raise ValueError('Claimed unit scale differs from filing header')
         values=number_row(lines,idx+1)
+        if len(values)==2*len(dates) and re.search(r'%\s*(?:of\s+)?(?:net\s+)?sales',intro,re.I):values=values[::2]  # amount, % sales
         if len(values)!=len(dates):raise ValueError('Filing row cannot be assigned unambiguously to period columns')
         return values[dates.index(m['period'])]*scale
 
@@ -174,6 +196,25 @@ class WorksheetFormat:
                 if day!=m['period'] or len(values)!=1 or values[0]!=amount(m['value']):raise ValueError('Share count or date differs from the cited cover-page text')
                 self.sources[(i,m.start())]={'value':values[0],'period':day,'kind':'shares'}
                 self.approved.add(values[0])
+            except (OSError,ValueError,ArithmeticError) as error:self.fail(i,str(error))
+        for m in SHARES_LINE.finditer(line):
+            for group in ('label','value'):self.mask(i,*m.span(group))
+            try:
+                lines=within(self.run,m['file']).read_text().splitlines();idx=int(m['line'])-1
+                label=' '.join(lines[idx].split()) if 0<=idx<len(lines) else ''
+                if label!=' '.join(m['label'].split()):raise ValueError('Cover-page shares citation does not match saved label')
+                words,numeric=MONTH_DATE.findall(label),NUMERIC_DATE.findall(label)
+                if len(words)+len(numeric)!=1:raise ValueError('Cover-page share-count date is not established')
+                if words:day=datetime.strptime(re.sub(r'(\d),? (\d{4})$',r'\1, \2',re.sub(r'\s+',' ',words[0])),'%B %d, %Y').date().isoformat()
+                else:day=datetime(int(numeric[0][2]),int(numeric[0][0]),int(numeric[0][1])).date().isoformat()
+                # Walmart: the count stands alone on the line before "shares of common stock outstanding as of ...".
+                # Lowe's: the count is the first number within three lines after "OUTSTANDING AT m/d/yyyy".
+                if re.match(r'shares of ',label,re.I):found=lines[idx-1].strip() if idx>0 and COUNT_LINE.fullmatch(lines[idx-1].strip()) else None
+                elif re.match(r'OUTSTANDING AT ',label,re.I):found=next((lines[k].strip() for k in range(idx+1,min(idx+4,len(lines))) if COUNT_LINE.fullmatch(lines[k].strip())),None)
+                else:found=None
+                if day!=m['period'] or found is None or amount(found)!=amount(m['value']):raise ValueError('Share count or date differs from the cited cover-page text')
+                self.sources[(i,m.start())]={'value':amount(found),'period':day,'kind':'shares'}
+                self.approved.add(amount(found))
             except (OSError,ValueError,ArithmeticError) as error:self.fail(i,str(error))
 
     def read_table(self,i,line):

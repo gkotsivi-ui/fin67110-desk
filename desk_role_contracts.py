@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 import re
-from desk_claims import Result,check,load_sources,PLACEHOLDER
+from desk_claims import Result,check,load_sources,PLACEHOLDER,format_fact
 from desk_sources import inside
 from insight_layout import PART_OWNERS,insight_failures
 
@@ -181,8 +181,56 @@ def report_text(run,sections=None):
     if insight_failures(manager['sections']):raise ValueError('Compiled report violates one Insight per role')
     if sections is None:sections=manager['sections']
     content=[manifest['filings_line'],'Run time: '+manifest['run_time'],'']
-    for part in PART_OWNERS:content.extend(['## '+part,sections[part],''])
+    core=core_claims_table(run)
+    for part in PART_OWNERS:
+        content.extend(['## '+part,sections[part]])
+        if part=='Overview' and core:content.extend(['',core])
+        content.append('')
     return '\n'.join(content)
+
+
+def core_claims_table(run):
+    """The course's 11 core claims, printed by code from the run's saved facts, so that every report states them and
+    any two reports compare (the base desk printed them the same way). On 2026-11-20 a report left out revenue growth,
+    which the desk had computed: the roles chose which numbers to state. '' for a run without saved facts."""
+    run=Path(run)
+    try:
+        facts=json.loads((run/'facts.json').read_text(encoding='utf-8')).get('facts',{})
+        saved=json.loads((run/'calculated_facts.json').read_text(encoding='utf-8'))
+    except (OSError,ValueError,AttributeError):return ''
+    metrics=saved.get('metrics') or {};quarter=saved.get('quarter_results') or {}
+    missing='not established by code'
+    def cell(text):return str(text).replace('|','/').replace('\n',' ')
+    def fact(key):
+        item=facts.get(key) or {}
+        if item.get('value') is None or not item.get('tag') or not item.get('filing'):return missing,'no saved fact'
+        return format_fact(key,item,'value'),f"XBRL tag {item['tag']}, period end {item['period_end']}, filing {item['filing']}"
+    def metric(key):
+        item=metrics.get(key) or {};value=item.get('value')
+        if value is None:return missing,'no saved calculation'
+        unit=item.get('unit')
+        shown=f'{float(value):.2f}%' if unit=='%' else f'{float(value):.3f}' if unit=='ratio' else format_fact(key,item,'value')
+        return shown,'computed in code: '+str(item.get('formula',''))
+    def release(value_key,source_key,eps=False):
+        value=quarter.get(value_key);source=str(quarter.get(source_key) or '').split('; quote:')[0]
+        if value is None or not source or source=='source unavailable':return missing,'the release reader found no table row'
+        return (f'${float(value):,.2f}' if eps else f'{float(value):,.0f}, as the release table prints it'),source
+    period=(facts.get('revenue') or {}).get('period_end') or 'not established'
+    rows=[('1',f'Total revenue, fiscal year ended {period}',*fact('revenue')),
+          ('2','Revenue growth versus the prior year',*metric('revenue_growth')),
+          ('3','Operating income',*fact('operating_income')),
+          ('3','Operating margin (operating income / total revenue)',*metric('operating_margin')),
+          ('4','Net income attributable to the company',*fact('net_income_attributable_to_parent')),
+          ('5','Diluted EPS, GAAP',*fact('diluted_eps')),
+          ('6','Return on average equity',*metric('return_on_average_equity')),
+          ('7','Debt to equity (long-term debt with its current portion)',*metric('debt_to_equity')),
+          ('8','Free cash flow (cash from operations - additions to property and equipment)',*metric('free_cash_flow')),
+          ('9',"Latest quarter's revenue",*release('total_revenue','revenue_source')),
+          ('10','Quarter growth versus the same quarter last year',*metric('quarter_revenue_growth')),
+          ('11',"Latest quarter's diluted EPS, GAAP",*release('diluted_eps','diluted_eps_source',eps=True))]
+    lines=['### The 11 core claims, read and computed in code','','| # | Claim | Value | Source |','|---|---|---|---|']
+    lines+=[f'| {n} | {cell(claim)} | {cell(value)} | {cell(source)} |' for n,claim,value,source in rows]
+    return '\n'.join(lines)
 
 
 # The body of a part whose every line held a claim the Verifier did not mark correct.
