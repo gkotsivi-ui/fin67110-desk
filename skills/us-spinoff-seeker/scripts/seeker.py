@@ -147,7 +147,7 @@ class Edgar:
         # Shared by concurrent seeker processes in the same workspace.
         path = ANALYST / 'spinoff_output/.sec_rate_gate'
         path.parent.mkdir(parents=True, exist_ok=True)
-        with path.open('a+') as stream:
+        with path.open('a+', encoding='utf-8') as stream:
             fcntl.flock(stream, fcntl.LOCK_EX)
             stream.seek(0)
             try: previous = float(stream.read() or 0)
@@ -501,7 +501,7 @@ def load_pdf_factors(path):
 def load_factors(path):
     path = Path(path).expanduser().resolve()
     if path.suffix.lower() == '.pdf': return load_pdf_factors(path)
-    config = json.loads(path.read_text())
+    config = json.loads(path.read_text(encoding='utf-8'))
     if 'source_pdf' in config:
         source = Path(config['source_pdf']).expanduser()
         return load_pdf_factors(source if source.is_absolute() else path.parent/source)
@@ -783,7 +783,7 @@ def diagnostics_output(path):
 
 def diagnostic_events(path):
     events=[]
-    for line in Path(path).read_text().splitlines():
+    for line in Path(path).read_text(encoding='utf-8').splitlines():
         try:
             events.append(json.loads(line))
         except json.JSONDecodeError:
@@ -801,7 +801,7 @@ def run(args):
     if not registry_path.exists() and (root / 'registry.json.gz').exists():
         registry_path = root / 'registry.json.gz'
     # Prevent two seekers from overwriting each other's registry.
-    with (root/'.run.lock').open('a+') as lock, diagnostics_output(root/f'closes_errors_{now:%Y-%m-%d_%H%M%S_%f}.jsonl') as diagnostics:
+    with (root/'.run.lock').open('a+', encoding='utf-8') as lock, diagnostics_output(root/f'closes_errors_{now:%Y-%m-%d_%H%M%S_%f}.jsonl') as diagnostics:
         try: fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError: raise ValueError('A seeker run already owns this registry.')
         config = {**dotenv_values(ANALYST/'.env'), **os.environ}

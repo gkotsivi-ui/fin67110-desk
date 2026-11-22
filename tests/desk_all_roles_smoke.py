@@ -20,8 +20,8 @@ with tempfile.TemporaryDirectory() as tmp:
     from desk_sources import Sources,write_json
     from desk_hook import Hook,HookFailure
     from desk_role_contracts import report_catalog
-    (run/'10-K.txt').write_text('Income was $100.\nDebt was $20.\n')
-    (run/'earnings_release_Ex99-1.txt').write_text('A seeded release.\n')
+    (run/'10-K.txt').write_text('Income was $100.\nDebt was $20.\n',encoding='utf-8')
+    (run/'earnings_release_Ex99-1.txt').write_text('A seeded release.\n',encoding='utf-8')
     calc=run/'calculated_facts.json'
     write_json(calc,{'metrics':{'free_cash_flow':{'value':80,'formula':'100 - 20','unit':'USD','sources':['10-K.txt:L1','10-K.txt:L2']}},
                     'quarter_results':{'latest_10q_capital_spending':{'value':80,'formula':'100 - 20','unit':'USD','sources':['10-K.txt:L1','10-K.txt:L2']}}})
@@ -71,8 +71,8 @@ with tempfile.TemporaryDirectory() as tmp:
         *replies(corrected_files,{'claims':[],'failures':[],'sections':corrected_sections})])
     report=Path(flow.strategy_manager(''))
     manager_node=run/'nodes/Strategy_Manager_1'
-    raws=json.loads((manager_node/'raw_responses.json').read_text())
-    attempts=json.loads((manager_node/'claim_attempts.json').read_text())
+    raws=json.loads((manager_node/'raw_responses.json').read_text(encoding='utf-8'))
+    attempts=json.loads((manager_node/'claim_attempts.json').read_text(encoding='utf-8'))
     assert len(raws)==2 and raws[0]['raw']==malformed
     assert len(attempts)==2 and attempts[0]['output']['unparsed_response']==malformed
     assert attempts[0]['errors'] and not attempts[1]['errors']
@@ -82,9 +82,9 @@ with tempfile.TemporaryDirectory() as tmp:
     verified=Path(flow.verifier(str(report)))
     gate.check('seeded checked reports',[report,verified])
     assert runtime.role_call_counts=={'Research Analyst':1,'Financial Analyst':2,'Investment Advisor':1,'Strategy Manager':2,'Verifier':1}
-    assert '$80' in verified.read_text()
-    assert '== 1.' not in report.read_text() # Manager selected body lines only.
-    verified.write_text(verified.read_text().replace('$80','$81'))
+    assert '$80' in verified.read_text(encoding='utf-8')
+    assert '== 1.' not in report.read_text(encoding='utf-8') # Manager selected body lines only.
+    verified.write_text(verified.read_text(encoding='utf-8').replace('$80','$81'),encoding='utf-8')
     try:gate.check('seeded changed report',[verified])
     except HookFailure:pass
     else:raise AssertionError('Changed report was accepted')

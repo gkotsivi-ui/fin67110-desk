@@ -675,7 +675,14 @@ def configured_model():
     key = os.environ.get("API_KEY") or env.get("API_KEY") or env.get("ANTHROPIC_API_KEY")
     if not key:
         raise ValueError("model review needs API_KEY in .env")
-    return Model(key, os.environ.get("MODEL") or env.get("MODEL") or DEFAULT_MODEL, "medium")
+    model = os.environ.get("MODEL") or env.get("MODEL") or DEFAULT_MODEL
+    # The review's client is the base desk's: Anthropic or Google. Until 2026-11-22 an OpenAI key was sent to
+    # Anthropic, and a model written openai/MODEL_ID was replaced by the default model without a word.
+    from lab02_desk import provider_of
+    if provider_of(key) == "openai" or model.startswith("openai/"):
+        raise ValueError("the model review runs on an Anthropic or a Google model, and API_KEY or MODEL in .env is OpenAI's. "
+                         "Use --offline, or --proposals with a coding agent's review")
+    return Model(key, model, "medium")
 
 
 def main():
@@ -695,7 +702,7 @@ def main():
     if args.model:
         model = configured_model()
     try:
-        proposals = json.loads(args.proposals.read_text()) if args.proposals else None
+        proposals = json.loads(args.proposals.read_text(encoding="utf-8")) if args.proposals else None
         shared = review_run(args.run, args.history, args.record_number, args.practice, args.output_root,
                             proposals, args.model_name, model)
     except (ValueError, OSError, RuntimeError) as exc:

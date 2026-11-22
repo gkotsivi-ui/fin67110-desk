@@ -35,25 +35,10 @@ SECTIONS = (
 )
 ROLES_DIR = Path(__file__).with_name("pipeline_roles")
 
-# A model call that failed on the way, not because of what the model said: the connection dropped or timed out,
-# or the provider answered with a server error. Names, not classes, so no provider's SDK is imported here.
-CONNECTION_ERRORS = {"APIConnectionError", "APITimeoutError", "ConnectError", "ConnectTimeout", "ReadError",
-                     "ReadTimeout", "WriteError", "RemoteProtocolError", "ProtocolError", "ConnectionError",
-                     "InternalServerError", "ServiceUnavailableError", "OverloadedError"}
-RETRY_WAIT_SECONDS = 30
-
-
-def dropped_connection(error: BaseException | None) -> bool:
-    """True when a model call failed because its reply never arrived, through the whole chain of causes."""
-    seen = set()
-    while error is not None and id(error) not in seen:
-        seen.add(id(error))
-        if isinstance(error, (ConnectionError, TimeoutError)) or type(error).__name__ in CONNECTION_ERRORS:
-            return True
-        if getattr(error, "status_code", None) in (500, 502, 503, 504, 529):
-            return True
-        error = error.__cause__ or error.__context__
-    return False
+# A model call that failed on the way, not because of what the model said: the rule is in model_calls.py, which
+# the worksheet uses too. The names stay here because the tests set RETRY_WAIT_SECONDS to zero.
+from model_calls import (CALL_TIME_LIMIT_SECONDS, CONNECTION_ERRORS, RATE_LIMIT_WAIT_SECONDS,  # noqa: E402,F401
+                         REQUEST_TIME_LIMIT_SECONDS, RETRY_WAIT_SECONDS, dropped_connection, retry_reason, within_time_limit)
 # Roles whose numbers come from a checked claims ledger instead of typed prose.
 ROLE_CONTRACTS={'research_analyst.md':'Research Analyst','financial_analyst.md':'Financial Analyst',
                 'investment_advisor.md':'Investment Advisor','strategy_manager.md':'Strategy Manager','verifier.md':'Verifier'}
@@ -184,9 +169,15 @@ class Runtime:
         self.api_key = os.getenv("API_KEY", "").strip()
         if not self.api_key:
             raise ValueError("API_KEY is missing or empty in .env")
-        self.model = os.getenv("MODEL", "gemini/gemini-3.5-flash-lite").strip()
+        # No default model: until 2026-11-22 a missing MODEL line meant a Gemini model, whatever the key was, and the
+        # worksheet, which has no default, then stopped the run after the five roles had been paid for.
+        self.model = os.getenv("MODEL", "").strip()
+        if not self.model:
+            raise ValueError("MODEL is missing or empty in .env. Write the model with its provider, for example MODEL=anthropic/MODEL_ID")
         base_url = os.getenv("LLM_BASE_URL", "").strip()
-        llm_args: dict[str, Any] = {"model": self.model, "api_key": self.api_key}
+        # The time limit reaches Anthropic's and OpenAI's clients. Google's takes none, so each role call also
+        # runs under within_time_limit (role_call).
+        llm_args: dict[str, Any] = {"model": self.model, "api_key": self.api_key, "timeout": REQUEST_TIME_LIMIT_SECONDS}
         if base_url:
             llm_args.update({"base_url": base_url, "custom_openai": True})
         self.llm = LLM(**llm_args)
@@ -285,19 +276,22 @@ class Runtime:
                     + '\nPrevious unaccepted reply:\n' + raw_replies[-1]}
                 prompt = json.dumps(packet, ensure_ascii=False)
                 try:
-                    result = kickoff(prompt)
+                    result = within_time_limit(lambda: kickoff(prompt), CALL_TIME_LIMIT_SECONDS, node)
                 except Exception as error:
-                    if not dropped_connection(error):
+                    reason = retry_reason(error)
+                    if reason is None:
                         raise
                     # 2026-11-19: the Verifier's call lost its connection to the provider after five minutes, and the
-                    # whole run stopped with no report. No reply arrived, so the same call is made once more.
+                    # whole run stopped with no report. No reply arrived, so the same call is made once more. A rate
+                    # limit (429) is the same case with a longer wait.
+                    wait = RATE_LIMIT_WAIT_SECONDS if reason == "rate limit" else RETRY_WAIT_SECONDS
                     dropped.append({"time": datetime.now().astimezone().isoformat(timespec="seconds"),
-                                    "error": f"{type(error).__name__}: {error}"})
+                                    "error": f"{type(error).__name__}: {error}", "reason": reason})
                     self.save_node(node, "dropped_connections", dropped)
-                    print(f"{node}: the connection to the model dropped ({type(error).__name__}: {error}); "
-                          f"trying once more in {RETRY_WAIT_SECONDS} seconds.", flush=True)
-                    time.sleep(RETRY_WAIT_SECONDS)
-                    result = kickoff(prompt)
+                    what = "the provider is limiting this key" if reason == "rate limit" else "the connection to the model dropped"
+                    print(f"{node}: {what} ({type(error).__name__}: {error}); trying once more in {wait} seconds.", flush=True)
+                    time.sleep(wait)
+                    result = within_time_limit(lambda: kickoff(prompt), CALL_TIME_LIMIT_SECONDS, node)
                 # Save every reply verbatim before parsing, so a malformed one can be inspected.
                 raw_replies.append(str(result.raw))
                 self.save_node(node, "raw_responses", [{"attempt": i + 1, "raw": r} for i, r in enumerate(raw_replies)])
@@ -366,7 +360,7 @@ class Runtime:
             output = ask(envelope)
         if claims_mode and contract_role in ('Research Analyst','Financial Analyst','Investment Advisor'):
             folder=self.nodes_dir/re.sub(r'[^A-Za-z0-9_-]+','_',node)
-            (folder/'draft.md').write_text(output['draft'])
+            (folder/'draft.md').write_text(output['draft'], encoding="utf-8")
         self.save_node(node, "output", output)
         return output
 
@@ -631,15 +625,16 @@ class Runtime:
             first + "\n\n" + "\n".join(marks) + "\n\n" + "\n".join(report_lines[1:]) + "\n",
             encoding="utf-8",
         )
-        self.save_node("Verifier", "output", {"code_checks": code_marks, "model_checks": model_marks, "verified_report": str(output_path)})
+        # The file's name, not its full path: a run folder is committed, and a full path names the member's home folder.
+        self.save_node("Verifier", "output", {"code_checks": code_marks, "model_checks": model_marks, "verified_report": Path(output_path).name})
         return output_path
 
     def verify_ledger_report(self,report_path,output_path):
         from desk_sources import write_json
         full=report_text(self.output_dir)
-        if report_path.read_text()!=full:raise ValueError('Report differs from saved role files')
+        if report_path.read_text(encoding="utf-8")!=full:raise ValueError('Report differs from saved role files')
         catalog=report_catalog(self.output_dir)
-        texts={p.name:p.read_text() for p in self.output_dir.glob('*.txt')}
+        texts={p.name:p.read_text(encoding="utf-8") for p in self.output_dir.glob('*.txt')}
         packet={'compiled_report':full,'published_claims':catalog,'saved_filing_texts':self.cited_filing_excerpts(full,texts)}
         write_json(self.output_dir/'verifier_input.json',packet)
         marks=ledger_marks(self.output_dir)
@@ -647,11 +642,11 @@ class Runtime:
         result=self.role_call('Verifier','verifier.md',self.envelope(
             'Read the saved verifier input and role files. Check every published claim exactly once for meaning, period and definition. Select targets by role and claim ID. Use claims placeholders for any amounts in reasons or corrections; never type numbers.',
             {'input_file':'verifier_input.json'},'JSON with claims and checks.'))
-        self.save_node('Verifier','output',{'code_checks':marks,'model_checks':result,'verified_report':str(output_path)})
+        self.save_node('Verifier','output',{'code_checks':marks,'model_checks':result,'verified_report':Path(output_path).name})
         # A claim the Verifier did not mark correct is left out with its line; the rest is published.
         _,left_out=published_sections(self.output_dir,result['checks'])
         if left_out:print(f"Verifier: left out {sum(len(c) for c in left_out.values())} flagged claim(s) from {len(left_out)} part(s); the marks table lists them",flush=True)
-        output_path.write_text(published_verified_text(self.output_dir,marks,result['checks']))
+        output_path.write_text(published_verified_text(self.output_dir,marks,result['checks']),encoding="utf-8")
         return output_path
 
 
@@ -837,7 +832,7 @@ class EquityResearchFlow(Flow):
         write_json(self.runtime.output_dir/'team_report.json',{'filings_line':filings_line,'run_time':self.runtime.desk.run_timestamp})
         self.report_path = self.runtime.output_dir / "report.md"
         self.report_path.write_text(report_text(self.runtime.output_dir), encoding="utf-8")
-        self.runtime.save_node("Strategy Manager", "output", {"compiled_from":latest(self.runtime.output_dir,'Strategy Manager')[0].relative_to(self.runtime.output_dir).as_posix(), "report": str(self.report_path)})
+        self.runtime.save_node("Strategy Manager", "output", {"compiled_from":latest(self.runtime.output_dir,'Strategy Manager')[0].relative_to(self.runtime.output_dir).as_posix(), "report": Path(self.report_path).name})
         return str(self.report_path)
 
     def _manager_call(self, task: str, failures: Any = None) -> dict[str, Any]:

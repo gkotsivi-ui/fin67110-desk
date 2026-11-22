@@ -21,7 +21,9 @@ filing's own section header, never by the model.
 from __future__ import annotations
 
 import bisect
+from datetime import date
 import json
+import unicodedata
 from pathlib import Path
 import re
 from dataclasses import dataclass, field
@@ -31,7 +33,21 @@ from desk_quantities import SMALL,TENS,SCALES,enumeration_spans,heading_spans
 
 PLACEHOLDER = re.compile(r"\{(c\d+)\}")
 SCALE_WORD = re.compile(r"\b(thousand|million|billion|trillion)s?\b", re.I)
-HEADER = re.compile(r"\(amounts in (thousands|millions|billions)([^)]*)\)", re.I)
+# A header that puts the amounts below it in a scale: "(amounts in millions, except per share data)", and also
+# "(in millions, ...)" and "(dollars in millions)", the wording of both filers of the first two live reports, which
+# this pattern did not read until 2026-11-22.
+HEADER = re.compile(r"\((?:(?:dollar\s+)?amounts\s+|dollars\s+)?in (thousands|millions|billions)([^)]*)\)", re.I)
+# Text typed next to a placeholder that would change the number's size or sign: a currency sign or a minus before
+# it, a multiplier before it, a scale after it. A rate after it ("{c1} percent of sales" for a bare table cell)
+# and parentheses around it (an aside) are a real model's ordinary sentences (the replies of 2026-11-20) and are
+# not refused: whether the label fits the cell is the Verifier's question, as every label is.
+SCALE_OR_RATE = r"thousand|million|billion|trillion|bn|mn|percent|per\s+cent|pct|percentage\s+points?|basis\s+points?|bps|points?|times|fold|x"
+TYPED_BEFORE = re.compile(r"(?:[$€£+]|(?<![\w)\]}])[-−–—]|\b(?:minus|negative|twice|thrice|double|triple|half)\s+(?:of\s+)?)\{c\d+\}", re.I)
+TYPED_AFTER = re.compile(r"\{c\d+\}\s*-?(?:thousand|million|billion|trillion|bn|mn|fold)s?\b", re.I)
+# A number written without digits: two number words in a row, a number word with a unit, or a multiplier.
+MULTIPLIER = re.compile(r"\b(?:doubl|tripl|quadrupl|halv)(?:e|ed|es|ing)\b|\b(?:twice|thrice)\b|\b(?:single|double|triple)[- ]digits?\b"
+                        r"|\b\w+fold\b|\bby\s+(?:a|one)\s+(?:half|third|quarter)\b", re.I)
+ROMAN_AMOUNT = re.compile(r"\b[IVXLCDM]{2,}\s*(?:%|(?:" + SCALE_OR_RATE + r")\b)")
 SECTION = re.compile(r"^Item\s+\d+[A-C]?\s*[—\-–.]", re.I)
 QUARTER = re.compile(r"\b(?:Q[1-4]|FY\d{2,4}|H[12])\b")
 # Allowed bare digits: list labels "(1)" or "1." at line start, Item numbers, ordinals in dates.
@@ -62,7 +78,9 @@ YEAR_METRIC=re.compile(r'(?<![\w$.,])(?:19|20)\d{2}(?=\s+(?:(?:long|short)[- ]te
 CLOCK_VALUE=r'(?:[01]?\d|2[0-3]):[0-5]\d(?::[0-5]\d)?'
 CLOCK_REF=re.compile(r'\b(?:at|before|after|by|close|closing|cutoff|time)\s+(?:'+CLOCK_VALUE+r')\b|(?<![\w$])'+CLOCK_VALUE+r'\s*(?:ET|EST|EDT|UTC|GMT|AM|PM)\b',re.I)
 WORD_AMOUNT = re.compile(
-    rf"\b(?:{NUMBER_WORDS})(?:[\s-]+(?:{NUMBER_WORDS}))*\s+(?:{UNIT_WORDS})\b", re.I)
+    rf"\b(?:{NUMBER_WORDS})(?:[\s-]+(?:{NUMBER_WORDS}))*[\s-]+(?:{UNIT_WORDS}|per\s+cent|pct|bn|mn)\b"
+    rf"|\b(?:{NUMBER_WORDS})(?:[\s-]+(?:{NUMBER_WORDS}))*\s*%"
+    rf"|\b(?:{NUMBER_WORDS})(?:[\s-]+(?:{NUMBER_WORDS}))+\b", re.I)
 
 
 def _norm(text: str) -> str:
@@ -95,6 +113,27 @@ def source_identifier_pattern(texts,facts,origins):
     return re.compile(r'(?<![\w$])(?:'+'|'.join(re.escape(name) for name in sorted(names,key=len,reverse=True))+r')(?![\w%])')
 
 
+# A scale or a rate. After a number it makes an amount, whatever words stand before the number.
+AMOUNT_AFTER = re.compile(r"\s*(?:%|(?:thousand|million|billion|trillion)s?\b|(?:bn|mn|percent|per\s+cent|pct|percentage\s+points?|basis\s+points?|bps)\b)", re.I)
+
+
+def a_reference(found, kind):
+    """Whether typed text that reads as a reference (an Item, a form, a table, a year, a date) is one.
+
+    Until 2026-11-22 the words before a number decided it alone: "Sales of Item 12 million" and "Insiders filed
+    Form 4 billion" passed with no claim, and so did "9999-99-99". A reference followed by a scale or a rate is an
+    amount, and a date must be a date of the calendar.
+    """
+    if AMOUNT_AFTER.match(found.string, found.end()):
+        return False
+    if kind is ISO_DATE:
+        try:
+            date.fromisoformat(found.group(0)[:10])
+        except ValueError:
+            return False
+    return True
+
+
 def complete_value(value,quote,source):
     """Require a complete literal value, not part of a larger amount or unit."""
     if len(re.findall(r'\d[\d,]*(?:\.\d+)?',value))>1:return False
@@ -102,10 +141,16 @@ def complete_value(value,quote,source):
         for v in re.finditer(re.escape(value),quote):
             start,end=q.start()+v.start(),q.start()+v.end()
             left,right=source[:start],source[end:]
+            # A loss is printed with a minus sign, a dash, or in parentheses: "(1,234)". Until 2026-11-22 the value
+            # could be cut out of its parentheses or from behind an en dash, and a loss was published as a gain.
             if left and (left[-1].isalnum() or left[-1] in '$€£.,−-'):continue
+            if left and left[-1] in '–—' and value[:1].isdigit():continue  # "–0.4 points"; "$18 billion–$22 billion" is a range
+            if left.endswith('(') and right.startswith(')'):continue
             if right and (right[0].isalnum() or right[0] in '%'):continue
             if re.match(r'[.,]\d',right):continue
-            if re.match(r'\s*(?:thousand|million|billion|trillion)s?\b|\s*(?:percent(?:age)?|basis\s+points?|bps|USD|EUR|GBP|dollars?)\b',right,re.I):continue
+            # "per cent", "bp" and "points" were not in this list until 2026-11-22: "5.2" could be cut from
+            # "5.2 per cent", and the unit was then the model's to type.
+            if re.match(r'\s*(?:thousand|million|billion|trillion)s?\b|\s*(?:percent(?:age)?|per\s+cent|pct|basis\s+points?|bps?|pp|points?|pts|bn|mn|USD|EUR|GBP|dollars?)\b',right,re.I):continue
             if not re.search(r'\d|\b(?:'+NUMBER_WORDS+r')\b',value,re.I):continue
             return True
     return False
@@ -147,6 +192,19 @@ def parse_response(text: str, role: str) -> dict[str, Any]:
         extra = (before or after)[:160]
         raise ResponseFormatError(f"{role} reply had text outside its JSON object ({extra!r}). Return exactly one "
                                   "JSON object with nothing before or after it.", text)
+    return unix_lines(value)
+
+
+def unix_lines(value: Any) -> Any:
+    """Every string of a reply with its line ends as "\\n". A model may end a draft's lines with "\\r\\n". Windows
+    then saved the draft as text with "\\r\\r\\n", read it back as two line ends, and the check that the saved draft
+    equals the checked one stopped the run (found on 2026-11-22, on a made-up reply)."""
+    if isinstance(value, str):
+        return value.replace("\r\n", "\n").replace("\r", "\n")
+    if isinstance(value, list):
+        return [unix_lines(item) for item in value]
+    if isinstance(value, dict):
+        return {key: unix_lines(item) for key, item in value.items()}
     return value
 
 
@@ -177,8 +235,20 @@ def section_scale(lines: list[str], index: int) -> tuple[str | None, str]:
     return None, ""
 
 
+class ScaleInDoubt(ValueError):
+    """A "$" amount under a header that scales the amounts, where the line does not say which scale it is in."""
+
+
 def display_value(claim: dict, lines: list[str]) -> str:
-    """Literal source value, with the section's scale added only where the filing implies it."""
+    """Literal source value, with the section's scale added only where the filing implies it.
+
+    A header such as "(amounts in millions, except per share data)" scales the dollar amounts of the tables and
+    the text under it, but not every dollar amount: a dividend of $1.16 or a wage of $20 an hour, a few lines
+    below, is in dollars. Until 2026-11-22 the header's scale went on every "$" value in the Item, and the desk
+    itself wrote "$1.16 million" for a dividend. The scale is now added only to an amount that cannot be anything
+    else: whole dollars with a thousands separator ("$9,226"). A per-share amount keeps its own unit. Any other
+    amount under such a header is in doubt, and the claim is refused with the reason (ScaleInDoubt).
+    """
     value = claim["value"].strip()
     if not value.startswith("$") or SCALE_WORD.search(value):
         return value
@@ -191,9 +261,14 @@ def display_value(claim: dict, lines: list[str]) -> str:
     quote_start=quote.find(_norm(claim['quote']))
     start=quote_start+_norm(claim['quote']).find(value)
     after = quote[start + len(value):][:30].lower()
-    if "per share" in exceptions and re.match(r"\s*(?:,\s*)?(?:or\s+)?per\s+(?:\w+\s+)?share", after):
+    before = quote[max(0, start - 40):start].lower()
+    if re.match(r"\s*(?:,\s*)?(?:or\s+)?(?:per|a|an|each)\s+(?:\w+\s+)?(?:share|hour|unit|member|day|month|year)\b", after) \
+            or re.search(r"per\s+(?:\w+\s+)?share[^.;]{0,20}$", before):
         return value
-    return f"{value} {scale}"
+    if re.fullmatch(r"\$\(?\d{1,3}(?:,\d{3})+\)?", value):
+        return f"{value} {scale}"
+    raise ScaleInDoubt(f"the filing's header puts the amounts of this section in {scale}s, and the cited line does not say whether "
+                       f"{value} is in that scale. Cite a line that states the scale in words, or use a saved fact")
 
 
 def format_fact(key: str, fact: dict, which: str) -> str:
@@ -373,7 +448,10 @@ def check(output: dict[str, Any], texts: dict[str, str], facts: dict[str, Any] |
             result.errors.append(f'{cid}: value must be a complete amount and unit copied from the cited line, not a substring of a larger value.')
             continue
         claim = {**claim, "value": _norm(value), "line": line_no}
-        rendered[cid] = f'{display_value(claim, lines)} [{name}:L{line_no}]'
+        try:
+            rendered[cid] = f'{display_value(claim, lines)} [{name}:L{line_no}]'
+        except ScaleInDoubt as doubt:
+            result.errors.append(f"{cid}: {doubt}.")
 
     used = set(PLACEHOLDER.findall(draft))
     for cid in sorted(used - rendered.keys() - ids):
@@ -382,6 +460,19 @@ def check(output: dict[str, Any], texts: dict[str, str], facts: dict[str, Any] |
         result.errors.append(f"{cid} is never used in the draft; remove it or place it.")
 
     for n, line in enumerate(draft.splitlines(), 1):
+        # A scale, a sign or a multiplier typed next to a placeholder changes the number the claim checked:
+        # "{c1} billion" for a cell that holds 9,200, "-{c1}" for a gain, "twice {c1}". Until 2026-11-22 these
+        # passed. The claim's own value holds its scale and sign, copied from the cited line, or code renders them.
+        for match in (*TYPED_BEFORE.finditer(line), *TYPED_AFTER.finditer(line)):
+            result.errors.append(f"draft line {n}: {match.group(0)!r} types a scale, a sign or a multiplier next to a claim. "
+                                 "The claim's value must hold it, copied from the cited line (\"$4.1 billion\", \"-0.4 points\"); do not type it.")
+        # A citation is written by code when a claim is rendered. A typed one looks checked and is not.
+        for match in re.finditer(r"\[(?:[\w./-]+\.(?:txt|json|md):L\d+|XBRL tag|saved calculated_facts)", line):
+            result.errors.append(f"draft line {n}: a source citation is typed ({match.group(0)!r}...). Code writes the citation of each claim; do not type one.")
+        # A role writes sentences under its headings. A table row in a draft, or one of the desk's own titles, can
+        # pass for the tables that code prints (the core claims, the Verifier's marks).
+        if line.lstrip().startswith("|") or re.search(r"core claims|read and computed in code|\|\s*Mark\s*\||Worksheet view and evidence", line, re.I):
+            result.errors.append(f"draft line {n}: a draft holds no table row and none of the desk's own table titles; write a sentence.")
         prose = PLACEHOLDER.sub("", line)
         prose = re.sub(r"\[[\w./-]+\.txt:L\d+\]", "", prose) # source identifiers only
         prose = LINE_REF.sub(" ", prose)
@@ -389,15 +480,20 @@ def check(output: dict[str, Any], texts: dict[str, str], facts: dict[str, Any] |
             prose=prose[:start]+' '*(end-start)+prose[end:]
         if identifiers:prose=identifiers.sub(' ',prose)
         for allowed in (ISO_DATE,TEXT_DATE,ACCESSION_REF,PERIOD_SEQUENCE,YEAR_END,YEAR_METRIC,YEAR,CLOCK_REF, QUARTER, ITEM_REF, FORM_REF,LABEL_REF):
-            prose = allowed.sub(" ", prose)
+            prose = allowed.sub(lambda found, kind=allowed: " " if a_reference(found, kind) else found.group(0), prose)
         for start,end in reversed(heading_spans(prose)):
             prose=prose[:start]+' '*(end-start)+prose[end:]
         for match in re.finditer(r"[$%]?\d[\d,.]*%?", prose):
             result.errors.append(
                 f"draft line {n}: number {match.group(0)!r} is typed directly; use a {{cN}} claim.")
-        for match in WORD_AMOUNT.finditer(prose):
+        for match in (*WORD_AMOUNT.finditer(prose), *MULTIPLIER.finditer(prose), *ROMAN_AMOUNT.finditer(prose)):
             result.errors.append(
                 f"draft line {n}: written amount {match.group(0)!r} must be a {{cN}} claim.")
+        # Superscripts, fractions, circled and other numerals are numbers too, and the digit scan above reads
+        # only the digits 0 to 9 and their look-alikes.
+        odd = sorted({ch for ch in prose if not ch.isascii() and unicodedata.numeric(ch, None) is not None})
+        if odd:
+            result.errors.append(f"draft line {n}: number character(s) {''.join(odd)!r} are typed directly; use a {{cN}} claim.")
 
     result.errors.extend(guidance_range_errors(draft, rendered, texts))
     if result.ok:
@@ -414,7 +510,7 @@ def load_sources(run) -> tuple[dict[str, str], dict[str, Any]]:
     run = Path(run)
     texts = {name: (run / name).read_text(encoding="utf-8", errors="replace")
              for name in SOURCE_FILES if (run / name).is_file()}
-    facts = json.loads((run / "facts.json").read_text()) if (run / "facts.json").is_file() else {}
+    facts = json.loads((run / "facts.json").read_text(encoding="utf-8")) if (run / "facts.json").is_file() else {}
     return texts, facts
 
 

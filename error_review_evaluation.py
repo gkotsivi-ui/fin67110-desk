@@ -108,7 +108,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="desk-review-practice-") as temp:
         result = evaluate(Path(temp))
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(result, indent=2) + "\n")
+    args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result["totals"], indent=2))
     print(result["scope"])
     return int(any(result["totals"][key] for key in ("false_alarms", "missed", "unconfirmed_false_alarms", "unconfirmed_missed")))

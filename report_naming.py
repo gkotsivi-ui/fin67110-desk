@@ -17,7 +17,7 @@ def report_runs(root: Path, company: str) -> list[Path]:
             continue
         metadata = path / 'run_identity.json'
         if metadata.exists():
-            data = json.loads(metadata.read_text())
+            data = json.loads(metadata.read_text(encoding='utf-8'))
             if data.get('company') == company and data.get('kind') == 'report':
                 runs.append(path)
         elif path.name.startswith(legacy + '_') and re.fullmatch(
@@ -30,7 +30,7 @@ def report_runs(root: Path, company: str) -> list[Path]:
 def report_number(source: Path, root: Path, company: str) -> int:
     metadata = source / 'run_identity.json'
     if metadata.exists():
-        return int(json.loads(metadata.read_text())['report_number'])
+        return int(json.loads(metadata.read_text(encoding='utf-8'))['report_number'])
     runs = report_runs(root, company)
     if source in runs:
         return runs.index(source) + 1
@@ -54,6 +54,6 @@ def create_run(root: Path, company: str, started: datetime, kind: str,
         (target / 'run_identity.json').write_text(json.dumps({
             'company': company, 'report_number': number, 'kind': kind,
             'run_time': started.isoformat(timespec='seconds'),
-        }, indent=2) + '\n')
+        }, indent=2) + '\n', encoding='utf-8')
         return target
     raise RuntimeError('Could not create a unique run folder')

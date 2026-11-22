@@ -29,15 +29,15 @@ class FormTests(unittest.TestCase):
             run = root / 'runs/practice/EXM'
             run.mkdir(parents=True)
             final = run / 'final_report.md'
-            final.write_text('# Final report\n')
+            final.write_text('# Final report\n', encoding="utf-8")
             intermediate = run / 'verified_report.md'
-            intermediate.write_text('# Intermediate\n')
+            intermediate.write_text('# Intermediate\n', encoding="utf-8")
             state = run / 'desk_run.json'
             with mock.patch.object(page, 'ROOT', root), mock.patch.object(page, 'OUTPUT', root / 'output'):
-                state.write_text(json.dumps({'status': 'failed', 'final_report': final.name}))
+                state.write_text(json.dumps({'status': 'failed', 'final_report': final.name}), encoding="utf-8")
                 self.assertIsNone(page.safe_report(str(final)))
                 self.assertIsNone(page.safe_report(str(intermediate)))
-                state.write_text(json.dumps({'status': 'complete', 'final_report': final.name}))
+                state.write_text(json.dumps({'status': 'complete', 'final_report': final.name}), encoding="utf-8")
                 self.assertEqual(page.safe_report(str(final)), final)
 
     def test_run_uses_only_this_repositorys_pipeline(self) -> None:
@@ -51,7 +51,7 @@ class FormTests(unittest.TestCase):
     def test_other_repository_reports_and_reviews_are_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "verified_report.md"
-            path.write_text("# External report\n")
+            path.write_text("# External report\n", encoding="utf-8")
             self.assertIsNone(page.safe_report(str(path)))
             with self.assertRaises(ValueError):
                 page.review_folder(folder)
@@ -113,16 +113,13 @@ class ServerTests(unittest.TestCase):
         self.assertIsInstance(json.loads(text), list)
 
     def test_a_report_renders_with_its_text_escaped(self) -> None:
-        # A fresh clone has no output folder yet: practice runs are not committed.
-        page.OUTPUT.mkdir(exist_ok=True)
-        folder = Path(tempfile.mkdtemp(dir=page.OUTPUT))
-        try:
-            (folder / "verified_report.md").write_text("# A report\n\n| # | Mark |\n|---|---|\n| 1 | **wrong** |\n\n<script>bad()</script>\n", encoding="utf-8")
+        # A temporary folder stands in for the repository: until 2026-11-22 this test made output/ in the repository itself.
+        root = Path(self.enterContext(tempfile.TemporaryDirectory())).resolve()
+        folder = root / "output" / "a_made_up_run"
+        folder.mkdir(parents=True)
+        (folder / "verified_report.md").write_text("# A report\n\n| # | Mark |\n|---|---|\n| 1 | **wrong** |\n\n<script>bad()</script>\n", encoding="utf-8")
+        with mock.patch.object(page, "ROOT", root), mock.patch.object(page, "OUTPUT", root / "output"):
             status, text = self.ask("GET", f"/report?path=output/{folder.name}/verified_report.md")
-        finally:
-            for file in folder.iterdir():
-                file.unlink()
-            folder.rmdir()
         self.assertEqual(status, 200)
         self.assertIn("<td><strong>wrong</strong></td>", text)
         self.assertNotIn("<script>", text)

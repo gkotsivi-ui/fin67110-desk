@@ -127,8 +127,23 @@ def accepted_on_edgar(desk: Desk, cik: str, accession: str) -> str:
 
 def read_run(folder: Path, desk: Desk | None, now: datetime, root: Path = ROOT) -> dict[str, Any]:
     """One row of the live record. desk is None when the program must not ask SEC EDGAR."""
-    row: dict[str, Any] = {"ticker": folder.name.split("_")[0], "folder": folder.name, "problem": "", "inside": ""}
-    report = next((folder / name for name in REPORTS if (folder / name).is_file()), None)
+    row: dict[str, Any] = {"ticker": folder.name.split("_")[0], "folder": folder.name, "problem": "", "inside": "", "note": ""}
+    names = REPORTS
+    # A group-desk run saves its state. Until 2026-11-22 this program never read it, so the report of a run that
+    # failed its checks, or was killed, was read as a live report. A run that stopped after its team report was
+    # checked is shown by that report, with a note; a run that stopped earlier holds no checked report.
+    try:
+        state = json.loads((folder / "desk_run.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        state = None
+    if isinstance(state, dict) and state.get("status") != "complete":
+        where = state.get("failed_part") or state.get("current_part") or "a part it did not record"
+        if where in ("worksheet", "final report") and (folder / "verified_report.md").is_file():
+            names = ("verified_report.md",)
+            row["note"] = f'the run stopped in the part "{where}": the row is its verified report, without the worksheet'
+        else:
+            return {**row, "problem": f'the run did not finish: it stopped in the part "{where}" and holds no checked report'}
+    report = next((folder / name for name in names if (folder / name).is_file()), None)
     if report is None:
         return {**row, "problem": "the folder holds no report"}
     with report.open(encoding="utf-8", errors="replace") as handle:
@@ -202,6 +217,9 @@ def render(rows: list[dict[str, Any]], now: datetime, offline: bool, tools: str)
     problems = [f"- `{r['folder']}`: {r['problem']}" for r in rows if r["problem"]]
     if problems:
         lines += ["Could not read, or does not agree:", "", *problems, ""]
+    notes = [f"- `{r['folder']}`: {r['note']}" for r in rows if r.get("note")]
+    if notes:
+        lines += ["Runs that did not finish:", "", *notes, ""]
     unchecked = sorted({r["accepted_from"] for r in good if "not checked" in r["accepted_from"]})
     if unchecked:
         lines += ["The Accepted times above come from the reports' first lines and were not checked on EDGAR in this run.", ""]

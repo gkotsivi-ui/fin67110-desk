@@ -16,6 +16,8 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
+from desk_rules import EXHIBIT_99, SAME_YEAR_END_DAYS, annual_problem, release_among  # shared with the group desk
+
 import requests
 
 from release import has_income_statement, numbers_in, read_quarter  # noqa: F401  (numbers_in: tests and other code import it from here)
@@ -183,10 +185,6 @@ def join_cells(cells: list[str]) -> str:
     return " | ".join(out)
 
 
-# An earnings release is an Exhibit 99 of its 8-K: EX-99.1 for most filers, EX-99 or another number for some.
-EXHIBIT_99 = re.compile(r"\bEX-99(?:\.(\d+))?(?![\d.])", re.I)
-
-
 def as_text(raw: str) -> str:
     """A filing document as plain text. A document that is already plain text keeps its lines."""
     return html_to_text(raw) if "<html" in raw[:1000].lower() or "<document" in raw[:1000].lower() else raw
@@ -255,23 +253,6 @@ def debt_at(values: dict[str, float]) -> dict[str, Any]:
     why = (f"the 10-K gives {' and '.join(found)}, which does not establish long-term debt with its current portion"
            if found else "no long-term debt fact at the fiscal year end under the tags the desk reads")
     return {"value": None, "terms": "", "note": "", "tags": (), "why": why}
-
-
-# A cover page can give a 52-week year's end as the month end, a few days from the statements' date.
-# A difference of a year means that the facts are another year's.
-SAME_YEAR_END_DAYS = 7
-
-
-def annual_problem(facts_year_end: str | None, ten_k_year_end: str) -> str:
-    """Why the annual facts cannot be stated; "" when the latest fiscal year of the company facts is the year
-    of the 10-K the desk read. The reason holds dates and no amounts."""
-    if facts_year_end is None:
-        return "the XBRL company facts hold no full-year revenue under the tags the desk reads"
-    if not ten_k_year_end:
-        return ""
-    if abs((date.fromisoformat(facts_year_end) - date.fromisoformat(ten_k_year_end)).days) <= SAME_YEAR_END_DAYS:
-        return ""
-    return f"the XBRL company facts end their latest fiscal year on {facts_year_end}, and the 10-K the desk read ends its year on {ten_k_year_end}"
 
 
 def not_stated(quarter: dict[str, Any]) -> list[str]:
@@ -440,19 +421,17 @@ class Desk:
         raise RuntimeError("Could not locate an Exhibit 99 with the earnings release in the 8-K's SEC filing directory.")
 
     def release_among(self, base: str, candidates: list[tuple[str, str]]) -> tuple[str, str]:
-        """Which Exhibit 99 is the earnings release: the first that holds an income statement.
-        The first exhibit when there is only one, or when none holds an income statement."""
-        if len(candidates) > 1:
-            for label, name in candidates[:4]:
-                try:
-                    text = as_text(self.get_text(f"{base}/{name}"))
-                except requests.RequestException:
-                    continue
-                if has_income_statement(text):
-                    if (label, name) != candidates[0]:
-                        print(f"The earnings release is Exhibit {label} ({name}): Exhibit {candidates[0][0]} holds no income statement.")
-                    return label, name
-        return candidates[0]
+        """Which Exhibit 99 is the earnings release: the first that holds an income statement (the rule is
+        desk_rules.release_among, shared with the group desk)."""
+        def text_of(name: str) -> str | None:
+            try:
+                return as_text(self.get_text(f"{base}/{name}"))
+            except requests.RequestException:
+                return None
+        chosen = release_among(candidates, text_of)
+        if chosen != candidates[0]:
+            print(f"The earnings release is Exhibit {chosen[0]} ({chosen[1]}): Exhibit {candidates[0][0]} holds no income statement.")
+        return chosen
 
     def step4(self) -> None:
         print("\n[4/7] Read latest fiscal-year XBRL facts")

@@ -11,20 +11,24 @@ CrewAI 1.15.34 requires Python below 3.14. Keep the old `.venv` intact and creat
 
 ```bash
 python3.13 -m venv .venv-desk
-.venv-desk/bin/python -m pip install -r requirements-pipeline.txt
+.venv-desk/bin/python -m pip install -r requirements-pipeline.txt -c constraints-pipeline.txt
 ```
+
+The constraints file pins every package the install brings in to the version the tests ran on. Without it
+only the packages named in `requirements-pipeline.txt` are pinned.
 
 On Windows, use `py -3.13 -m venv .venv-desk` and `.venv-desk\Scripts\python` in place of the Mac path.
 The inherited seeker and standalone hook lock files with fcntl on macOS and Linux and with msvcrt on Windows.
-The desk's programs start themselves in Python's UTF-8 mode on Windows (`utf8_mode.py`). The filings, the
-rules and the reports are UTF-8, and Windows would otherwise read and write them in its own code page: the
-worksheet could not read its own rule "owner cash flow ÷ 10%". Run the tests there with `-X utf8` for the
-same reason. The test harness is portable (`tests/portable.py`): symlink checks run only where the system
-permits a symlink, the ordinary secret and excluded-file checks always run, and the seeded CrewAI tests
-allow loopback sockets, which Windows' event loop needs, while blocking every external connection. The
-automated tests ran on macOS and Python 3.13, and, with both sets of Windows changes, on Windows 11 and
-Python 3.13 on 2026-11-21: 663 tests in the four folders, no failure; the four that create a symlink
-were skipped.
+The filings, the rules and the reports are UTF-8, and Windows would otherwise read and write them in its own
+code page: the worksheet could not read its own rule "owner cash flow ÷ 10%". Since 2026-11-22 every file is
+opened as UTF-8 by name, and a test fails when a new line of code leaves the encoding out, so neither the
+desk nor its tests need `-X utf8`. The desk's programs still start themselves in Python's UTF-8 mode on
+Windows (`utf8_mode.py`), which covers what they print. The test harness is portable (`tests/portable.py`):
+symlink checks run only where the system permits a symlink, the ordinary secret and excluded-file checks
+always run, and the seeded CrewAI tests allow loopback sockets, which Windows' event loop needs, while
+blocking every external connection. On Windows 11 and Python 3.13 on 2026-11-22, `check_all.py` ran
+840 tests with no failure; the four that create a symlink were skipped. The macOS run has not been
+redone since 2026-11-21.
 
 Configure only this repo's `.env`. It needs `SEC_USER_AGENT`, `API_KEY`, and an explicit `MODEL`.
 Use the CrewAI model prefix, such as `anthropic/` followed by a model ID available to your account.
@@ -34,17 +38,29 @@ The closes reader uses this repo's `.env` too. No price or volume source is copi
 Its optional LSEG worker defaults to this repo's `.venv-lseg`, not a workspace environment.
 The default is `.venv-lseg/bin/python` on macOS/Linux and `.venv-lseg\Scripts\python.exe` on Windows.
 Create that environment and install `requirements-lseg.txt`, or set `LSEG_PYTHON` in `.env` to an existing Python
-that has the package, for example `.venv\Scripts\python.exe` on Windows. The override takes precedence. The reader has no other price source: with LSEG Workspace closed, a run has no close, and its worksheet view is "not computed".
+that has the package, for example `.venv\Scripts\python.exe` on Windows. The override takes precedence. The reader has two sources and no other: a CSV of closes named by
+`LSEG_CLOSES_FILE`, read first when it is set, and LSEG Workspace through `LSEG_APP_KEY`. With neither, or
+with Workspace closed and no file, a run has no close, and its worksheet view is "not computed".
 
 ```bash
 .venv-desk/bin/python check_pipeline.py
 ```
 
-This command prints setup status, not identity or secret values. It makes no external requests.
+This command prints setup status, not identity or secret values. It makes no external requests. No line may
+say `FIX`; `note` lines are information. It also checks that `SEC_USER_AGENT`, `API_KEY` and `MODEL` are
+filled in, are not the example's words, and that the key and the model are of one provider. `desk.py` makes
+the same check as its first step, before it fetches anything.
 
 ## One command
 
-For a fresh group checkout, refresh a screen and run the requested ticker:
+Run the requested ticker. A fresh checkout needs no screen and no registry:
+
+```bash
+.venv-desk/bin/python desk.py TICKER
+```
+
+With no saved registry the desk writes an empty one with a note, and the spinoff parts of the report say
+"not applicable". To run the seeker's screen first, which is optional and slow:
 
 ```bash
 .venv-desk/bin/python desk.py TICKER --refresh-screen YYYY-MM-DD
@@ -66,8 +82,8 @@ For a saved group registry, no screen refresh is needed:
 .venv-desk/bin/python desk.py TICKER --registry runs/practice/SAVED_RUN/registry.json
 ```
 
-Do not use a personal registry path. A fresh checkout has no cached registry. The command stops if it
-cannot find the requested registry or screen. It never fills the gap with personal run data.
+Do not use a personal registry path. The command stops if it cannot find a registry or a screen that the
+command line names. It never fills the gap with personal run data.
 CLI registry, screen, authored-input, run-storage, and replay paths must stay inside this repository.
 The path check rejects outside locations and symlinks that resolve outside the group checkout.
 
@@ -90,8 +106,23 @@ corrections are checked the same way: one that still fails after its repairs is 
 that says so, and its mark stays. A reply of the wrong shape, or one with nothing left, still stops the run.
 
 A model call whose reply never came, because the connection dropped or timed out or the provider answered
-with a server error, is made once more after thirty seconds. The role's `dropped_connections.json` records
-it. A second drop stops the run. The worksheet's one model call is tried once more in the same way.
+with a server error, is made once more after thirty seconds. A call the provider limits (429) is made once
+more after sixty. The role's `dropped_connections.json` records it. A second failure stops the run. The
+worksheet's one model call is tried once more by the same rule, which both read from `model_calls.py`. One
+request may take ten minutes and one role's call twenty; past that the run stops and names the role. SEC
+EDGAR is asked for a page up to three times, waiting two and then eight seconds, or as long as its
+`Retry-After` header asks.
+
+A run that stops in its worksheet or its final report, after the team's verified report is saved and
+checked, can be finished without calling the team's models again:
+
+```bash
+.venv-desk/bin/python desk.py --resume runs/practice/SAVED_RUN
+```
+
+The command prints this line when it applies. It first checks the saved files against their recorded
+hashes and moves what the stopped attempt left into `earlier_attempt/`. A run that stopped earlier is run
+again from the start. Ctrl+C stops a run, records the part it was in, and marks the folder "stopped".
 
 The final report is published only after the hook accepts it. `view.json` is written by code immediately when the prediction is saved. It records `up`, `down`,
 `flat`, or `not computed`, actual filing acceptance, and the intended reaction window. The report prints
@@ -148,19 +179,21 @@ research outputs or their timestamps.
 
 ## Validation
 
-On Windows, write `.venv-desk\Scripts\python -X utf8` in place of `.venv-desk/bin/python`.
+On Windows, write `.venv-desk\Scripts\python` in place of `.venv-desk/bin/python`.
 
 ```bash
-.venv-desk/bin/python -m unittest discover -s tests
-.venv-desk/bin/python -m unittest discover -s skills/us-spinoff-seeker/tests
-.venv-desk/bin/python -m unittest discover -s skills/spinoff-worksheet/tests
-.venv-desk/bin/python -m unittest discover -s hooks/tests
-.venv-desk/bin/python live_record.py --offline --no-save
+.venv-desk/bin/python check_all.py
 ```
 
+One command runs the four test folders (`tests`, `hooks/tests` and the two skills' tests), the two seeded
+checks that test discovery does not collect, `live_record.py --offline --no-save`, and `check_public.py`,
+which looks for keys, values of `.env`, data files, lists of closes and home-folder paths in what git tracks
+or would add. It needs no network and no key.
+
 The isolation test creates a temporary group-only checkout, imports each copied component, and runs
-the seeded pipeline there. It has no neighboring personal repo or workspace skills. Other tests use
-invented data, stubbed models, and injected readers. This does not prove live provider availability
+the seeded pipeline there. It has no neighboring personal repo or workspace skills. `tests/test_whole_desk.py`
+runs the whole desk, from a ticker to its final report, on made-up SEC pages and a stand-in model. Other
+tests use invented data, stubbed models, and injected readers. This does not prove live provider availability
 or correct behavior on every real filing. No real live run was launched to validate this integration.
 
 The legacy `team.py`, `lab03_app.py`, and `verifier.py` remain available. They are not the new command's

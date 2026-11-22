@@ -19,7 +19,7 @@ First-time setup (keep an existing working `.venv-desk`):
 
 ```powershell
 py -3.13 -m venv .venv-desk
-.\.venv-desk\Scripts\python.exe -m pip install -r requirements-pipeline.txt
+.\.venv-desk\Scripts\python.exe -m pip install -r requirements-pipeline.txt -c constraints-pipeline.txt
 py -3.13 -m venv .venv-lseg
 .\.venv-lseg\Scripts\python.exe -m pip install -r requirements-lseg.txt
 .\.venv-lseg\Scripts\python.exe -m pip check
@@ -66,7 +66,7 @@ The Mac used for the November 21 setup already has both environments installed. 
 
 ```bash
 python3.13 -m venv .venv-desk
-.venv-desk/bin/python -m pip install -r requirements-pipeline.txt
+.venv-desk/bin/python -m pip install -r requirements-pipeline.txt -c constraints-pipeline.txt
 python3.13 -m venv .venv-lseg
 .venv-lseg/bin/python -m pip install -r requirements-lseg.txt
 .venv-lseg/bin/python -m pip check

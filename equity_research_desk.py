@@ -16,6 +16,7 @@ from typing import Any
 from closes_reader import filing_time, last_close_before, NOT_AVAILABLE
 from report_naming import create_run
 from quarterly_cash_flow import quarterly_capital_spending
+from desk_rules import annual_problem, exhibit_99_label, release_among
 
 import requests
 from bs4 import BeautifulSoup
@@ -68,75 +69,230 @@ class Filing:
     document_url: str = ""
     release_document: str = ""
     release_url: str = ""
+    release_label: str = "99.1"  # the release's exhibit number on the 8-K's index page: 99.1, 99.2 or 99
     report_date: str = ""
 
 
-DATE_CELL = re.compile(r"[A-Z][a-z]+\.?\s+\d{1,2},?\s+(20\d{2})")
+DATE_CELL = re.compile(r"([A-Z][a-z]+)\.?\s+(\d{1,2}),?\s+(20\d{2})")
 YEAR_CELL = re.compile(r"(20\d{2})")
-NUMBER_CELL = re.compile(r"\$?\s*\d[\d,]*(?:\.\d+)?")
-REVENUE_TIERS = (r"total\s+(?:net\s+)?revenues?|revenues?,?\s+total", r"(?:net\s+)?revenues?", r"total\s+net\s+sales|net\s+sales")
+MONTHS = {name: number for number, name in enumerate(("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), 1)}
+# One amount in a table cell: 22,756  $2.98  (0.12)  (0.12  -0.12. A dash alone is an empty amount.
+AMOUNT_CELL = re.compile(r"\$?\s*(\()?\s*\$?\s*([-−–])?\s*\$?\s*(\d[\d,]*(?:\.\d+)?)\s*\)?")
+DASH_CELL = re.compile(r"[-–—−]+")
+REVENUE_TIERS = (r"total\s+(?:net\s+)?revenues?|revenues?,?\s+total", r"(?:net\s+)?revenues?(?:,\s+net)?", r"total\s+net\s+sales|net\s+sales")
+# A row or a per-share heading with one of these words is another measure, never GAAP diluted EPS.
+NOT_GAAP = re.compile(r"adjusted|non-?\s?gaap|\bcore\b|excluding|continuing|discontinued", re.I)
+# A table under one of these headings is not the income statement.
+NOT_THE_STATEMENT = re.compile(r"non-?\s?gaap|reconciliation|adjusted|outlook|guidance|forecast", re.I)
+SPAN = re.compile(r"\b(?:(?:[A-Za-z-]+|\d+)\s+(?:Months|Weeks)|Quarter|(?:Fiscal\s+)?Year)s?\s+Ended\b", re.I)
+SPAN_WORDS = {"three": 3, "six": 6, "nine": 9, "twelve": 12, "thirteen": 13, "fourteen": 14, "sixteen": 16, "seventeen": 17}
+QUARTER_TOKEN = re.compile(r"(?:Q([1-4])\s*['’]?\s*(\d{2})|([1-4])\s*Q\s*['’]?\s*(\d{2}))", re.I)
+EPS_ROW = re.compile(r"diluted\s+(?:net\s+)?(?:earnings|income)(?:\s+\(loss\))?\s+per\s+(?:common\s+)?share", re.I)
+PER_SHARE_HEADING = re.compile(r"(?:earnings|income).*per\s+(?:common\s+)?share|per\s+share", re.I)
+
+
+def row_amounts(cells: list[str]) -> list[str | None]:
+    """The amounts in a table row's cells, in order, as the table prints them, a loss with a minus sign.
+
+    A filer prints a loss in parentheses or with a minus sign, and often splits it over two cells, "(0.12" then ")".
+    A dash is an empty amount and keeps its column (None). A percentage is not an amount: the cell ends with "%",
+    or the next cell starts with it. On 2026-11-22 the readers kept only the cells that were plain numbers, so a
+    row with a loss held one amount fewer and the year-ago figure was read as the quarter's.
+    """
+    cells = [cell.strip() for cell in cells]
+    amounts: list[str | None] = []
+    for k, cell in enumerate(cells):
+        if next((c for c in cells[k + 1:] if c), "").startswith("%"):
+            continue
+        if DASH_CELL.fullmatch(cell):
+            amounts.append(None)
+            continue
+        found = AMOUNT_CELL.fullmatch(cell)
+        if found:
+            amounts.append(("-" if found.group(1) or found.group(2) else "") + found.group(3))
+    return amounts
+
+
+def cell_period(cell: str) -> tuple[int, Any] | None:
+    """A period column's label: (year, date) for "October 30, 2026" or "Oct. 30, 2026", (year, None) for "2026"."""
+    text = cell.strip()
+    found = DATE_CELL.fullmatch(text)
+    if found:
+        month = MONTHS.get(found.group(1)[:3].lower())
+        try:
+            return (int(found.group(3)), datetime(int(found.group(3)), month, int(found.group(2))).date()) if month else None
+        except ValueError:
+            return None
+    found = YEAR_CELL.fullmatch(text)
+    return (int(found.group(1)), None) if found else None
+
+
+def latest_and_year_ago(periods: list[tuple[int, Any]]) -> tuple[int, int | None] | None:
+    """Which of one group's period columns is the latest, and which is the same period a year before.
+
+    Dates are compared as dates, and the year-ago column ends 350 to 380 days earlier (a 52- or 53-week year).
+    Bare years: the year before. None when the latest period is printed twice or dates and years are mixed: the
+    table does not say which column is which, and the desk does not guess.
+    """
+    if not periods:
+        return None
+    if all(day for _, day in periods):
+        top = max(day for _, day in periods)
+        if sum(day == top for _, day in periods) != 1:
+            return None
+        before = [k for k, (_, day) in enumerate(periods) if 350 <= (top - day).days <= 380]
+        return [day for _, day in periods].index(top), before[0] if len(before) == 1 else None
+    if any(day for _, day in periods):
+        return None
+    years = [year for year, _ in periods]
+    if years.count(max(years)) != 1:
+        return None
+    return years.index(max(years)), years.index(max(years) - 1) if years.count(max(years) - 1) == 1 else None
+
+
+def quarter_group(header: str) -> tuple[int, int, str] | None:
+    """Which group of period columns is the quarter, how many groups there are, and the header's words for it.
+
+    A header names its groups in order: "Three Months Ended" then "Nine Months Ended", or "12 Weeks Ended" then
+    "36 Weeks Ended". The quarter is the group of at most 17 weeks; with two, the shorter and then the first.
+    """
+    spans = [found.group(0) for found in SPAN.finditer(header)]
+    spans = [span for k, span in enumerate(spans) if k == 0 or span.lower() != spans[k - 1].lower()]  # one cell for each column repeats the words
+
+    def weeks(span: str) -> float:
+        first, unit = span.split()[0].lower(), span.lower()
+        if first == "quarter":
+            return 13
+        number = int(first) if first.isdigit() else SPAN_WORDS.get(first)
+        if number is None or "year" in unit:
+            return 99
+        return number * 13 / 3 if "month" in unit else number
+
+    lengths = [weeks(span) for span in spans]
+    if not lengths or min(lengths) > 17:
+        return None
+    chosen = lengths.index(min(lengths))
+    return chosen, len(spans), " ".join(spans[chosen].lower().split())
 
 
 def read_quarter_table(rows: list[list[str]]) -> dict[str, Any] | None:
-    """The latest three months' revenue, the same quarter's revenue a year before, and GAAP diluted EPS, from one
-    release table whose period columns carry dates or years under a "Three Months Ended" header.
+    """The latest quarter's revenue, the same quarter's revenue a year before, and GAAP diluted EPS, from one release
+    table whose period columns carry dates or years under a "Three Months Ended", "Quarter Ended" or "N Weeks Ended" header.
 
     On 2026-11-20 step 6 read no quarter from Lowe's or Walmart: Lowe's dates its columns and pairs each amount with
     its percentage of sales, and Walmart's year cells do not line up with its merged header cells. Total revenues
-    come before revenues, and revenues before net sales. None when the table does not give all three.
+    come before revenues, and revenues before net sales. A row is read only when it holds one amount for each period
+    column (row_amounts), so a loss, a dash or a change column never moves a figure into another period's place.
+    None when the table does not give the quarter's revenue and its diluted EPS.
     """
     texts = [" ".join(row) for row in rows]
-    head = next((i for i, text in enumerate(texts) if re.search(r"(?:Three|3)\s+Months\s+Ended|Quarter\s+Ended|(?:Thirteen|13)\s+Weeks\s+Ended", text, re.I)), None)
+    head = next((i for i, text in enumerate(texts) if quarter_group(text)), None)
     if head is None:
         return None
-    groups = max(1, len(re.findall(r"\b(?:Months|Weeks|Quarter|Year)s?\s+Ended", texts[head], re.I)))
-
-    def year(cell: str) -> int | None:
-        match = DATE_CELL.fullmatch(cell.strip()) or YEAR_CELL.fullmatch(cell.strip())
-        return int(match.group(1)) if match else None
-
-    period_row = next((i for i in range(head, min(head + 4, len(rows))) if sum(year(c) is not None for c in rows[i]) >= 2), None)
+    group, groups, span = quarter_group(texts[head])
+    period_row = next((i for i in range(head, min(head + 4, len(rows))) if sum(cell_period(c) is not None for c in rows[i]) >= 2), None)
     if period_row is None:
         return None
-    labels = [c.strip() for c in rows[period_row] if year(c) is not None]
-    if len(labels) % groups:
+    labels = [c.strip() for c in rows[period_row] if cell_period(c) is not None]
+    count = len(labels)
+    if count % groups:
         return None
-    count, first = len(labels), labels[:len(labels) // groups]
-    years = [year(c) for c in first]
-    latest = years.index(max(years))
-    prior = years.index(max(years) - 1) if max(years) - 1 in years else None
+    size = count // groups
+    columns = latest_and_year_ago([cell_period(c) for c in labels[group * size:(group + 1) * size]])
+    if columns is None:
+        return None
+    latest, prior = group * size + columns[0], None if columns[1] is None else group * size + columns[1]
+    # Lowe's prints each period's amount and then its percentage of sales; only a header that says so pairs them.
+    paired = any(sum("%" in c for c in row) >= count and not row_amounts(row[1:]) for row in rows[head:period_row + 3])
 
-    def amounts(row: list[str]) -> list[str] | None:
-        cells = [c.strip() for c in row[1:]]
-        values = [cell.replace("$", "").strip() for k, cell in enumerate(cells)
-                  if NUMBER_CELL.fullmatch(cell) and not (k + 1 < len(cells) and cells[k + 1].startswith("%"))]
-        if len(values) == 2 * count:
-            values = values[::2]  # each period's amount, then its percentage of sales
+    def amounts(row: list[str]) -> list[str | None] | None:
+        values = row_amounts(row[1:])
+        if paired and len(values) == 2 * count:
+            values = values[::2]
         return values if len(values) == count else None
 
-    revenue: dict[int, tuple[str, list[str]]] = {}
+    revenue: dict[int, tuple[str, list[str | None]]] = {}
     eps = None
     heading = ""
     for row in rows[period_row + 1:]:
         if not row:
             continue
-        label = row[0].strip().rstrip(":").strip()
+        label = re.sub(r"\s*\(\w{1,2}\)$", "", row[0].strip().rstrip(":").strip())  # a footnote mark after the label
         values = amounts(row)
         if not values:
             heading = label or heading
             continue
         for tier, pattern in enumerate(REVENUE_TIERS):
-            if tier not in revenue and re.fullmatch(pattern, label, re.I):
+            if tier not in revenue and re.fullmatch(pattern, label, re.I) and values[latest] and not values[latest].startswith("-"):
                 revenue[tier] = (label, values)
-        if eps is None and not re.search(r"adjusted|non-?gaap", label, re.I) and (
-                re.match(r"diluted\s+(?:net\s+)?(?:earnings|income)(?:\s+\(loss\))?\s+per\s+(?:common\s+)?share", label, re.I)
-                or (re.fullmatch(r"diluted", label, re.I) and re.search(r"(?:earnings|income).*per\s+(?:common\s+)?share|per\s+share", heading, re.I))):
-            eps = (label, values)
+        if eps is None and values[latest] is not None and not NOT_GAAP.search(label) and (
+                EPS_ROW.match(label)
+                or (re.fullmatch(r"diluted", label, re.I) and PER_SHARE_HEADING.search(heading) and not NOT_GAAP.search(heading))
+                or (re.fullmatch(r"GAAP", label, re.I) and EPS_ROW.search(heading))):
+            eps = (label if EPS_ROW.match(label) else f"{heading}: {label}", values)
     if not revenue or eps is None:
         return None
     label, values = revenue[min(revenue)]
     return {"revenue": values[latest], "prior_revenue": values[prior] if prior is not None else None, "eps": eps[1][latest],
-            "revenue_label": label, "eps_label": eps[0], "latest": first[latest], "prior": first[prior] if prior is not None else None}
+            "revenue_label": label, "eps_label": eps[0], "span": span, "latest": labels[latest], "prior": labels[prior] if prior is not None else None}
+
+
+def read_quarter_token_table(rows: list[list[str]]) -> dict[str, Any] | None:
+    """The same three figures from a table whose period columns are quarter tokens: Q3'26 and Q3'25, or 3Q26 and 3Q25.
+
+    The latest token is the quarter and the same quarter of the year before is its comparison, wherever the columns
+    stand. None when the latest token is printed twice (GAAP beside non-GAAP columns: the table does not say which is
+    which), and a row is read only when it holds one amount for each token column.
+    """
+    def key(cell: str) -> tuple[int, int] | None:
+        found = QUARTER_TOKEN.fullmatch(cell.strip())
+        return (int(found.group(2) or found.group(4)), int(found.group(1) or found.group(3))) if found else None
+
+    header = max(range(len(rows)), key=lambda i: sum(key(c) is not None for c in rows[i]), default=None)
+    if header is None or sum(key(c) is not None for c in rows[header]) < 2:
+        return None
+    labels = [c.strip() for c in rows[header] if key(c) is not None]
+    keys = [key(c) for c in labels]
+    top = max(keys)
+    if keys.count(top) != 1:
+        return None
+    latest, year_ago = keys.index(top), (top[0] - 1, top[1])
+    prior = keys.index(year_ago) if keys.count(year_ago) == 1 else None
+    revenue = eps = None
+    heading = ""
+    for row in rows[header + 1:]:
+        if not row:
+            continue
+        label = re.sub(r"\s*\(\w{1,2}\)$", "", row[0].strip().rstrip(":").strip())
+        values = row_amounts(row[1:])
+        if len(values) != len(keys):
+            heading = label or heading
+            continue
+        if revenue is None and re.fullmatch(r"(?:(?:total|net)\s+)?revenues?(?:\s*[-–]\s*reported)?", label, re.I) and values[latest] and not values[latest].startswith("-"):
+            revenue = (label, values)
+        if eps is None and values[latest] is not None and not NOT_GAAP.search(label) and (
+                re.fullmatch(r"(?:diluted\s+(?:EPS|earnings\s+per\s+share)|(?:EPS|earnings\s+per\s+share)\s*[-–]\s*diluted)", label, re.I)
+                or (re.fullmatch(r"diluted", label, re.I) and re.search(r"earnings\s+per\s+share|EPS", heading, re.I) and not NOT_GAAP.search(heading))):
+            eps = (label, values)
+        heading = label or heading
+    if revenue is None or eps is None:
+        return None
+    return {"revenue": revenue[1][latest], "prior_revenue": revenue[1][prior] if prior is not None else None, "eps": eps[1][latest],
+            "revenue_label": revenue[0], "eps_label": eps[0], "span": "quarter", "latest": labels[latest], "prior": labels[prior] if prior is not None else None}
+
+
+def table_heading(table: Any) -> str:
+    """The lines printed just above a release table, up to four: its title, and often its unit."""
+    above: list[str] = []
+    if table is not None:
+        for text in table.find_all_previous(string=True, limit=40):
+            if text.find_parent("table") is not None:
+                break  # an earlier table: its heading is not this one's
+            if text.strip():
+                above.append(text.strip())
+            if len(above) == 4:
+                break
+    return " ".join(above)
 
 
 def table_unit(table: Any, rows: list[list[str]]) -> str:
@@ -146,17 +302,7 @@ def table_unit(table: Any, rows: list[list[str]]) -> str:
     the desk called its net sales "USD as shown"; an analyst who guessed the unit would write a wrong claim.
     """
     pattern = r"\bin (millions|thousands|billions)\b"
-    found = re.search(pattern, " ".join(cell for row in rows for cell in row), re.I)
-    if not found and table is not None:
-        above: list[str] = []
-        for text in table.find_all_previous(string=True, limit=40):
-            if text.find_parent("table") is not None:
-                break  # an earlier table: its unit is not this one's
-            if text.strip():
-                above.append(text.strip())
-            if len(above) == 4:  # the table's own heading lines
-                break
-        found = re.search(pattern, " ".join(above), re.I)
+    found = re.search(pattern, " ".join(cell for row in rows for cell in row), re.I) or re.search(pattern, table_heading(table), re.I)
     return f"USD {found.group(1).lower()}" if found else "USD as shown"
 
 
@@ -177,7 +323,8 @@ def filings_line(filings: dict[str, Any], cik: str) -> str:
             details = [f"{period} {when}" if when else "", accepted(filing)]
         else:
             exhibit = getattr(filing, "release_document", "") or ""
-            details = ["Item 2.02 earnings release" + (f", Exhibit 99.1 {exhibit}" if exhibit else ""), accepted(filing)]
+            label = getattr(filing, "release_label", "") or "99.1"
+            details = ["Item 2.02 earnings release" + (f", Exhibit {label} {exhibit}" if exhibit else ""), accepted(filing)]
         details = [d for d in details if d]
         entries.append(f"{form} {filing.accession}" + (f" ({', '.join(details)})" if details else ""))
     if cik:
@@ -214,6 +361,7 @@ class Desk:
         self.quarter_results: dict[str, Any] = {}
         self.company_facts: dict[str, Any] = {}
         self.report_period = ""
+        self.annual_problem = ""  # why no annual fact is stated; "" when they are
         self.output_dir: Path | None = None
 
     def get(self, url: str) -> requests.Response:
@@ -280,28 +428,48 @@ class Desk:
         if not self.cik:
             self.cik, self.company = self.resolve_ticker(self.ticker)
         self.submissions = self.get_submissions(self.cik)
-        records = sorted(self.submissions["_records"], key=lambda x: x.get("filed", ""), reverse=True)
+        # Newest first, by the filing date. Until 2026-11-22 this sort named a key the rows do not have ("filed"),
+        # so the order was only the order in which EDGAR returned them.
+        records = sorted(self.submissions["_records"], key=lambda x: x.get("filingDate", ""), reverse=True)
         chosen: dict[str, Filing] = {}
         for row in records:
             form = row.get("form", "")
             if form not in {"10-K", "10-Q", "8-K"} or form in chosen:
                 continue
             accession = row["accessionNumber"]
-            accepted, files = self.index_info(self.cik, accession)
             root = self.archive_root(self.cik, accession)
             primary = row.get("primaryDocument", "")
             doc_url = f"{root}/{primary}" if primary else ""
+            if form == "8-K":
+                # The earnings 8-K is the newest 8-K with Item 2.02. EDGAR lists each 8-K's items; the document is
+                # read only when that list is empty.
+                items = [item.strip() for item in str(row.get("items") or "").split(",") if item.strip()]
+                if items:
+                    earnings = "2.02" in items
+                else:
+                    earnings = bool(doc_url) and bool(re.search(r"Item\s*2\.02\b", BeautifulSoup(self.get(doc_url).content, "html.parser").get_text(" ", strip=True), re.I))
+                if not earnings:
+                    continue
+            accepted, files = self.index_info(self.cik, accession)
             filing = Filing(form, accession, row.get("filingDate", ""), primary, accepted, f"{root}/{accession}-index.html", doc_url,
                             report_date=row.get("reportDate", ""))
             if form == "8-K":
-                primary_text = BeautifulSoup(self.get(doc_url).content, "html.parser").get_text(" ", strip=True) if doc_url else ""
-                if not re.search(r"Item\s*2\.02\b", primary_text, re.I):
-                    continue
-                exhibit = next((f for f in files if re.search(r"EX-99\.1|99\.1", f["description"] + " " + f["name"], re.I)), None)
-                if not exhibit:
-                    continue
-                filing.release_document = exhibit["name"]
-                filing.release_url = f"{root}/{exhibit['name']}"
+                # The release is an Exhibit 99 of this 8-K, found by what it holds (desk_rules.release_among): 99.1
+                # for most filers, 99 or 99.2 for some. An 8-K with no Exhibit 99 stops the run with its accession.
+                # The desk never goes back to an older 8-K: that is last quarter's release, with last quarter's
+                # Accepted time, and until 2026-11-22 the desk took it without a word.
+                candidates = [(label, f["name"]) for f in files for label in [exhibit_99_label(f["description"])]
+                              if label and f["name"].lower().endswith((".htm", ".html", ".txt"))]
+                if not candidates:
+                    raise RuntimeError(f"The earnings 8-K {accession} has no Exhibit 99 that the desk can read, so there is no release to read. Choose another company.")
+
+                def text_of(name: str, root: str = root) -> str | None:
+                    try:
+                        return self.html_to_text(self.get(f"{root}/{name}").content)
+                    except (requests.RequestException, ValueError):
+                        return None
+                filing.release_label, filing.release_document = release_among(candidates, text_of)
+                filing.release_url = f"{root}/{filing.release_document}"
             chosen[form] = filing
         missing = {f for f in ("10-K", "10-Q", "8-K") if f not in chosen}
         if missing:
@@ -317,7 +485,7 @@ class Desk:
                                 "earnings_accession": chosen["8-K"].accession,
                                 "filed_override": self.filed_override, "effective_filed_eastern": effective}
         self.ensure_output()
-        (self.output_dir / "filing_time.json").write_text(json.dumps(self.market_evidence, indent=2) + "\n")
+        (self.output_dir / "filing_time.json").write_text(json.dumps(self.market_evidence, indent=2) + "\n", encoding="utf-8")
         print("  Latest qualifying filings (accession | EDGAR Accepted time):")
         for form in ("10-K", "10-Q", "8-K"):
             f = chosen[form]
@@ -387,38 +555,56 @@ class Desk:
         _, tag, rows = max(candidates, key=lambda x: (x[0], -spec["tags"].index(x[1])))
         return tag, rows
 
-    def get_fy_fact(self, rows: list[dict[str, Any]], target_end: str, previous: bool = False, target_fy: int | None = None) -> dict[str, Any] | None:
+    def get_fy_fact(self, rows: list[dict[str, Any]], target_end: str, accession: str | None = None) -> dict[str, Any] | None:
+        """The fact of the fiscal year that ends on target_end. With accession, the year before it instead, as that
+        same filing states it.
+
+        The audit checklist computes growth "from the two years in the same filing": a 10-K carries last year's
+        figure as its comparative column, restated when the filer restated it, and last year's own 10-K holds the
+        figure as first reported. Until 2026-11-22 the prior value came from last year's 10-K. It is now the row of
+        the same accession whose period ended a year earlier, 350 to 380 days (a 52- or 53-week year); without such
+        a row no prior value is stated.
+        """
         if not rows:
             return None
-        if not previous:
+        if accession is None:
             # Require the exact revenue period end so every current metric
             # belongs to the same fiscal year-end.
             matches = [r for r in rows if r.get("end") == target_end]
         else:
             target_date = datetime.fromisoformat(target_end).date()
-            prior_fy = target_fy - 1 if target_fy is not None else None
-            matches = [r for r in rows if r.get("end", "") < target_end and prior_fy is not None and int(r.get("fy", 0)) == prior_fy]
-            if not matches:
-                # 52/53-week fiscal years can end a few days away from the
-                # prior calendar anniversary. Accept the closest annual
-                # period within one fiscal-year window.
-                candidates = [r for r in rows if r.get("end", "") < target_end]
-                matches = [r for r in candidates if 350 <= (target_date - datetime.fromisoformat(r["end"]).date()).days <= 380]
+            matches = [r for r in rows if r.get("accn") == accession and r.get("end", "") < target_end
+                       and 350 <= (target_date - datetime.fromisoformat(r["end"]).date()).days <= 380]
         if not matches:
             return None
         return max(matches, key=lambda r: (r.get("end", ""), r.get("filed", "")))
 
-    def compile_facts(self, facts: dict[str, Any]) -> tuple[dict[str, Any], str, int]:
+    def fact_pair(self, rows: list[dict[str, Any]], target_end: str) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+        """This year's fact and, from the same filing, last year's."""
+        current = self.get_fy_fact(rows, target_end)
+        return current, self.get_fy_fact(rows, target_end, accession=current.get("accn")) if current else None
+
+    def compile_facts(self, facts: dict[str, Any], ten_k_year_end: str = "") -> tuple[dict[str, Any], str, int]:
+        """The annual facts of one company, its fiscal-year end and its fiscal year.
+
+        ten_k_year_end is the year end of the 10-K the desk read (its reportDate), for the company the report is
+        about. EDGAR's facts file can lag a new 10-K, and a filer can move its revenue to a tag the desk does not
+        read; then the newest revenue is another year's. In both cases no annual fact is stated, each one says why
+        (desk_rules.annual_problem), and the run goes on: a report with missing claims is better than one with
+        another year's numbers. The base desk has had this rule since 2026-11-12; the group desk got it on 2026-11-22.
+        """
         _, rev_rows = self.select_fact(facts, "revenue")
-        if not rev_rows:
-            raise RuntimeError("No annual revenue fact was found in company facts")
-        rev_latest = max(rev_rows, key=lambda r: (r["end"], r.get("filed", "")))
+        rev_latest = max(rev_rows, key=lambda r: (r["end"], r.get("filed", ""))) if rev_rows else None
+        problem = annual_problem(rev_latest["end"] if rev_latest else None, ten_k_year_end)
+        if problem:
+            empty = {"tag": None, "period_end": None, "fy": None, "filing": None, "value": None,
+                     "prior_period_end": None, "prior_filing": None, "prior_value": None, "why": problem}
+            return {metric: {**empty, **({"label": spec["label"]} if spec.get("label") else {})} for metric, spec in CONCEPTS.items()}, ten_k_year_end, 0
         target_end, target_fy = rev_latest["end"], int(rev_latest["fy"])
         output: dict[str, Any] = {}
         for metric, spec in CONCEPTS.items():
             tag, rows = self.select_fact(facts, metric)
-            current = self.get_fy_fact(rows, target_end) if rows else None
-            prior = self.get_fy_fact(rows, target_end, previous=True, target_fy=target_fy) if rows else None
+            current, prior = self.fact_pair(rows, target_end)
             output[metric] = {"tag": tag, "period_end": current.get("end") if current else target_end, "fy": target_fy, "filing": current.get("accn") if current else None, "value": current.get("val") if current else None, "prior_period_end": prior.get("end") if prior else None, "prior_filing": prior.get("accn") if prior else None, "prior_value": prior.get("val") if prior else None}
             if spec.get("label"):
                 output[metric]["label"] = spec["label"]
@@ -456,8 +642,7 @@ class Desk:
         """
         def entry(tag: str, metric: str) -> dict[str, Any]:
             rows = self.fact_rows(facts, tag, "USD", "instant")
-            current = self.get_fy_fact(rows, target_end) if rows else None
-            prior = self.get_fy_fact(rows, target_end, previous=True, target_fy=target_fy) if rows else None
+            current, prior = self.fact_pair(rows, target_end)
             return {"tag": tag if rows else None, "period_end": current.get("end") if current else target_end, "fy": target_fy,
                     "filing": current.get("accn") if current else None, "value": current.get("val") if current else None,
                     "prior_period_end": prior.get("end") if prior else None, "prior_filing": prior.get("accn") if prior else None,
@@ -500,11 +685,21 @@ class Desk:
             return "n/a"
         return cls.number(value)
 
+    def own_facts(self, facts: dict[str, Any]) -> dict[str, Any]:
+        """The annual facts of the company the report is about, checked against the 10-K the desk read."""
+        ten_k = self.filings.get("10-K") if self.filings else None
+        self.facts, self.report_period, _ = self.compile_facts(facts, getattr(ten_k, "report_date", "") or "")
+        self.annual_problem = next((item["why"] for item in self.facts.values() if item.get("why")), "")
+        if self.annual_problem:
+            print(f"  The annual facts are not stated: {self.annual_problem}")
+        return self.facts
+
     def print_facts(self, facts: dict[str, Any], ticker: str, peer: bool = False) -> dict[str, Any]:
-        result, end, fy = self.compile_facts(facts)
-        if not peer:
-            self.report_period = end
-            self.facts = result
+        if peer:
+            result, end, fy = self.compile_facts(facts)
+        else:
+            result = self.own_facts(facts)
+            end, fy = self.report_period, next((item["fy"] for item in result.values() if item.get("fy")), 0)
         print(f"  {ticker}: fiscal year {fy}, period end {end}")
         for metric, item in result.items():
             print(f"    {metric}: {self.number(item['value'])} (prior: {self.number(item['prior_value'])}) | tag={item['tag']} | period end={item['period_end']} | filing={item['filing']}")
@@ -540,7 +735,7 @@ class Desk:
     def step5(self) -> None:
         print("Step 5/7: Calculate financial ratios and free cash flow.", flush=True)
         if not self.facts:
-            self.facts, self.report_period, _ = self.compile_facts(self.get_company_facts(self.cik or self.resolve_ticker(self.ticker)[0]))
+            self.own_facts(self.get_company_facts(self.cik or self.resolve_ticker(self.ticker)[0]))
         if not self.filings:
             self.step2()
         effective = self.market_evidence.get("effective_filed_eastern", NOT_AVAILABLE)
@@ -554,7 +749,7 @@ class Desk:
         self.market_evidence["selected_close"] = selected_close
         self.market_evidence["price_source"] = self.price_source
         self.ensure_output()
-        (self.output_dir / "market_price.json").write_text(json.dumps(self.market_evidence, indent=2) + "\n")
+        (self.output_dir / "market_price.json").write_text(json.dumps(self.market_evidence, indent=2) + "\n", encoding="utf-8")
         f = self.facts
         rev, prev_rev = f["revenue"]["value"], f["revenue"]["prior_value"]
         op = f["operating_income"]["value"]
@@ -635,184 +830,39 @@ class Desk:
         soup = BeautifulSoup(response.content, "html.parser")
         release = self.html_to_text(response.content)
         lines = release.splitlines()
-        table_revenue_hit = None
-        table_prior_revenue_hit = None
-        table_eps_hit = None
-        quarter_pattern = re.compile(r"(?:Q[1-4]\s*['’]?\s*\d{2}|[1-4]\s*Q\s*['’]?\s*\d{2})", re.I)
-        for table in soup.find_all("table"):
-            table_rows = [[cell.get_text(" ", strip=True) for cell in row.find_all(["th", "td"])] for row in table.find_all("tr")]
-            headers = [row for row in table_rows if sum(bool(quarter_pattern.fullmatch(cell.strip())) for cell in row) >= 2]
-            if not headers:
-                continue
-            # A multi-row table header may first list comparison periods
-            # (for example, 3Q25 and 4Q24), then the full row with 4Q25.
-            header = max(headers, key=lambda row: sum(bool(quarter_pattern.fullmatch(cell.strip())) for cell in row))
-            period_columns = [(i, cell.strip(), quarter_pattern.fullmatch(cell.strip())) for i, cell in enumerate(header) if quarter_pattern.fullmatch(cell.strip())]
-            actual_period_indexes = [(i, label, match) for i, label, match in period_columns if not re.search(r"forecast|estimate|guidance", label, re.I)]
-            if not period_columns or not actual_period_indexes:
-                continue
-            # Releases often order columns as current quarter, year-ago
-            # quarter, then prior quarter. Select by quarter/year, not by
-            # whichever column happens to appear last in the HTML.
-            def quarter_key(label: str) -> tuple[int, int] | None:
-                match = re.fullmatch(r"Q([1-4])\s*['’]?\s*(\d{2})", label, re.I)
-                if match:
-                    return int(match.group(2)), int(match.group(1))
-                match = re.fullmatch(r"([1-4])\s*Q\s*['’]?\s*(\d{2})", label, re.I)
-                return (int(match.group(2)), int(match.group(1))) if match else None
-            selected_col, latest_actual_period, _ = max(actual_period_indexes, key=lambda x: quarter_key(x[1]) or (-1, -1))
-            period_ordinal = [i for i, _, _ in actual_period_indexes].index(selected_col)
-            latest_key = quarter_key(latest_actual_period)
-            prior_actual_period = next((item for item in actual_period_indexes if latest_key and quarter_key(item[1]) == (latest_key[0] - 1, latest_key[1])), None)
-            prior_period_ordinal = [i for i, _, _ in actual_period_indexes].index(prior_actual_period[0]) if prior_actual_period else None
-            unit_match = next((re.search(r"\b(millions|thousands|billions)\b", cell, re.I) for cell in header if re.search(r"\b(millions|thousands|billions)\b", cell, re.I)), None)
-            unit = f"USD {unit_match.group(1).lower()}" if unit_match else "amounts as reported"
-            local_revenue_hit = None
-            local_prior_revenue_hit = None
-            local_eps_hit = None
-            data_rows = table_rows[table_rows.index(header) + 1:]
-            for row_index, row in enumerate(data_rows):
-                if not row:
+        # The quarter's three figures come from one table of the release: first a table whose columns are quarter
+        # tokens, then one with dated or year columns. A table under a non-GAAP, reconciliation or outlook heading is
+        # not the income statement. A table a reader cannot place in columns is not read, and it never stops the run:
+        # a missing claim costs nothing, a figure from the wrong column fails the audit.
+        tables = [(table, [[cell.get_text(" ", strip=True) for cell in row.find_all(["th", "td"])] for row in table.find_all("tr")])
+                  for table in soup.find_all("table")]
+        found = None
+        quarter_unit = "USD as shown"
+        for reader in (read_quarter_token_table, read_quarter_table):
+            for table, table_rows in tables:
+                if NOT_THE_STATEMENT.search(table_heading(table)):
                     continue
-                label = row[0].strip()
-                # Release tables often split each value into currency and
-                # amount cells, while the header uses different column spans.
-                # Match the chronological quarter ordinal to the numeric values.
-                numbers = [cell.strip().replace("$", "").replace(",", "") for cell in row[1:] if re.fullmatch(r"\s*\$?\s*\d[\d,]*(?:\.\d+)?\s*", cell)]
-                if period_ordinal >= len(numbers):
-                    continue
-                value = numbers[period_ordinal]
-                if local_revenue_hit is None and re.fullmatch(r"(?:(?:total|net)\s+)?revenues?(?:\s*[-–]\s*reported)?", label, re.I):
-                    local_revenue_hit = f"Reported revenue ({latest_actual_period} actual, {unit}): {value}"
-                    if prior_period_ordinal is not None and prior_period_ordinal < len(numbers):
-                        local_prior_revenue_hit = f"Prior-year reported revenue ({prior_actual_period[1]} actual, {unit}): {numbers[prior_period_ordinal]}"
-                previous_label = data_rows[row_index - 1][0].strip() if row_index else ""
-                eps_label = bool(re.fullmatch(r"(?:diluted\s+(?:EPS|earnings\s+per\s+share)|(?:EPS|earnings\s+per\s+share)\s*[-–]\s*diluted)", label, re.I)) or (re.fullmatch(r"diluted", label, re.I) and re.search(r"earnings\s+per\s+share|EPS", previous_label, re.I))
-                if local_eps_hit is None and eps_label:
-                    local_eps_hit = f"GAAP diluted EPS ({latest_actual_period} actual): ${value}"
-            if local_revenue_hit and local_eps_hit:
-                table_revenue_hit, table_eps_hit = local_revenue_hit, local_eps_hit
-                table_prior_revenue_hit = local_prior_revenue_hit
+                try:
+                    found = reader(table_rows)
+                except (ValueError, IndexError, TypeError):
+                    found = None
+                if found:
+                    quarter_unit = table_unit(table, table_rows)
+                    break
+            if found:
                 break
 
-        # Some releases label columns by the date range and year instead of
-        # a quarter token (for example, "Three Months Ended September 30")
-        # and group a GAAP/Adjusted EPS pair beneath a shared row heading.
-        if not (table_revenue_hit and table_eps_hit):
-            year_pattern = re.compile(r"\b20\d{2}\b")
-            for table in soup.find_all("table"):
-                table_rows = [[cell.get_text(" ", strip=True) for cell in row.find_all(["th", "td"])] for row in table.find_all("tr")]
-                three_months_row = next((i for i, row in enumerate(table_rows) if re.search(r"Three\s+Months\s+Ended", " ".join(row), re.I)), None)
-                if three_months_row is None:
-                    continue
-                year_row_index = next((i for i in range(three_months_row + 1, min(three_months_row + 4, len(table_rows))) if sum(bool(year_pattern.fullmatch(cell.strip())) for cell in table_rows[i]) >= 2), None)
-                if year_row_index is None:
-                    continue
-                # Limit the year columns to the "Three Months Ended" group;
-                # later columns in the same table may show year-to-date values.
-                nine_months_col = next((i for i, cell in enumerate(table_rows[three_months_row]) if re.search(r"Nine\s+Months\s+Ended", cell, re.I)), len(table_rows[year_row_index]))
-                year_cols = [(i, int(cell.strip())) for i, cell in enumerate(table_rows[year_row_index]) if i < nine_months_col and year_pattern.fullmatch(cell.strip())]
-                if not year_cols:
-                    continue
-                latest_year = max(year for _, year in year_cols)
-                quarter_ordinal = [year for _, year in year_cols].index(latest_year)
-                prior_year_col = next(((i, year) for i, year in year_cols if year == latest_year - 1), None)
-                prior_quarter_ordinal = [year for _, year in year_cols].index(prior_year_col[1]) if prior_year_col else None
-                quarter_unit = table_unit(table, table_rows)
-                local_revenue_hit = None
-                local_prior_revenue_hit = None
-                local_eps_hit = None
-                expect_gaap_eps = False
-                for row in table_rows[year_row_index + 1:]:
-                    if not row:
-                        continue
-                    label = row[0].strip()
-                    if re.search(r"diluted\s+earnings\s+per\s+(?:common\s+)?share", label, re.I):
-                        expect_gaap_eps = True
-                        continue
-                    numbers = [cell.strip().replace("$", "").replace(",", "") for cell in row[1:] if re.fullmatch(r"\s*\$?\s*\d[\d,]*(?:\.\d+)?\s*", cell)]
-                    if quarter_ordinal >= len(numbers):
-                        expect_gaap_eps = False
-                        continue
-                    value = numbers[quarter_ordinal]
-                    if local_revenue_hit is None and re.match(r"(?:(?:total|net)\s+)?revenues?\b", label, re.I):
-                        local_revenue_hit = f"Reported revenue ({latest_year} latest three-month period, {quarter_unit}): {value}"
-                        if prior_quarter_ordinal is not None and prior_quarter_ordinal < len(numbers):
-                            local_prior_revenue_hit = f"Prior-year reported revenue ({latest_year - 1} same three-month period, {quarter_unit}): {numbers[prior_quarter_ordinal]}"
-                    if expect_gaap_eps and re.fullmatch(r"GAAP", label, re.I):
-                        local_eps_hit = f"GAAP diluted EPS ({latest_year} latest three-month period): ${value}"
-                    expect_gaap_eps = False
-                if local_revenue_hit and local_eps_hit:
-                    table_revenue_hit, table_eps_hit = local_revenue_hit, local_eps_hit
-                    table_prior_revenue_hit = local_prior_revenue_hit
-                    break
+        def money(printed: str) -> str:
+            return "-$" + printed[1:] if printed.startswith("-") else "$" + printed
 
-        # Some issuers label quarterly and annual columns as week durations,
-        # such as 16 Weeks Ended and 52 Weeks Ended, with dates below them.
-        if not (table_revenue_hit and table_eps_hit):
-            date_pattern = re.compile(r"\b[A-Z][a-z]+\s+\d{1,2},\s+20\d{2}\b")
-            for table in soup.find_all("table"):
-                table_rows = [[cell.get_text(" ", strip=True) for cell in row.find_all(["th", "td"])] for row in table.find_all("tr")]
-                duration_row_index = next((i for i, row in enumerate(table_rows) if len(re.findall(r"\b\d+\s+Weeks?\s+Ended\b", " ".join(row), re.I)) >= 2), None)
-                if duration_row_index is None:
-                    continue
-                date_row_index = next((i for i in range(duration_row_index + 1, min(duration_row_index + 4, len(table_rows))) if sum(bool(date_pattern.fullmatch(cell.strip())) for cell in table_rows[i]) >= 2), None)
-                if date_row_index is None:
-                    continue
-                date_cols = [(i, datetime.strptime(cell.strip(), "%B %d, %Y")) for i, cell in enumerate(table_rows[date_row_index]) if date_pattern.fullmatch(cell.strip())]
-                duration_group_count = len(re.findall(r"\b\d+\s+Weeks?\s+Ended\b", " ".join(table_rows[duration_row_index]), re.I))
-                if len(date_cols) < 4 or duration_group_count < 2 or len(date_cols) % duration_group_count:
-                    continue
-                dates_per_group = len(date_cols) // duration_group_count
-                quarter_dates = date_cols[:dates_per_group]
-                quarter_ordinal = max(range(len(quarter_dates)), key=lambda i: quarter_dates[i][1])
-                latest_period = quarter_dates[quarter_ordinal][1].strftime("%B %d, %Y")
-                latest_date = quarter_dates[quarter_ordinal][1]
-                prior_date = next((date for _, date in quarter_dates if date.year == latest_date.year - 1), None)
-                prior_quarter_ordinal = next((i for i, (_, date) in enumerate(quarter_dates) if prior_date and date == prior_date), None)
-                quarter_unit = table_unit(table, table_rows)
-                local_revenue_hit = None
-                local_prior_revenue_hit = None
-                local_eps_hit = None
-                in_common_eps_section = False
-                for row in table_rows[date_row_index + 1:]:
-                    if not row:
-                        continue
-                    label = row[0].strip()
-                    if re.search(r"net income per common share|earnings per common share", label, re.I):
-                        in_common_eps_section = True
-                        continue
-                    numbers = [cell.strip().replace("$", "").replace(",", "") for cell in row[1:] if re.fullmatch(r"\s*\$?\s*\d[\d,]*(?:\.\d+)?\s*", cell)]
-                    if quarter_ordinal >= len(numbers):
-                        continue
-                    value = numbers[quarter_ordinal]
-                    if local_revenue_hit is None and re.fullmatch(r"total\s+revenues?", label, re.I):
-                        local_revenue_hit = f"Reported total revenue (latest quarter ended {latest_period}, {quarter_unit}): {value}"
-                        if prior_quarter_ordinal is not None and prior_quarter_ordinal < len(numbers):
-                            local_prior_revenue_hit = f"Prior-year total revenue ({prior_date.strftime('%B %d, %Y')}, {quarter_unit}): {numbers[prior_quarter_ordinal]}"
-                    if in_common_eps_section and re.fullmatch(r"diluted", label, re.I):
-                        local_eps_hit = f"GAAP diluted EPS (quarter ended {latest_period}): ${value}"
-                        in_common_eps_section = False
-                if local_revenue_hit and local_eps_hit:
-                    table_revenue_hit, table_eps_hit = local_revenue_hit, local_eps_hit
-                    table_prior_revenue_hit = local_prior_revenue_hit
-                    break
-
-        # Dated or year columns with merged headers, and amount/percentage pairs (read_quarter_table).
+        table_revenue_hit = table_prior_revenue_hit = table_eps_hit = None
         revenue_label = r"total\s+revenues?"
-        if not (table_revenue_hit and table_eps_hit):
-            for table in soup.find_all("table"):
-                table_rows = [[cell.get_text(" ", strip=True) for cell in row.find_all(["th", "td"])] for row in table.find_all("tr")]
-                found = read_quarter_table(table_rows)
-                if not found:
-                    continue
-                quarter_unit = table_unit(table, table_rows)
-                table_revenue_hit = f"Reported revenue, {found['revenue_label']} (three months ended {found['latest']}, {quarter_unit}): {found['revenue']}"
-                table_prior_revenue_hit = (f"Prior-year reported revenue, {found['revenue_label']} (three months ended {found['prior']}, {quarter_unit}): {found['prior_revenue']}"
-                                           if found["prior_revenue"] else None)
-                table_eps_hit = f"GAAP diluted EPS, {found['eps_label']} (three months ended {found['latest']}): ${found['eps']}"
-                revenue_label = re.escape(found["revenue_label"])
-                break
+        if found:
+            table_revenue_hit = f"Reported revenue, {found['revenue_label']} ({found['span']} {found['latest']}, {quarter_unit}): {found['revenue']}"
+            if found["prior_revenue"]:
+                table_prior_revenue_hit = f"Prior-year reported revenue, {found['revenue_label']} ({found['span']} {found['prior']}, {quarter_unit}): {found['prior_revenue']}"
+            table_eps_hit = f"GAAP diluted EPS, {found['eps_label']} ({found['span']} {found['latest']}): {money(found['eps'])}"
+            revenue_label = re.escape(found["revenue_label"])
 
         revenue_hits = [] if table_revenue_hit else [line for line in lines if not re.search(r"fiscal year|annual|forecast|guidance|expect|project", line, re.I) and (re.search(r"quarter(?:ly)?\s+(?:net\s+)?revenue", line, re.I) or re.search(r"(?:net\s+)?revenues?\s+of\s+\$\s*[\d,.]+\s*(?:billion|million)", line, re.I)) and re.search(r"\$\s*[\d,.]+", line)]
         eps_hits = [] if table_eps_hit else [line for line in lines if not re.search(r"forecast|guidance|expect|project", line, re.I) and (re.search(r"diluted", line, re.I) and re.search(r"earnings\s+per\s+share|per\s+diluted\s+share|per-share", line, re.I) or re.search(r"\bEPS\s+of\s+\$", line, re.I)) and re.search(r"\$\s*[\d,.]+|\b\d+\.\d+\b", line)]
@@ -821,108 +871,98 @@ class Desk:
             hits.append(table_prior_revenue_hit)
         hits = list(dict.fromkeys(hits))
 
-        def hit_amount(hit: str | None) -> float | None:
-            if not hit:
-                return None
-            match = re.search(r":\s*\$?([\d,]+(?:\.\d+)?)\s*$", hit)
-            return float(match.group(1).replace(",", "")) if match else None
+        def number(printed: str | None) -> float | None:
+            return float(printed.replace(",", "")) if printed else None
 
-        def exact_quote(value: float | None, label_pattern: str | None = None) -> str:
-            if value is None:
+        def exact_quote(printed: str | None, label_pattern: str | None = None) -> str:
+            """The release lines that hold a figure as the table prints it, from its label down to the amount."""
+            if not printed:
                 return "source unavailable"
-            token = f"{value:,.0f}" if value.is_integer() else f"{value:,.2f}"
+            token = printed.lstrip("-")
             normalized = token.replace(",", "")
-            found = [i for i, line in enumerate(lines) if re.sub(r"[^\d.]", "", line) == normalized]
-            if not found:
-                found = [i for i, line in enumerate(lines) if re.search(rf"(?<![\d.])\$?{re.escape(token)}(?![\d.])", line)]
-            if not found:
+            holding = [i for i, line in enumerate(lines) if re.sub(r"[^\d.]", "", line) == normalized]
+            if not holding:
+                holding = [i for i, line in enumerate(lines) if re.search(rf"(?<![\d.])\$?{re.escape(token)}(?![\d.])", line)]
+            if not holding:
                 return "source unavailable"
 
             def label_above(index: int) -> int | None:
                 return next((i for i in range(index - 1, max(-1, index - 6), -1) if re.search(label_pattern, lines[i], re.I)), None) if label_pattern else None
             # The first line with the value under its own label: Walmart's basic and diluted EPS were both 0.62 on
             # 2026-11-20, and the first 0.62 in the release was the basic one.
-            value_index = next((i for i in found if label_above(i) is not None), found[0])
+            value_index = next((i for i in holding if label_above(i) is not None), holding[0])
             start_index = label_above(value_index)
             start_index = value_index if start_index is None else start_index
             quoted = "\n".join(lines[start_index:value_index + 1])
             return f"{self.quarter_results.get('release_file', 'earnings_release_Ex99-1.txt')}:L{start_index + 1}-L{value_index + 1}; quote: {json.dumps(quoted, ensure_ascii=False)}"
 
-        current_quarter_revenue = hit_amount(table_revenue_hit)
-        prior_quarter_revenue = hit_amount(table_prior_revenue_hit)
+        current_quarter_revenue = number(found["revenue"]) if found else None
+        prior_quarter_revenue = number(found["prior_revenue"]) if found else None
+        revenue_source = exact_quote(found["revenue"] if found else None, revenue_label)
+        prior_revenue_source = exact_quote(found["prior_revenue"] if found else None, revenue_label)
         quarter_revenue_growth = None
-        if current_quarter_revenue is not None and prior_quarter_revenue not in (None, 0):
+        # Growth is stated on a positive base, from two lines the desk can show. Otherwise it is left out.
+        if (current_quarter_revenue is not None and prior_quarter_revenue is not None and prior_quarter_revenue > 0
+                and "source unavailable" not in (revenue_source, prior_revenue_source)):
             quarter_revenue_growth = (current_quarter_revenue - prior_quarter_revenue) / prior_quarter_revenue * 100
-            current_source = exact_quote(current_quarter_revenue, revenue_label)
-            prior_source = exact_quote(prior_quarter_revenue, revenue_label)
-            growth_source = [current_source, prior_source]
             self.computed_metrics["quarter_revenue_growth"] = {
                 "formula": f"({current_quarter_revenue} - {prior_quarter_revenue}) / {prior_quarter_revenue} * 100",
                 "value": quarter_revenue_growth,
                 "unit": "%",
-                "sources": growth_source,
+                "sources": [revenue_source, prior_revenue_source],
             }
-            print(f"  Computed quarter total-revenue growth = ({self.number(current_quarter_revenue)} - {self.number(prior_quarter_revenue)}) / {self.number(prior_quarter_revenue)} * 100 = {self.number(quarter_revenue_growth)}% | inputs: current [{current_source}]; prior-year [{prior_source}]")
+            print(f"  Computed quarter total-revenue growth = ({self.number(current_quarter_revenue)} - {self.number(prior_quarter_revenue)}) / {self.number(prior_quarter_revenue)} * 100 = {self.number(quarter_revenue_growth)}% | inputs: current [{revenue_source}]; prior-year [{prior_revenue_source}]")
+
         def first_amount_after(start: int) -> str | None:
+            """The amount on the line after a label, when that line is a plain amount. A loss, a dash or words there
+            mean the desk cannot say which figure belongs to the label, so it states none."""
             for candidate in lines[start + 1:]:
-                value = candidate.strip().replace("$", "").replace(",", "")
-                if re.fullmatch(r"\d+(?:\.\d+)?", value):
-                    return candidate.strip().replace("$", "").strip()
+                value = candidate.strip()
+                if value in ("", "$"):
+                    continue
+                return value.replace("$", "").strip() if re.fullmatch(r"\$?\s*\d[\d,]*(?:\.\d+)?", value) else None
             return None
+        eps_printed = found["eps"] if found else None
         if not table_revenue_hit and not revenue_hits:
             total_revenue_i = next((i for i, line in enumerate(lines) if re.fullmatch(r"Total revenue", line.strip(), re.I)), None)
             total_revenue = first_amount_after(total_revenue_i) if total_revenue_i is not None else None
             if total_revenue:
-                hits.append(f"Total revenue (quarterly, in millions): {total_revenue}")
+                hits.append(f"Total revenue (quarterly; the unit was not read): {total_revenue}")
         if not table_eps_hit and not eps_hits:
             diluted_i = next((i for i, line in enumerate(lines) if re.search(r"diluted\s+net income per common share", line, re.I)), None)
             if diluted_i is None:
                 income_i = next((i for i, line in enumerate(lines) if re.search(r"NET INCOME PER COMMON SHARE", line, re.I)), None)
                 diluted_i = next((i for i, line in enumerate(lines) if income_i is not None and i > income_i and re.fullmatch(r"Diluted", line.strip(), re.I)), None)
-            diluted_eps = first_amount_after(diluted_i) if diluted_i is not None else None
-            if diluted_eps:
-                hits.append(f"Diluted earnings per share (quarterly): ${diluted_eps}")
+            eps_printed = first_amount_after(diluted_i) if diluted_i is not None else None
+            if eps_printed:
+                hits.append(f"Diluted earnings per share (quarterly): ${eps_printed}")
         print("  Release lines that state quarterly total revenue and diluted EPS:")
         for line in hits:
             print(f"  {line}")
         adjusted_eps_lines = [line for line in lines if len(line) <= 150 and ((re.search(r"reported\s+EPS\s+from\s+\$?[\d.]+\s+to\s+\$?[\d.]+", line, re.I) and re.search(r"excluding|non-GAAP|adjusted", line, re.I)) or re.search(r"GAAP.*\$[\d.]+.*\$[\d.]+.*adjusted", line, re.I))]
-        eps_hit = next((hit for hit in hits if "EPS" in hit or "per share" in hit.lower()), None)
-        diluted_eps_value = hit_amount(eps_hit)
+        diluted_eps_value = number(eps_printed)
         self.quarter_results = {
             "results": hits,
             "adjusted_eps_flags": adjusted_eps_lines,
             "release_file": "earnings_release_Ex99-1.txt",
             "filing_accession": self.filings["8-K"].accession,
             "total_revenue": current_quarter_revenue,
+            # The figure as the release table prints it, and that table's unit: the claims table prints these.
+            "total_revenue_printed": found["revenue"] if found else None,
+            "revenue_unit": quarter_unit if found else None,
             "prior_year_total_revenue": prior_quarter_revenue,
             "quarter_revenue_growth_percent": quarter_revenue_growth,
-            "revenue_source": exact_quote(current_quarter_revenue, revenue_label),
-            "prior_revenue_source": exact_quote(prior_quarter_revenue, revenue_label),
+            "revenue_source": revenue_source,
+            "prior_revenue_source": prior_revenue_source,
             "diluted_eps": diluted_eps_value,
-            "diluted_eps_source": exact_quote(diluted_eps_value, r"diluted|per\s+diluted\s+share") if diluted_eps_value is not None else "source unavailable",
+            "diluted_eps_source": exact_quote(eps_printed, r"diluted|per\s+diluted\s+share|GAAP"),
             # Label this separately: the latest 10-Q can cover a different
             # quarter from the earnings release. Never label YTD cash flow QTD.
             "latest_10q_capital_spending": self.quarterly_capex(),
         }
-        refund_line = next(((i, line) for i, line in enumerate(lines) if re.search(r"non-recurring benefit of\s+\$\s*\d+(?:\.\d+)?\s+per diluted share", line, re.I)), None)
-        annual_eps = self.facts.get("diluted_eps", {}).get("value") if self.facts else None
-        if refund_line and annual_eps:
-            refund_match = re.search(r"non-recurring benefit of\s+\$\s*(\d+(?:\.\d+)?)\s+per diluted share", refund_line[1], re.I)
-            if refund_match:
-                refund_per_share = float(refund_match.group(1))
-                refund_pct_of_annual_eps = refund_per_share / annual_eps * 100
-                refund_source = f"earnings_release_Ex99-1.txt:L{refund_line[0] + 1}; quote: {json.dumps(refund_line[1], ensure_ascii=False)}"
-                annual_eps_source = self.fact_source(self.facts["diluted_eps"])
-                self.computed_metrics["q4_nonrecurring_refund_pct_of_fy_eps"] = {
-                    "formula": f"{refund_per_share} / {annual_eps} * 100",
-                    "value": refund_pct_of_annual_eps,
-                    "unit": "%",
-                    "sources": [refund_source, annual_eps_source],
-                }
-                self.quarter_results["nonrecurring_benefit_per_share"] = refund_per_share
-                self.quarter_results["nonrecurring_benefit_source"] = refund_source
-                self.quarter_results["nonrecurring_benefit_percent_of_fy_eps"] = refund_pct_of_annual_eps
-                print(f"  Computed one-time Q4 per-share benefit as share of FY diluted EPS = {self.number(refund_per_share)} / {self.number(annual_eps)} * 100 = {self.number(refund_pct_of_annual_eps)}% | inputs: Q4 benefit [{refund_source}]; FY EPS [{annual_eps_source}]")
+        # Until 2026-11-22 a rule here read one company's sentence, "non-recurring benefit of $X per diluted share",
+        # and saved a metric named for its fourth quarter. Nothing in the code names a company (AGENTS.md), and the
+        # rule divided by the annual EPS of whatever 10-K the desk had read. It is gone; a role can still quote the line.
         for line in adjusted_eps_lines:
             print(f"  Flagged adjusted/non-GAAP figure (not used for diluted EPS): {line}")
         if not hits:
@@ -931,7 +971,7 @@ class Desk:
     def step7(self) -> None:
         print("Step 7/7: Fetch peer facts and calculate operating margins.", flush=True)
         if not self.facts:
-            self.facts, self.report_period, _ = self.compile_facts(self.get_company_facts(self.cik or self.resolve_ticker(self.ticker)[0]))
+            self.own_facts(self.get_company_facts(self.cik or self.resolve_ticker(self.ticker)[0]))
         print("  Operating margin uses operating income divided by revenue.")
         self.peer_results: dict[str, Any] = {}
         for peer in self.peers:
@@ -950,7 +990,7 @@ class Desk:
         if not self.facts:
             return
         self.ensure_output()
-        payload = {"ticker": self.ticker, "company": self.company, "cik": self.cik, "report_period": self.report_period, "facts": self.facts, "peers": getattr(self, "peer_results", {}), "market_price": self.market_evidence}
+        payload = {"ticker": self.ticker, "company": self.company, "cik": self.cik, "report_period": self.report_period, "annual_problem": getattr(self, "annual_problem", ""), "facts": self.facts, "peers": getattr(self, "peer_results", {}), "market_price": self.market_evidence}
         (self.output_dir / "facts.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 def parse_args() -> argparse.Namespace:

@@ -26,6 +26,13 @@
 /output/
 /runs/practice/
 
+# Inside a run folder, what is not part of the public record (desk_sources.kept_out_of_the_record): the daily
+# closes and volumes of a licensed price source, the agent framework's own storage, and the closes reader's
+# error log. A live run is committed without them.
+/runs/**/sources/licensed/
+/runs/**/framework/
+/runs/**/closes_errors_*.jsonl
+
 # Python
 __pycache__/
 *.py[cod]

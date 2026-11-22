@@ -58,11 +58,11 @@ def handle(event):
     STATE.mkdir(parents=True, exist_ok=True)
     session_key = hashlib.sha256(session.encode()).hexdigest()
     path = STATE / (session_key+'.json')
-    with (STATE / (session_key+'.lock')).open('a') as lock:
+    with (STATE / (session_key+'.lock')).open('a', encoding='utf-8') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         current = snapshot()
         if path.exists():
-            state = json.loads(path.read_text())
+            state = json.loads(path.read_text(encoding='utf-8'))
         elif name == 'SessionStart':
             # Existing worksheets are not outputs of this session.
             state = {'observed': current, 'pending': []}
@@ -74,7 +74,7 @@ def handle(event):
         state = {'observed': current, 'pending': sorted(pending)}
         # State contains paths and change hashes only, never numerical evidence.
         temp = path.with_suffix('.tmp')
-        temp.write_text(json.dumps(state, indent=2))
+        temp.write_text(json.dumps(state, indent=2), encoding='utf-8')
         os.replace(temp, path)
         paths = [Path(p) for p in sorted(pending)]
         if any(not p.is_relative_to(OUTPUT.resolve()) for p in paths):

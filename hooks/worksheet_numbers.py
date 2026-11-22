@@ -151,7 +151,7 @@ class Auditor:
         value = amount(printed)
         if kind == 'fact':
             strict_keys(args, ('tag', 'period'), ('start',))
-            facts = json.loads((self.run / 'facts.json').read_text(), parse_float=Decimal)
+            facts = json.loads((self.run / 'facts.json').read_text(encoding='utf-8'), parse_float=Decimal)
             matches = []
             for row in facts.get('facts', {}).values():
                 if not isinstance(row, dict) or row.get('tag') != args['tag']: continue
@@ -170,7 +170,7 @@ class Auditor:
                 allowed = {self.workspace / 'spinoff-rules.md', self.workspace / 'persona-why-cheap.md'}
                 if path not in {p.resolve() for p in allowed} and not (path.is_relative_to(self.workspace / 'skills/spinoff-worksheet') and path.suffix == '.md'):
                     raise ValueError('Rate or weight source is not an authored skill/rules file')
-            lines = path.read_text().splitlines()
+            lines = path.read_text(encoding='utf-8').splitlines()
             index = int(args['line']) - 1
             if not 0 <= index < len(lines): raise ValueError('Source line does not exist')
             if 'literal' in args:
@@ -187,7 +187,7 @@ class Auditor:
             path = within(self.run, args['path'])
             if path.name.startswith('Spinoff worksheet') or 'model' in path.name.lower():
                 raise ValueError('Price/volume must cite saved reader output, not worksheet/model output')
-            data = json.loads(path.read_text(), parse_float=Decimal)
+            data = json.loads(path.read_text(encoding='utf-8'), parse_float=Decimal)
             rows = data if isinstance(data, list) else data.get('rows', [data])
             matches = [r.get(args['field']) for r in rows if r.get('ticker') == args['ticker'] and r.get('date') == args['date']]
             if len(matches) != 1 or matches[0] is None or isinstance(matches[0], bool) or Decimal(str(matches[0])) != value:
@@ -203,7 +203,7 @@ class Auditor:
     def check(self, worksheet):
         self.values = {}
         failures = []
-        text = worksheet.read_text()
+        text = worksheet.read_text(encoding='utf-8')
         if not text.strip():
             return [Failure(worksheet, 1, '', 'Worksheet is empty')]
         from worksheet_format import WorksheetFormat

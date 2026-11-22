@@ -8,3 +8,6 @@ markdown==3.11.3
 tzdata==2026.6
 # US equity session dates and early closing times for the hit-rate table.
 exchange-calendars==4.13.3
+# Reads .env for the closes reader's LSEG worker (closes.py reaches closes_reader.py). Added on 2026-11-22: the
+# code imported it and this file did not list it. The version is the group environment's.
+python-dotenv==1.2.4

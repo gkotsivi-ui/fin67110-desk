@@ -26,7 +26,7 @@ class AdapterTests(unittest.TestCase):
     def test_registry_with_unresolved_ticker_is_not_applicable(self):
         self.parts.registry={'candidates':{'12345':{'facts':{'ticker':None}}}}
         with redirect_stdout(io.StringIO()):self.parts.spinoff_status('ZZZZ')
-        self.assertEqual(json.loads((self.run/'spinoff_status.json').read_text())['spinoff'],'not applicable')
+        self.assertEqual(json.loads((self.run/'spinoff_status.json').read_text(encoding='utf-8'))['spinoff'],'not applicable')
 
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
@@ -45,10 +45,10 @@ class AdapterTests(unittest.TestCase):
         with patch.object(desk_parts,'DEFAULT_REGISTRY',missing):
             self.options.registry=missing
             with redirect_stdout(io.StringIO()):self.assertIsNone(self.parts.seeker_part())
-            self.assertEqual(json.loads((self.run/'registry.json').read_text())['candidates'],{})
-            self.assertEqual(json.loads((self.run/'seeker_status.json').read_text())['mode'],'not requested')
+            self.assertEqual(json.loads((self.run/'registry.json').read_text(encoding='utf-8'))['candidates'],{})
+            self.assertEqual(json.loads((self.run/'seeker_status.json').read_text(encoding='utf-8'))['mode'],'not requested')
             with redirect_stdout(io.StringIO()):self.parts.spinoff_status('ZZZZ')
-            self.assertEqual(json.loads((self.run/'spinoff_status.json').read_text())['spinoff'],'not applicable')
+            self.assertEqual(json.loads((self.run/'spinoff_status.json').read_text(encoding='utf-8'))['spinoff'],'not applicable')
             # A registry path that someone gave on purpose and that does not exist still stops the run.
             self.options.registry=self.run/'a_typo.json'
             with self.assertRaisesRegex(ValueError,'Registry does not exist'):self.parts.seeker_part()
@@ -57,7 +57,7 @@ class AdapterTests(unittest.TestCase):
         from equity_research_desk import Filing
         url='https://www.sec.gov/Archives/edgar/data/12345/000001234526000001/a.htm'
         self.sources.transport=Mock(side_effect=AssertionError('filing fetched twice'))
-        (self.run/'10-K.txt').write_text('Saved text remains unchanged.')
+        (self.run/'10-K.txt').write_text('Saved text remains unchanged.',encoding='utf-8')
         captured={}
         class FakeFlow:
             def __init__(self,*args,**kwargs):captured.update(kwargs)
@@ -65,7 +65,7 @@ class AdapterTests(unittest.TestCase):
                 desk=captured['desk']
                 desk.filings={'10-K':Filing('10-K','0000012345-26-000001','2026-11-01','a.htm',document_url=url)}
                 desk.step3()
-                path=desk.output_dir/'verified_report.md';path.write_text('No numerical claims.')
+                path=desk.output_dir/'verified_report.md';path.write_text('No numerical claims.',encoding='utf-8')
                 return str(path)
         fake=SimpleNamespace(EquityResearchFlow=FakeFlow)
         with patch.dict(sys.modules,{'equity_research_agent_team':fake}),patch.dict('os.environ',{'SEC_USER_AGENT':'invented test identity'}):
@@ -73,7 +73,7 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(result,self.run/'verified_report.md')
         self.assertEqual(captured['desk'].output_dir,self.run)
         self.assertEqual(captured['desk'].run_timestamp,self.started.isoformat())
-        self.assertEqual((self.run/'10-K.txt').read_text(),'Saved text remains unchanged.')
+        self.assertEqual((self.run/'10-K.txt').read_text(encoding='utf-8'),'Saved text remains unchanged.')
         self.assertTrue(all(p.is_relative_to(self.run) for p in captured['skill_files']))
         self.sources.transport.assert_not_called()
 
@@ -86,7 +86,7 @@ class AdapterTests(unittest.TestCase):
             path=run/(stem+', model input.json')
             write_json(path,{'persona':'Saved persona','input':{'filing_facts':{'from_file':True},'value_range':{},'price_vs_low':{}}})
             model_call('wrong in-memory persona',{'wrong_payload':True})
-            target=run/(stem+'.md');target.write_text('Saved worksheet')
+            target=run/(stem+'.md');target.write_text('Saved worksheet',encoding='utf-8')
             return {'model_error_type':None,'files':{'markdown':target}}
         def judge(persona,payload,record_response):
             captured.update(persona=persona,payload=payload)
@@ -109,14 +109,14 @@ class AdapterTests(unittest.TestCase):
             judge.assert_not_called()
 
     def test_authored_rules_are_validated_before_any_fetch(self):
-        (self.run/'inputs/spinoff-rules.md').write_text('FILL')
+        (self.run/'inputs/spinoff-rules.md').write_text('FILL',encoding='utf-8')
         with patch.object(self.sources,'response') as get:
             with self.assertRaises(ValueError):self.parts.validate_setup()
             get.assert_not_called()
 
     def test_role_packet_passes_files_and_requires_tool_reads_without_recomputation(self):
         source=Path(__file__).resolve().parents[1]/'equity_research_agent_team.py'
-        tree=ast.parse(source.read_text());runtime=next(n for n in tree.body if isinstance(n,ast.ClassDef) and n.name=='Runtime')
+        tree=ast.parse(source.read_text(encoding='utf-8'));runtime=next(n for n in tree.body if isinstance(n,ast.ClassDef) and n.name=='Runtime')
         method=next(n for n in runtime.body if isinstance(n,ast.FunctionDef) and n.name=='role_call')
         numbered=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='numbered_lines')
         captured={}
@@ -127,11 +127,14 @@ class AdapterTests(unittest.TestCase):
                 captured['read_text']=captured['store'].read('pick.json')
                 return SimpleNamespace(raw='{"draft":"No figures."}')
         def tool(store):captured['store']=store;return store
+        import model_calls  # the role call's retry rule and time limit (2026-11-22)
         scope={'Any':Any,'Path':Path,'json':json,'re':re,'AssignedFiles':AssignedFiles,'reply_with_required_reads':reply_with_required_reads,'file_tool':tool,'timed_role':timed_role,'CLAIMS_ROLES':{'research_analyst.md'},'ROLE_CONTRACTS':{},
+               'within_time_limit':model_calls.within_time_limit,'retry_reason':model_calls.retry_reason,'CALL_TIME_LIMIT_SECONDS':model_calls.CALL_TIME_LIMIT_SECONDS,
+               'RETRY_WAIT_SECONDS':0,'RATE_LIMIT_WAIT_SECONDS':0,
                'Agent':lambda **k:None,'Task':lambda **k:None,
                'Crew':FakeCrew,'Process':SimpleNamespace(sequential='sequential'),'parse_response':parse_response}
         exec(compile(ast.fix_missing_locations(ast.Module(body=[numbered,method],type_ignores=[])),str(source),'exec'),scope)
-        path=self.run/'pick.json';path.write_text('{"ticker":"ZZZZ"}\n')
+        path=self.run/'pick.json';path.write_text('{"ticker":"ZZZZ"}\n',encoding='utf-8')
         self_stub=SimpleNamespace(output_dir=self.run,skill_files=[path],role_call_counts={},llm=object(),instructions=lambda name:'Role instructions',save_node=Mock())
         envelope={'task':'Quote the assigned file','context':{},'expected_output':'JSON draft'}
         with redirect_stdout(io.StringIO()):scope['role_call'](self_stub,'Financial Analyst','financial_analyst.md',envelope)
@@ -147,7 +150,7 @@ class AdapterTests(unittest.TestCase):
 
     def test_financial_context_uses_saved_values_without_inline_copies(self):
         source=Path(__file__).resolve().parents[1]/'equity_research_agent_team.py'
-        runtime=next(n for n in ast.parse(source.read_text()).body if isinstance(n,ast.ClassDef) and n.name=='Runtime')
+        runtime=next(n for n in ast.parse(source.read_text(encoding='utf-8')).body if isinstance(n,ast.ClassDef) and n.name=='Runtime')
         method=next(n for n in runtime.body if isinstance(n,ast.FunctionDef) and n.name=='financial_context')
         scope={'Any':Any,'missing_fact_filing_lines':lambda *a:'filing evidence',
                'relevant_release_lines':lambda *a:'release evidence','calculator_inputs':lambda *a:{'income':100}}

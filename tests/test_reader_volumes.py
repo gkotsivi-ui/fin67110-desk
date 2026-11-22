@@ -6,7 +6,7 @@ import closes_reader as c
 class ReaderVolumesTests(unittest.TestCase):
     def test_csv_volume_is_optional_and_legacy_closes_unchanged(self):
         with tempfile.TemporaryDirectory() as d:
-            p=Path(d)/'closes.csv';p.write_text('ticker,date,close,volume,currency\nZZZ,2026-01-05,10,100,USD\nZZZ,2026-01-06,11,,USD\n')
+            p=Path(d)/'closes.csv';p.write_text('ticker,date,close,volume,currency\nZZZ,2026-01-05,10,100,USD\nZZZ,2026-01-06,11,,USD\n',encoding='utf-8')
             with patch.object(c,'_settings',return_value={'LSEG_CLOSES_FILE':str(p)}):
                 legacy=c.daily_closes('ZZZ','2026-01-01','2026-01-10')
                 rows=c.daily_closes_and_volumes('ZZZ','2026-01-01','2026-01-10')

@@ -8,6 +8,7 @@ from __future__ import annotations
 import ast
 from datetime import datetime, time
 from decimal import Decimal, localcontext
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -90,6 +91,10 @@ def number_row(lines, start):
     return result
 
 
+class RowsNotHere(ValueError):
+    """The worksheet's daily closes and volumes are named but not in the run folder: a copy from the repository."""
+
+
 class WorksheetFormat:
     def __init__(self,run,workspace,worksheet,text):
         self.run=run;self.workspace=workspace;self.worksheet=worksheet
@@ -102,6 +107,9 @@ class WorksheetFormat:
         for i,line in enumerate(self.lines,1):self.read_sources(i,line)
         for i,line in enumerate(self.lines,1):self.read_table(i,line)
         for i,line in enumerate(self.lines,1):self.read_daily(i,line)
+        # A worksheet made since 2026-11-22 prints no daily rows (licensed data): they are read from their file.
+        self.rows_absent=False;self.checked_before=None
+        if not self.daily:self.read_local_rows()
         if self.settings.get('observations')==len(self.daily):
             self.median=median([close*volume for close,volume in self.daily.values()])
         self.compute_inputs()
@@ -124,7 +132,7 @@ class WorksheetFormat:
     def rules(self):
         path=self.workspace/'spinoff-rules.md'
         try:
-            text=path.read_text()
+            text=path.read_text(encoding='utf-8')
             def get(pattern):
                 m=re.search(pattern,text,re.I)
                 if not m:raise ValueError('Authored rule missing')
@@ -140,7 +148,7 @@ class WorksheetFormat:
         except (OSError,ValueError):return {}
 
     def filing_value(self,m):
-        lines=within(self.run,m['file']).read_text().splitlines()
+        lines=within(self.run,m['file']).read_text(encoding='utf-8').splitlines()
         idx=int(m['line'])-1
         if not 0<=idx<len(lines) or lines[idx].strip()!=m['label'].strip():
             raise ValueError('Cited filing row label does not match saved text')
@@ -186,7 +194,7 @@ class WorksheetFormat:
         for m in SHARES.finditer(line):
             self.mask(i,*m.span('value'))
             try:
-                lines=within(self.run,m['file']).read_text().splitlines();idx=int(m['line'])-1
+                lines=within(self.run,m['file']).read_text(encoding='utf-8').splitlines();idx=int(m['line'])-1
                 label=' '.join(lines[idx].split()) if 0<=idx<len(lines) else ''
                 if label!=' '.join(m['label'].split()):raise ValueError('Cover-page shares citation does not match saved label')
                 dates=MONTH_DATE.findall(label)
@@ -200,7 +208,7 @@ class WorksheetFormat:
         for m in SHARES_LINE.finditer(line):
             for group in ('label','value'):self.mask(i,*m.span(group))
             try:
-                lines=within(self.run,m['file']).read_text().splitlines();idx=int(m['line'])-1
+                lines=within(self.run,m['file']).read_text(encoding='utf-8').splitlines();idx=int(m['line'])-1
                 label=' '.join(lines[idx].split()) if 0<=idx<len(lines) else ''
                 if label!=' '.join(m['label'].split()):raise ValueError('Cover-page shares citation does not match saved label')
                 words,numeric=MONTH_DATE.findall(label),NUMERIC_DATE.findall(label)
@@ -314,13 +322,53 @@ class WorksheetFormat:
         # These are original saved reader observations, not computed worksheet
         # facts, model data, or a hook-specific claim manifest.
         companion=self.worksheet.with_suffix('.json')
-        data=json.loads(companion.read_text(),parse_float=Decimal)
-        identity=json.loads((self.run/'facts.json').read_text())
+        data=json.loads(companion.read_text(encoding='utf-8'),parse_float=Decimal)
+        identity=json.loads((self.run/'facts.json').read_text(encoding='utf-8'))
         ticker=self.lines[0].split('|')[1].strip()
         if data.get('ticker')!=ticker or identity.get('ticker')!=ticker:raise ValueError('Saved reader data has a conflicting issuer')
-        rows=data.get('liquidity',{}).get('inputs')
+        liq=data.get('liquidity',{})
+        rows=liq.get('inputs')
+        if rows is None and liq.get('inputs_file'):
+            # Since 2026-11-22 the rows are licensed data kept beside the run, not in the worksheet: the worksheet
+            # names their file and its SHA-256 (worksheet.py, keep_rows_local).
+            path=(Path(self.run)/liq['inputs_file']).resolve()
+            if not path.is_relative_to(Path(self.run).resolve()):raise ValueError('The saved daily rows are outside the run folder')
+            if not path.is_file():raise RowsNotHere('The daily closes and volumes are not in this copy of the run')
+            raw=path.read_bytes()
+            if hashlib.sha256(raw).hexdigest()!=liq.get('inputs_sha256'):raise ValueError('The saved daily rows are not the ones this worksheet used')
+            rows=json.loads(raw.decode('utf-8'),parse_float=Decimal)
         if not isinstance(rows,list) or not rows:raise ValueError('No saved raw reader observations')
         return rows
+
+    def read_local_rows(self):
+        """The daily closes and volumes of a worksheet that does not print them, checked as a printed row is."""
+        try:rows=self.reader_rows()
+        except RowsNotHere:self.rows_absent=True;return
+        except (OSError,ValueError,KeyError,TypeError):return  # no rows, or rows not to be trusted: each line that needs them fails
+        try:
+            cutoff=datetime.fromisoformat(self.lines[0].split('|')[2].strip());daily={}
+            for row in rows:
+                day=datetime.fromisoformat(row['date']).date();close=amount(row['close']);volume=amount(row['volume'])
+                if (day.weekday()>=5 or datetime.combine(day,time(16),ZoneInfo('America/New_York'))>=cutoff
+                        or row['date'] in daily or close<=0 or volume<0 or row.get('currency')!='USD'):return
+                daily[row['date']]=(close,volume)
+            self.daily=daily
+        except (ValueError,KeyError,TypeError,ArithmeticError,IndexError):return
+
+    def needs_earlier_check(self,i):
+        """A line whose numbers come from the daily rows, in a copy of the run that does not hold them: they are
+        licensed data and are never committed. The line stands only if this very worksheet, byte for byte, passed
+        the hook when the rows were there, as a saved hook record of the run shows."""
+        if self.checked_before is None:
+            name=Path(self.worksheet).resolve().relative_to(Path(self.run).resolve()).as_posix()
+            digest=hashlib.sha256(Path(self.worksheet).read_bytes()).hexdigest();self.checked_before=False
+            for record in sorted((Path(self.run)/'hook').glob('*.json')):
+                try:saved=json.loads(record.read_text(encoding='utf-8'))
+                except (OSError,ValueError):continue
+                if saved.get('status')=='PASS' and any(o.get('path')==name and o.get('sha256')==digest for o in saved.get('outputs',[])):
+                    self.checked_before=True;break
+        if not self.checked_before:
+            self.fail(i,'The daily closes and volumes behind this line are not in the run folder (sources/licensed), and no saved hook record shows this worksheet passing with them')
 
     def read_daily(self,i,line):
         m=re.fullmatch(r'Liquidity day\s*\|\s*(?P<date>'+DATE+r')\s*\|\s*(?P<close>'+NUMBER+r')\s*\|\s*(?P<volume>'+NUMBER+r')\s*\|\s*(?P<currency>[A-Z]+)\s*\|\s*(?P<source>[^|]+?)(?:\s*\|\s*(?P<volume_source>[^|]+))?',line)
@@ -346,6 +394,8 @@ class WorksheetFormat:
         m=re.match(r'Price against low:\s*(?P<price>'+NUMBER+r') on (?P<date>'+DATE+r') \((?P<source>.+)\); low (?P<low>'+NUMBER+r'); \(price - low\) / low \* (?P<scale>'+NUMBER+r') = (?P<percent>'+NUMBER+r')',line)
         if not m:return
         for name in ('price','low','scale','percent'):self.mask(i,*m.span(name))
+        if self.rows_absent:
+            self.needs_earlier_check(i);self.price=amount(m['price']);return
         try:
             rows=self.reader_rows();cutoff=datetime.fromisoformat(self.lines[0].split('|')[2].strip())
             eligible=[]
@@ -374,7 +424,7 @@ class WorksheetFormat:
         if m:
             self.mask(i,*m.span('score'))
             try:
-                persona=(self.workspace/'persona-why-cheap.md').read_text()
+                persona=(self.workspace/'persona-why-cheap.md').read_text(encoding='utf-8')
                 if not all(re.search(r'\b'+str(n)+r'\s*=\s*'+word,persona,re.I) for n,word in [(0,'absent'),(1,'partial'),(2,'present')]):
                     raise ValueError('Persona score policy is unavailable')
                 index=int(m['id']);expected=None
@@ -398,11 +448,17 @@ class WorksheetFormat:
             self.check(i,m,'purchase',purchase if self.settings else None,'Client purchase size')
             self.check(i,m,'count',self.settings.get('observations'),'Liquidity observation count',exact=True)
             days=re.findall(DATE,line)
-            if len(days)!=len(set(days)) or len(days)!=amount(m['count']):self.fail(i,'Printed liquidity dates do not match its observation count')
-            if self.median is None:
+            # A worksheet that does not print its rows gives the first and the last day of them.
+            ranged=re.search(r'observations, ('+DATE+r') to ('+DATE+r');',line)
+            if self.rows_absent:self.needs_earlier_check(i)
+            elif ranged and self.daily and ((ranged[1],ranged[2])!=(min(self.daily),max(self.daily)) or len(self.daily)!=amount(m['count'])):
+                self.fail(i,'Liquidity summary days or count differ from the saved daily rows')
+            elif not ranged and (len(days)!=len(set(days)) or len(days)!=amount(m['count'])):self.fail(i,'Printed liquidity dates do not match its observation count')
+            if self.rows_absent:pass
+            elif self.median is None:
                 self.fail(i,'Liquidity median and purchase fraction cannot be recomputed: required daily closes and volumes are not printed and verified in the worksheet')
             else:
-                if sorted(days)!=sorted(self.daily):self.fail(i,'Liquidity summary dates differ from the printed daily inputs')
+                if not ranged and sorted(days)!=sorted(self.daily):self.fail(i,'Liquidity summary dates differ from the printed daily inputs')
                 self.check(i,m,'median',self.median,'Liquidity median')
                 self.check(i,m,'fraction',purchase/self.median if self.median else None,'Purchase fraction')
         m=re.match(r'Can you buy it: (?P<buyable>yes|no); (?P<rate>'+NUMBER+r') \* median = (?P<capacity>'+NUMBER+r') USD/day; required (?P<days>'+NUMBER+r') trading days; limit (?P<limit>'+NUMBER+r')',line)
@@ -410,7 +466,8 @@ class WorksheetFormat:
             for name in ('rate','capacity','days','limit'):self.mask(i,*m.span(name))
             self.check(i,m,'rate',self.settings.get('participation'),'Daily participation rate',exact=True)
             self.check(i,m,'limit',self.settings.get('days'),'Trading-day limit',exact=True)
-            if self.median is None:
+            if self.rows_absent:self.needs_earlier_check(i)
+            elif self.median is None:
                 self.fail(i,'Trading capacity and required days depend on a median without printed daily inputs')
             else:
                 capacity=self.median*self.settings['participation']

@@ -22,7 +22,7 @@ class AllRoleContracts(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         self.run=Path(self.tmp.name).resolve()
-        (self.run/'10-K.txt').write_text('Income was $100.\nDebt was $20.\n')
+        (self.run/'10-K.txt').write_text('Income was $100.\nDebt was $20.\n',encoding='utf-8')
         write_json(self.run/'calculated_facts.json',{'metrics':{'free_cash_flow':{'value':80,'formula':'100 - 20','unit':'USD','sources':['10-K.txt:L1','10-K.txt:L2']},
             'pe':{'value':None,'formula':'None / 2','unit':'ratio','sources':['not available']}},'quarter_results':{}})
 
@@ -31,7 +31,7 @@ class AllRoleContracts(unittest.TestCase):
         self.assertTrue(result.ok,result.errors)
         path=self.run/'nodes'/f'{role.replace(" ","_")}_{number}'/'output.json'
         write_json(path,result.output)
-        if 'draft' in result.output:path.with_name('draft.md').write_text(result.output['draft'])
+        if 'draft' in result.output:path.with_name('draft.md').write_text(result.output['draft'],encoding='utf-8')
         return result.output,path
 
     def authors(self):
@@ -60,7 +60,7 @@ class AllRoleContracts(unittest.TestCase):
         self.assertTrue(result.ok,result.errors)
         self.assertIn('$80',result.rendered)
         self.assertIn('formula 100 - 20',result.rendered)
-        data=json.loads((self.run/'calculated_facts.json').read_text());data['metrics']['free_cash_flow']['value']=81
+        data=json.loads((self.run/'calculated_facts.json').read_text(encoding='utf-8'));data['metrics']['free_cash_flow']['value']=81
         write_json(self.run/'calculated_facts.json',data)
         self.assertFalse(validate(self.run,'Financial Analyst',{'claims':[{'id':'c1','computed':'free_cash_flow'}],'draft':'Cash {c1}.'}).ok)
 
@@ -129,7 +129,7 @@ class AllRoleContracts(unittest.TestCase):
         self.assertFalse(validate(self.run,'Verifier',raw).ok)
 
     def test_verifier_accepts_only_actual_saved_field_names(self):
-        data=json.loads((self.run/'calculated_facts.json').read_text())
+        data=json.loads((self.run/'calculated_facts.json').read_text(encoding='utf-8'))
         data['quarter_results']['latest_10q_capital_spending']={'value':80,'formula':'100 - 20','unit':'USD','sources':['10-K.txt:L1','10-K.txt:L2']}
         write_json(self.run/'calculated_facts.json',data)
         self.manager()
@@ -146,14 +146,14 @@ class AllRoleContracts(unittest.TestCase):
     def test_reports_and_hook_rebuild_from_actual_saved_role_files(self):
         self.manager()
         write_json(self.run/'team_report.json',{'filings_line':'Filings read: seeded filing','run_time':'2026-11-17T12:00:00-05:00'})
-        report=self.run/'report.md';report.write_text(report_text(self.run))
+        report=self.run/'report.md';report.write_text(report_text(self.run),encoding='utf-8')
         checks=[{'target':c['target'],'status':'correct','reason':'Source and period agree.','correction':''} for c in report_catalog(self.run)]
         verifier,_=self.save('Verifier',{'claims':[],'checks':checks})
         marks=code_marks(self.run)
         write_json(self.run/'nodes/Verifier/output.json',{'code_checks':marks,'model_checks':verifier})
-        verified=self.run/'verified_report.md';verified.write_text(verified_text(report.read_text(),marks,verifier['checks']))
+        verified=self.run/'verified_report.md';verified.write_text(verified_text(report.read_text(encoding='utf-8'),marks,verifier['checks']),encoding='utf-8')
         self.assertEqual(Hook(self.run,Sources(self.run,'')).check('seeded report',[report,verified])['status'],'PASS')
-        verified.write_text(verified.read_text().replace('$80','$81'))
+        verified.write_text(verified.read_text(encoding='utf-8').replace('$80','$81'),encoding='utf-8')
         with self.assertRaisesRegex(HookFailure,'differs'):Hook(self.run,Sources(self.run,'')).check('seeded changed report',[verified])
 
     def ledger_run(self,flag=(),two_claims=False):
@@ -177,26 +177,26 @@ class AllRoleContracts(unittest.TestCase):
         else:
             self.manager()
         write_json(self.run/'team_report.json',{'filings_line':'Filings read: seeded filing','run_time':'2026-11-17T12:00:00-05:00'})
-        report=self.run/'report.md';report.write_text(report_text(self.run))
+        report=self.run/'report.md';report.write_text(report_text(self.run),encoding='utf-8')
         checks=[{'target':c['target'],'status':'wrong' if (c['target']['role'],c['target']['claim']) in flag else 'correct',
                  'reason':'The period label is wrong.' if (c['target']['role'],c['target']['claim']) in flag else 'Source and period agree.',
                  'correction':''} for c in report_catalog(self.run)]
         verifier,_=self.save('Verifier',{'claims':[],'checks':checks})
         marks=code_marks(self.run)
         write_json(self.run/'nodes/Verifier/output.json',{'code_checks':marks,'model_checks':verifier})
-        verified=self.run/'verified_report.md';verified.write_text(published_verified_text(self.run,marks,verifier['checks']))
+        verified=self.run/'verified_report.md';verified.write_text(published_verified_text(self.run,marks,verifier['checks']),encoding='utf-8')
         return report,verified
 
     def test_with_no_flag_the_published_report_is_the_report_as_before(self):
         report,verified=self.ledger_run()
         _,verifier=__import__('desk_role_contracts').latest(self.run,'Verifier')
-        self.assertEqual(verified.read_text(),verified_text(report.read_text(),code_marks(self.run),verifier['checks']))
+        self.assertEqual(verified.read_text(encoding='utf-8'),verified_text(report.read_text(encoding='utf-8'),code_marks(self.run),verifier['checks']))
         self.assertEqual(Hook(self.run,Sources(self.run,'')).check('seeded report',[report,verified])['status'],'PASS')
 
     def test_a_flagged_claim_is_left_out_and_the_rest_is_published(self):
         # On 2026-11-19 one flag among 92 numbers stopped a whole run, and no report was published.
         report,verified=self.ledger_run(flag={('Research Analyst','c2')},two_claims=True)
-        text=verified.read_text();body=text.split('## Overview',1)[1]
+        text=verified.read_text(encoding='utf-8');body=text.split('## Overview',1)[1]
         self.assertNotIn('Debt was',body)                       # the flagged line is gone from the text
         self.assertIn('Income was $100 [10-K.txt:L1].',body)    # the line beside it stays
         self.assertIn('Cash generation was',body)               # and every other part
@@ -206,14 +206,14 @@ class AllRoleContracts(unittest.TestCase):
 
     def test_a_flagged_line_put_back_is_refused(self):
         report,verified=self.ledger_run(flag={('Research Analyst','c2')},two_claims=True)
-        verified.write_text(verified.read_text().replace('Income was $100 [10-K.txt:L1].','Income was $100 [10-K.txt:L1].\nDebt was $20 [10-K.txt:L2].'))
+        verified.write_text(verified.read_text(encoding='utf-8').replace('Income was $100 [10-K.txt:L1].','Income was $100 [10-K.txt:L1].\nDebt was $20 [10-K.txt:L2].'),encoding='utf-8')
         with self.assertRaisesRegex(HookFailure,'differs'):Hook(self.run,Sources(self.run,'')).check('seeded changed report',[verified])
 
     def test_a_part_whose_every_line_is_flagged_says_so(self):
         report,verified=self.ledger_run(flag={('Financial Analyst','c1')})
-        body=verified.read_text().split('## Valuation Insights',1)[1].split('## ',1)[0]
+        body=verified.read_text(encoding='utf-8').split('## Valuation Insights',1)[1].split('## ',1)[0]
         self.assertEqual(body.strip(),LEFT_OUT_PART)
-        self.assertNotIn('Cash generation was',verified.read_text().split('## Overview',1)[1])
+        self.assertNotIn('Cash generation was',verified.read_text(encoding='utf-8').split('## Overview',1)[1])
         self.assertEqual(Hook(self.run,Sources(self.run,'')).check('seeded report',[report,verified])['status'],'PASS')
 
     def test_in_a_ledger_run_a_verifier_file_must_be_a_checked_verification(self):
@@ -232,7 +232,7 @@ class AllRoleContracts(unittest.TestCase):
 
     def test_tampered_author_file_and_ledger_fail_downstream(self):
         _,out,_=self.manager()
-        p=self.run/'nodes/Research_Analyst_1/draft.md';p.write_text(p.read_text().replace('$100','$999'))
+        p=self.run/'nodes/Research_Analyst_1/draft.md';p.write_text(p.read_text(encoding='utf-8').replace('$100','$999'),encoding='utf-8')
         self.assertTrue(verify_output(self.run,out))
 
     def test_advisor_references_are_pinned_when_an_author_is_corrected(self):

@@ -16,20 +16,20 @@ class ExistingFormatTests(unittest.TestCase):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         self.root=Path(self.tmp.name);self.run=self.root/'run';self.run.mkdir()
         rules=self.root/'spinoff-rules.md';rules.parent.mkdir(parents=True,exist_ok=True)
-        rules.write_text('Low case: owner cash flow ÷ 10%\nMid case: owner cash flow ÷ 7%\nOwner cash flow: average of the last 3 fiscal years\nClient portfolio: $1,000,000\nPurchase size: $1,000,000 ÷ 8 positions = $125,000\nmedian daily dollar volume over the last 60 trading days\npurchase size ≤ 10%\ncompleted within 3 trading days\n')
-        (rules.parent/'persona-why-cheap.md').write_text('Scores: 0 = absent, 1 = partial, 2 = present and cited')
-        (self.run/'facts.json').write_text(json.dumps({'ticker':'TEST','facts':{}}))
+        rules.write_text('Low case: owner cash flow ÷ 10%\nMid case: owner cash flow ÷ 7%\nOwner cash flow: average of the last 3 fiscal years\nClient portfolio: $1,000,000\nPurchase size: $1,000,000 ÷ 8 positions = $125,000\nmedian daily dollar volume over the last 60 trading days\npurchase size ≤ 10%\ncompleted within 3 trading days\n',encoding='utf-8')
+        (rules.parent/'persona-why-cheap.md').write_text('Scores: 0 = absent, 1 = partial, 2 = present and cited', encoding='utf-8')
+        (self.run/'facts.json').write_text(json.dumps({'ticker':'TEST','facts':{}}),encoding='utf-8')
         self.filing=self.run/'10-K.txt'
         lines=['The number of shares outstanding of the registrant’s common stock as of September 29, 2026, was','10,000,000','.']
         header=['(amounts in millions)','(U.S. dollars)','52 Weeks Ended','August 30,','2026','August 31,','2025','September 1,','2024']
         lines+=['CONSOLIDATED STATEMENTS OF INCOME']+header+['NET INCOME','$','100','$','90','$','80']
         lines+=['CONSOLIDATED STATEMENTS OF CASH FLOWS']+header+['Depreciation and amortization','20','25','30','Additions to property and equipment','(','30',')','(','25',')','(','20',')','Next row label','123']
-        self.filing.write_text('\n'.join(lines))
+        self.filing.write_text('\n'.join(lines),encoding='utf-8')
         self.positions={label:lines.index(label)+1 for label in ['NET INCOME','Depreciation and amortization','Additions to property and equipment']}
         self.path=self.run/'Spinoff worksheet, TEST.md'
         data={'ticker':'TEST','value_range':{'low':{'value':999999}},'liquidity':{'median_daily_dollar_volume':999999,'inputs':[
             {'date':'2026-11-11','close':50,'volume':200,'currency':'USD','source':'LSEG TR.PriceClose (TEST.O)','volume_source':'LSEG TR.Volume (TEST.O)'}]}}
-        self.path.with_suffix('.json').write_text(json.dumps(data))
+        self.path.with_suffix('.json').write_text(json.dumps(data),encoding='utf-8')
         self.periods=['2026-08-30','2025-08-31','2024-09-01']
         self.amounts=[[100000000,20000000,30000000],[90000000,25000000,25000000],[80000000,30000000,20000000]]
         self.share_source='[10-K.txt:L1] section Cover page; as of 2026-09-29; quote: The number of shares outstanding of the registrant’s common stock as of September 29, 2026, was 10,000,000'
@@ -70,7 +70,7 @@ class ExistingFormatTests(unittest.TestCase):
         return '\n'.join(lines)
 
     def check(self,text=None):
-        self.path.write_text(self.text if text is None else text)
+        self.path.write_text(self.text if text is None else text,encoding='utf-8')
         return Auditor(self.run,self.root).check(self.path)
 
     def test_existing_format_passes_without_new_annotations(self):
@@ -95,11 +95,11 @@ class ExistingFormatTests(unittest.TestCase):
             with self.subTest(new=new):self.assertTrue(self.check(self.text.replace(old,new,1)))
 
     def test_changed_filing_amount_fails_unchanged_worksheet(self):
-        self.filing.write_text(self.filing.read_text().replace('\n100\n','\n101\n'))
+        self.filing.write_text(self.filing.read_text(encoding='utf-8').replace('\n100\n','\n101\n'),encoding='utf-8')
         self.assertTrue(self.check())
 
     def test_changed_cover_share_count_fails(self):
-        self.filing.write_text(self.filing.read_text().replace('10,000,000','11,000,000'))
+        self.filing.write_text(self.filing.read_text(encoding='utf-8').replace('10,000,000','11,000,000'),encoding='utf-8')
         self.assertTrue(self.check())
 
     def test_changed_cover_share_date_fails(self):
@@ -123,7 +123,7 @@ class ExistingFormatTests(unittest.TestCase):
 
     def test_changed_authored_discount_rate_fails(self):
         p=self.root/'spinoff-rules.md'
-        p.write_text(p.read_text().replace('÷ 10%','÷ 11%'))
+        p.write_text(p.read_text(encoding='utf-8').replace('÷ 10%','÷ 11%'),encoding='utf-8')
         self.assertTrue(self.check())
 
     def test_changed_printed_rate_or_valuation_operand_fails(self):
@@ -135,19 +135,19 @@ class ExistingFormatTests(unittest.TestCase):
             with self.subTest(new=new):self.assertTrue(self.check(self.text.replace(old,new)))
 
     def test_price_checks_only_original_reader_observations(self):
-        data=json.loads(self.path.with_suffix('.json').read_text())
+        data=json.loads(self.path.with_suffix('.json').read_text(encoding='utf-8'))
         data['value_range']={'low':{'value':90}} # Irrelevant computed sidecar claims.
         data['price_vs_low']={'price':50}
         data['liquidity']['inputs'][0]['close']=51
-        self.path.with_suffix('.json').write_text(json.dumps(data))
+        self.path.with_suffix('.json').write_text(json.dumps(data),encoding='utf-8')
         self.assertTrue(self.check())
 
     def test_price_rejects_duplicate_dates_and_foreign_currency(self):
-        path=self.path.with_suffix('.json');original=json.loads(path.read_text())
-        data=json.loads(path.read_text());data['liquidity']['inputs']*=2
-        path.write_text(json.dumps(data));self.assertTrue(self.check())
+        path=self.path.with_suffix('.json');original=json.loads(path.read_text(encoding='utf-8'))
+        data=json.loads(path.read_text(encoding='utf-8'));data['liquidity']['inputs']*=2
+        path.write_text(json.dumps(data),encoding='utf-8');self.assertTrue(self.check())
         original['liquidity']['inputs'][0]['currency']='EUR'
-        path.write_text(json.dumps(original));self.assertTrue(self.check())
+        path.write_text(json.dumps(original),encoding='utf-8');self.assertTrue(self.check())
 
     def test_changed_score_fails(self):
         self.assertTrue(self.check(self.text.replace('Price against value: 2','Price against value: 0')))
@@ -169,7 +169,7 @@ class ExistingFormatTests(unittest.TestCase):
 
     def test_basis_and_currency_cannot_be_changed(self):
         self.assertTrue(self.check(self.text.replace('| historical |','| pro forma |',1)))
-        self.filing.write_text(self.filing.read_text().replace('(U.S. dollars)','(CAD)'))
+        self.filing.write_text(self.filing.read_text(encoding='utf-8').replace('(U.S. dollars)','(CAD)'),encoding='utf-8')
         self.assertTrue(self.check())
 
     def with_printed_daily_inputs(self):
@@ -178,9 +178,9 @@ class ExistingFormatTests(unittest.TestCase):
             if day.weekday()<5:days.append(day.isoformat())
             day-=timedelta(days=1)
         days.sort()
-        data=json.loads(self.path.with_suffix('.json').read_text())
+        data=json.loads(self.path.with_suffix('.json').read_text(encoding='utf-8'))
         data['liquidity']['inputs']=[{'date':day,'close':50,'volume':1000+j,'currency':'USD','source':'LSEG TR.PriceClose (TEST.O)','volume_source':'LSEG TR.Volume (TEST.O)'} for j,day in enumerate(days)]
-        self.path.with_suffix('.json').write_text(json.dumps(data))
+        self.path.with_suffix('.json').write_text(json.dumps(data),encoding='utf-8')
         lines=[f'Liquidity day | {day} | 50 | {1000+j} | USD | LSEG TR.PriceClose (TEST.O)' for j,day in enumerate(days)]
         med=Decimal('51475');purchase=Decimal(125000);capacity=med/10
         required=(purchase/capacity).to_integral_value(rounding=ROUND_CEILING)

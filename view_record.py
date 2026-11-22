@@ -33,7 +33,7 @@ def normalize_direction(signal):
 def acceptance(run):
     """EDGAR Accepted is Eastern. An explicit price-cutoff override is not an acceptance timestamp."""
     path = run / 'filing_time.json'
-    evidence = json.loads(path.read_text()) if path.exists() else {}
+    evidence = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
     raw = evidence.get('edgar_accepted')
     if not raw or raw == 'not available':
         return None
@@ -51,9 +51,9 @@ def freeze_view(run, ticker, signal, *, clock=None):
     run = Path(run)
     path = run / 'view.json'
     if path.exists():
-        return json.loads(path.read_text())
+        return json.loads(path.read_text(encoding='utf-8'))
     for old in run.glob('Spinoff worksheet*.json'):
-        if ', model ' not in old.name and isinstance(json.loads(old.read_text()).get('view'), dict):
+        if ', model ' not in old.name and isinstance(json.loads(old.read_text(encoding='utf-8')).get('view'), dict):
             return None
     direction = normalize_direction(signal)
     filed = acceptance(run)
@@ -80,7 +80,7 @@ def freeze_view(run, ticker, signal, *, clock=None):
                                    'This is not a statistical price-reaction model.',
                'reason': reason}
     # The atomic link prevents both partial reads and replacement by concurrent publishers.
-    with tempfile.NamedTemporaryFile(mode='w', dir=run, prefix='.view-', suffix='.tmp', delete=False) as stream:
+    with tempfile.NamedTemporaryFile(mode='w', dir=run, prefix='.view-', suffix='.tmp', delete=False, encoding='utf-8') as stream:
         json.dump(payload, stream, indent=2)
         stream.write('\n')
         temp = Path(stream.name)
@@ -88,7 +88,7 @@ def freeze_view(run, ticker, signal, *, clock=None):
         try:
             os.link(temp, path)
         except FileExistsError:
-            return json.loads(path.read_text())
+            return json.loads(path.read_text(encoding='utf-8'))
     finally:
         temp.unlink(missing_ok=True)
     return payload

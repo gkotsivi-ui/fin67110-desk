@@ -72,8 +72,12 @@ def read(ticker: str, start: date, end: date) -> tuple[list[tuple[date, float]],
     attempts = []
     if setting("LSEG_APP_KEY"):
         attempts.append(lambda: lseg_closes(ticker, start, end))
-    if setting("CLOSES_FILE"):
-        attempts.append(lambda: (file_closes(Path(setting("CLOSES_FILE")).expanduser(), ticker), "the CSV file in CLOSES_FILE"))
+    # The group desk names its file LSEG_CLOSES_FILE (.env.example); this reader named it CLOSES_FILE. Until
+    # 2026-11-22 a member who set the one the example gives got a price in the report and no reaction in the
+    # hit-rate table, which reads its closes here. Both names are read; CLOSES_FILE first.
+    name = next((name for name in ("CLOSES_FILE", "LSEG_CLOSES_FILE") if setting(name)), "")
+    if name:
+        attempts.append(lambda: (file_closes(Path(setting(name)).expanduser(), ticker), f"the CSV file in {name}"))
     for attempt in attempts:
         rows, source = attempt()
         rows = sorted({day: close for day, close in rows if start <= day <= end}.items())
@@ -95,7 +99,14 @@ def rics_for(ticker: str) -> list[str]:
 
 def worker_closes(ticker, start, end):
     """Keep the legacy query in the isolated SDK environment when this Python lacks it."""
-    from closes_reader import worker_python, _settings
+    try:
+        from closes_reader import worker_python, _settings
+        settings = _settings()
+    except ImportError:
+        # closes_reader reads .env with python-dotenv. Until 2026-11-22 requirements.txt did not list it, and with
+        # LSEG_APP_KEY set the base desk stopped here with a traceback instead of going on without a price.
+        print('Closes reader: the python-dotenv package is missing. Install the packages: python -m pip install -r requirements.txt', file=sys.stderr)
+        return [], ''
     root = Path(__file__).resolve().parent
     code = """
 import contextlib, io, json, sys
@@ -106,7 +117,7 @@ with contextlib.redirect_stdout(io.StringIO()):
 print(json.dumps({'rows': [(day.isoformat(), price) for day, price in rows], 'source': source}))
 """
     try:
-        result = subprocess.run([worker_python(_settings()), '-c', code, ticker, start.isoformat(), end.isoformat()],
+        result = subprocess.run([worker_python(settings), '-c', code, ticker, start.isoformat(), end.isoformat()],
                                 cwd=root, env={**os.environ, 'LSEG_APP_KEY':setting('LSEG_APP_KEY'),
                                                'DESK_LSEG_WORKER':'1', 'PYTHONIOENCODING':'utf-8'},
                                 capture_output=True, text=True, encoding='utf-8', timeout=180)

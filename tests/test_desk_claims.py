@@ -286,7 +286,7 @@ class SavedOutputCheck(unittest.TestCase):
     def setUp(self):
         self.run = Path(tempfile.mkdtemp())
         for name in ("10-K.txt", "earnings_release_Ex99-1.txt", "facts.json"):
-            (self.run / name).write_text(json.dumps(FACTS) if name == "facts.json" else TEXTS[name])
+            (self.run / name).write_text(json.dumps(FACTS) if name == "facts.json" else TEXTS[name], encoding="utf-8")
         self.saved, _ = with_repairs(
             lambda f: {"claims": [SALES, GROWTH], "draft": "Net sales rose {c2} to {c1}."}, TEXTS, FACTS)
 
@@ -306,7 +306,7 @@ class SavedOutputCheck(unittest.TestCase):
 
     def test_changed_source_file_fails(self):
         path = self.run / ER
-        path.write_text(path.read_text().replace("$93.9 billion", "$90.0 billion"))
+        path.write_text(path.read_text(encoding="utf-8").replace("$93.9 billion", "$90.0 billion"), encoding="utf-8")
         self.assertTrue(verify_saved(self.run, self.saved))
 
 
@@ -325,7 +325,7 @@ class HookUsesClaims(SavedOutputCheck):
     def check(self, data):
         node = self.run / "nodes" / "Research_Analyst_1"
         node.mkdir(parents=True)
-        (node / "output.json").write_text(json.dumps(data))
+        (node / "output.json").write_text(json.dumps(data), encoding="utf-8")
         sources = type("S", (), {"verify": lambda self: None, "data": {"responses": {}}})()
         return Hook(self.run, sources).check("Research Analyst 1", [node / "output.json"])
 
@@ -490,7 +490,7 @@ class LeaveOutAfterRepairs(unittest.TestCase):
     def test_the_saved_output_passes_the_hooks_check(self):
         run = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, run)
-        (run / "10-K.txt").write_text(self.TEXTS["10-K.txt"])
+        (run / "10-K.txt").write_text(self.TEXTS["10-K.txt"], encoding="utf-8")
         raw = {"claims": [self.GOOD, self.BAD], "draft": "Income was {c1}.\nDebt was {c2}."}
         output, _ = with_repairs(lambda feedback: raw, self.TEXTS, {})
         self.assertEqual(verify_saved(run, output), [])

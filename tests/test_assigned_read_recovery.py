@@ -14,7 +14,7 @@ class AssignedReadRecoveryTests(unittest.TestCase):
         self.paths=[]
         for role in ('Research','Financial','Advisor'):
             for suffix in ('.md','.json'):
-                p=self.run/(role+suffix);p.write_text('{}' if suffix=='.json' else 'Synthetic draft')
+                p=self.run/(role+suffix);p.write_text('{}' if suffix=='.json' else 'Synthetic draft',encoding='utf-8')
                 self.paths.append(p)
         self.store=AssignedFiles(self.run,self.paths,self.run/'reads.json')
 
@@ -36,7 +36,7 @@ class AssignedReadRecoveryTests(unittest.TestCase):
         for p in self.paths:
             if p.suffix=='.json':self.assertIn(p.name,replies[1])
         self.store.verify()
-        self.assertEqual(len(json.loads((self.run/'reads.json').read_text())['reads']),6)
+        self.assertEqual(len(json.loads((self.run/'reads.json').read_text(encoding='utf-8'))['reads']),6)
 
     def test_second_omission_still_stops_after_two_calls(self):
         calls=[]
@@ -50,7 +50,7 @@ class AssignedReadRecoveryTests(unittest.TestCase):
         def request(feedback):
             calls.append(feedback)
             for p in self.paths:self.store.read(p.name)
-            self.paths[0].write_text('Changed after read')
+            self.paths[0].write_text('Changed after read',encoding='utf-8')
             return 'invalid'
         with self.assertRaisesRegex(ValueError,'changed'):
             desk_files.reply_with_required_reads(self.store,request)

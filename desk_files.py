@@ -55,7 +55,7 @@ class AssignedFiles:
             name=path.relative_to(self.run).as_posix()
             if name not in self.files:raise ValueError('File is not assigned: '+file)
             if digest(path)!=self.files[name]:raise ValueError('Assigned file changed: '+name)
-            text=path.read_text()
+            text=path.read_text(encoding='utf-8')
             self.reads.append({'file':name,'sha256':self.files[name]})
             write_json(self.log,{'reads':self.reads})
             return '\n'.join(f'{name}:L{i}: {line}' for i,line in enumerate(text.splitlines(),1))

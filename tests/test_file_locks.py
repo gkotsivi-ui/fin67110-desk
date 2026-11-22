@@ -40,7 +40,7 @@ class FileLocks(unittest.TestCase):
             with self.subTest(name):
                 fcntl = load(f"lock_test_{name.replace(' ', '_')}", path)
                 lock_path = Path(tempfile.mkdtemp()) / ".run.lock"
-                with lock_path.open("a+") as first, lock_path.open("a+") as second:
+                with lock_path.open("a+", encoding="utf-8") as first, lock_path.open("a+", encoding="utf-8") as second:
                     fcntl.flock(first, fcntl.LOCK_EX | fcntl.LOCK_NB)
                     with self.assertRaises(BlockingIOError):  # what the seeker catches: "A seeker run already owns this registry."
                         fcntl.flock(second, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -52,7 +52,7 @@ class FileLocks(unittest.TestCase):
         # The seeker's pause between SEC requests keeps the last request's time in the locked file.
         fcntl = load("lock_test_rate_gate", LOCKS["seeker"])
         path = Path(tempfile.mkdtemp()) / ".sec_rate_gate"
-        with path.open("a+") as stream:
+        with path.open("a+", encoding="utf-8") as stream:
             fcntl.flock(stream, fcntl.LOCK_EX)
             stream.seek(0)
             self.assertEqual(stream.read(), "")
@@ -61,7 +61,7 @@ class FileLocks(unittest.TestCase):
             stream.write("1234.5")
             stream.flush()
             fcntl.flock(stream, fcntl.LOCK_UN)
-        self.assertEqual(path.read_text(), "1234.5")
+        self.assertEqual(path.read_text(encoding="utf-8"), "1234.5")
 
 
 if __name__ == "__main__":

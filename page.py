@@ -10,7 +10,7 @@ It listens on this computer only (127.0.0.1), and runs one job at a time.
 from __future__ import annotations
 
 import argparse
-from datetime import date
+from datetime import date, datetime
 import html
 import json
 import os
@@ -110,7 +110,11 @@ class ReviewJob:
 
 def arguments(body: dict[str, Any]) -> tuple[list[str], str]:
     """Arguments for this repository's complete pipeline, never another project."""
-    ticker = str(body.get("ticker", "")).strip().upper()
+    # Each field is text or absent. Until 2026-11-22 a JSON null or true became the ticker NONE or TRUE.
+    if any(not isinstance(body.get(name, ""), str) and body.get(name) is not None for name in ("ticker", "peers", "refresh_screen", "registry", "filed")):
+        return [], "Type a ticker or screen."
+    body = {name: value for name, value in body.items() if value is not None}
+    ticker = body.get("ticker", "").strip().upper()
     if not TICKER.fullmatch(ticker):
         return [], "Type a ticker or screen."
     args = ["screen" if ticker == "SCREEN" else ticker]
@@ -135,7 +139,13 @@ def arguments(body: dict[str, Any]) -> tuple[list[str], str]:
         args += ["--registry", str(path)]
     filed = str(body.get("filed", "")).strip()
     if filed:
-        if not FILED.fullmatch(filed):
+        # A time that exists. Until 2026-11-22 the form took 2026-13-45T99:99:99, and the desk refused it only in
+        # its team part, after the seeker and the pick had run.
+        try:
+            if not FILED.fullmatch(filed) or not filed.isascii():
+                raise ValueError
+            datetime.strptime(filed, "%Y-%m-%dT%H:%M:%S")
+        except ValueError:
             return [], "The filing time is YYYY-MM-DDTHH:MM:SS, in Eastern time."
         args += ["--filed", filed]
     if body.get("live") is True:
@@ -144,22 +154,29 @@ def arguments(body: dict[str, Any]) -> tuple[list[str], str]:
 
 
 def safe_report(relative: str) -> Path | None:
-    """The report file, when it is a Markdown file inside the output folder; None for any other path."""
+    """The report file, when it is a checked report of a saved run; None for any other path.
+
+    A base-desk run is shown by its verified report, a group-desk run by its final report once the run is complete.
+    Until 2026-11-22 any Markdown file under output/ was served, drafts included, and a network path
+    (two slashes and a host name) reached the file system, which makes Windows sign in to that host.
+    """
+    if not relative or relative.replace("/", "\\").startswith("\\\\"):
+        return None
     try:
         path = (ROOT / relative).resolve()
     except (OSError, ValueError):
         return None
     if path.suffix.lower() != ".md" or not path.is_file():
         return None
-    if OUTPUT.resolve() in path.parents:
-        return path
+    verified = path.name.startswith("verified_report")
+    if path.parent.parent == OUTPUT.resolve():
+        return path if verified else None
     roots = [(ROOT / "runs" / kind).resolve() for kind in ("live", "practice")]
-    if (path.parent.parent in roots and path.name in {"report.md", "verified_report.md"}
-            and not (path.parent / "desk_run.json").exists()):
+    if path.parent.parent in roots and path.name == "verified_report.md" and not (path.parent / "desk_run.json").exists():
         return path
     if path.parent.parent in roots and path.name == "final_report.md":
         try:
-            state = json.loads((path.parent / "desk_run.json").read_text())
+            state = json.loads((path.parent / "desk_run.json").read_text(encoding="utf-8"))
             if state.get("status") == "complete" and state.get("final_report") == path.name:
                 return path
         except (OSError, ValueError, AttributeError):
@@ -176,15 +193,45 @@ def report_link(printed: str) -> str:
 
 
 def render(path: Path) -> str:
-    """The report as HTML. Its text is escaped first, so nothing in a filing or a model's reply becomes markup."""
-    text = html.escape(path.read_text(encoding="utf-8"), quote=False)
+    """The report as HTML. Its text is escaped first, so nothing in a filing or a model's reply becomes markup.
+
+    Markdown then builds markup of its own from the report's text, and until 2026-11-22 that was left in: a link
+    could be a script or a data address, an image was fetched from any host as soon as the report was shown,
+    "2*3*4" was shown as 234, and a table row with one cell too many lost its last cells. Now a single star is
+    text, a link is kept only when it is http or https, an image is shown as its words, and a table whose rows do
+    not match its header is shown as plain text.
+    """
+    text = html.escape(path.read_text(encoding="utf-8-sig"), quote=False)
     # Reports verified before the Verifier's fix escape a quoted table bar twice (\\|), which would split the row.
     text = text.replace("\\\\|", "\\|")
-    return markdown.markdown(text, extensions=["tables", "sane_lists", "nl2br"])
+    text = re.sub(r"(?<![*\\])\*(?!\*)", r"\\*", text)  # a star alone is a star; ** stays bold
+    lines, kept, i = text.split("\n"), [], 0
+    while i < len(lines):
+        if "|" in lines[i] and i + 1 < len(lines) and re.fullmatch(r"\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*", lines[i + 1]):
+            end = i + 2
+            while end < len(lines) and "|" in lines[end]:
+                end += 1
+            cells = [len(re.split(r"(?<!\\)\|", row.strip().strip("|"))) for row in lines[i:end]]
+            if len(set(cells)) > 1:
+                kept += ["A row of this table does not have as many cells as its header, so the table is shown as it is written:", "",
+                         *("    " + row for row in lines[i:end]), ""]
+            else:
+                kept += lines[i:end]
+            i = end
+        else:
+            kept.append(lines[i])
+            i += 1
+    made = markdown.markdown("\n".join(kept), extensions=["tables", "sane_lists", "nl2br"])
+    made = re.sub(r"<img\b[^>]*?(?:alt=\"([^\"]*)\")?[^>]*>", lambda m: m.group(1) or "", made)
+    made = re.sub(r"<a\s+href=\"(?!https?://)[^\"]*\"[^>]*>(.*?)</a>", r"\1", made, flags=re.S)
+    made = made.replace("<a href=\"", "<a rel=\"noopener noreferrer\" target=\"_blank\" href=\"")
+    # The text was escaped before Markdown, and Markdown escapes code once more.
+    return re.sub(r"<code>(.*?)</code>", lambda m: "<code>" + m.group(1).replace("&amp;amp;", "&amp;").replace("&amp;lt;", "&lt;").replace("&amp;gt;", "&gt;") + "</code>", made, flags=re.S)
 
 
 class Page(BaseHTTPRequestHandler):
     server_version = "DeskPage/1.0"
+    timeout = 30  # seconds: a client that says nothing is dropped, and does not hold a thread for good
 
     def log_message(self, format: str, *args: Any) -> None:
         pass  # Keep the terminal quiet; the page shows what matters.
@@ -199,11 +246,18 @@ class Page(BaseHTTPRequestHandler):
         if self.headers.get("Host") not in allowed:
             self.send_json({"error": "This page answers only at its own address."}, HTTPStatus.FORBIDDEN)
             return False
+        # A request another website makes names that website. Until 2026-11-22 only a POST was checked, so a page
+        # open in another tab could start the setup check or ask for any report address with a GET.
+        origin = self.headers.get("Origin")
+        # The page itself is the one exception: the README shows its address as a link, and a click on that link
+        # on GitHub is a request from another website. It opens the page, as a whole page only, and nothing else.
+        a_link_to_the_page = (self.command == "GET" and urlparse(self.path).path == "/" and not origin
+                              and self.headers.get("Sec-Fetch-Dest", "document") == "document")
+        if not a_link_to_the_page and ((origin and origin.removeprefix("http://") not in allowed)
+                                       or self.headers.get("Sec-Fetch-Site", "same-origin") not in ("same-origin", "none")):
+            self.send_json({"error": "This page answers only its own requests."}, HTTPStatus.FORBIDDEN)
+            return False
         if self.command == "POST":
-            origin = self.headers.get("Origin")
-            if origin and origin.removeprefix("http://") not in allowed:
-                self.send_json({"error": "A run starts only from this page."}, HTTPStatus.FORBIDDEN)
-                return False
             if not str(self.headers.get("Content-Type", "")).startswith("application/json"):
                 self.send_json({"error": "Send JSON."}, HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
                 return False
@@ -264,8 +318,13 @@ class Page(BaseHTTPRequestHandler):
     def route_start(self) -> None:
         global RUN
         try:
-            body = json.loads(self.rfile.read(int(self.headers.get("Content-Length") or 0)) or b"{}")
-        except (ValueError, json.JSONDecodeError):
+            # A small body, read whole. Until 2026-11-22 a length of -1 or of a gigabyte held the handler for good,
+            # and JSON nested a hundred thousand deep ended it with no answer.
+            length = int(self.headers.get("Content-Length") or 0)
+            if not 0 <= length <= 16384:
+                raise ValueError("invalid request length")
+            body = json.loads(self.rfile.read(length) or b"{}")
+        except (ValueError, RecursionError):
             self.send_json({"error": "Send JSON."}, HTTPStatus.BAD_REQUEST)
             return
         args, problem = arguments(body if isinstance(body, dict) else {})
@@ -288,9 +347,10 @@ class Page(BaseHTTPRequestHandler):
 
     def route_stop(self) -> None:
         run = RUN
-        if run and not run.done:
+        running = bool(run and not run.done)
+        if running:
             run.process.terminate()
-        self.send_json({"stopped": bool(run)})
+        self.send_json({"stopped": running})  # true only for a run that was going
 
     def route_review_start(self):
         global REVIEW_JOB
@@ -299,7 +359,10 @@ class Page(BaseHTTPRequestHandler):
             if not 0 < length <= 16384:
                 raise ValueError("invalid request length")
             body = json.loads(self.rfile.read(length))
-            folder = review_folder(str(body.get("folder", "")))
+            folder = str(body.get("folder", ""))
+            if folder.replace("/", "\\").startswith("\\\\"):
+                raise ValueError("a network path is not a run folder")
+            folder = review_folder(folder)
             number = body.get("record_number")
             if number not in (None, ""):
                 if isinstance(number, bool) or not str(number).isdigit() or int(number) < 1:
@@ -310,7 +373,7 @@ class Page(BaseHTTPRequestHandler):
             use_model = body.get("model", False)
             if not isinstance(use_model, bool):
                 raise ValueError("Model selection must be true or false.")
-        except (ValueError, TypeError, AttributeError, OSError):
+        except (ValueError, TypeError, AttributeError, OSError, RecursionError):
             self.send_json({"error": "Choose a valid saved run folder and positive record number."}, HTTPStatus.BAD_REQUEST)
             return
         with RUN_LOCK:
@@ -387,7 +450,11 @@ class Page(BaseHTTPRequestHandler):
         if path is None:
             self.send_json({"error": "That report is unavailable."}, HTTPStatus.NOT_FOUND)
             return
-        self.send_html(render(path))
+        try:
+            self.send_html(render(path))
+        except (OSError, UnicodeDecodeError):
+            # Until 2026-11-22 a report that was not UTF-8 closed the connection, and the page kept the report before it.
+            self.send_json({"error": f"{path.name} is not UTF-8 text, so the page cannot show it."}, HTTPStatus.UNPROCESSABLE_ENTITY)
 
     def route_runs(self, query: dict[str, list[str]]) -> None:
         """The saved runs that have a verified report, newest first, each with its newest verified report."""
@@ -410,13 +477,18 @@ class Page(BaseHTTPRequestHandler):
         self.send_json(found[:60])
 
     def route_setup(self, query: dict[str, list[str]]) -> None:
-        """check_env.py without its network checks, so the page can say what to fix before a run."""
+        """check_pipeline.py, which asks no network, so the page can say what to fix before a run."""
         try:
             done = subprocess.run([sys.executable, str(ROOT / "check_pipeline.py")], cwd=ROOT, capture_output=True, text=True,
                                   encoding="utf-8", errors="replace", timeout=60, env=dict(os.environ, PYTHONIOENCODING="utf-8"))
-            self.send_json({"ok": done.returncode == 0, "lines": [line for line in done.stdout.splitlines() if line.strip()]})
+            lines = [line for line in done.stdout.splitlines() if line.strip()]
+            if done.returncode != 0 and not any(line.startswith("FIX") for line in lines):
+                # The check itself stopped. Until 2026-11-22 its "ok" lines were shown and the page said the setup passed.
+                why = next((line for line in reversed(done.stderr.splitlines()) if line.strip()), "it gave no reason")
+                lines.append(f"FIX   check_pipeline.py stopped before it finished: {why}")
+            self.send_json({"ok": done.returncode == 0, "lines": lines})
         except (OSError, subprocess.TimeoutExpired) as exc:
-            self.send_json({"ok": False, "lines": [f"FIX   check_env.py did not run: {exc}"]})
+            self.send_json({"ok": False, "lines": [f"FIX   check_pipeline.py did not run: {exc}"]})
 
 
 PAGE = """<!doctype html>
@@ -608,7 +680,8 @@ async function setup() {
   const s = await (await fetch('/setup')).json();
   const box = $('#setup'); box.hidden = false; box.innerHTML = '';
   const fixes = s.lines.filter((l) => l.startsWith('FIX'));
-  if (!fixes.length) { box.className = 'setup good'; box.textContent = 'Desk setup passed the local checks.'; return; }
+  if (s.ok && !fixes.length) { box.className = 'setup good'; box.textContent = 'Desk setup passed the local checks.'; return; }
+  if (!fixes.length) fixes.push('FIX   The setup check did not finish. Run check_pipeline.py in a terminal to see why.');
   box.className = 'setup bad';
   const head = document.createElement('strong'); head.textContent = 'Fix the setup before a run:'; box.append(head);
   const ul = document.createElement('ul');
@@ -698,6 +771,23 @@ $('#review-form').addEventListener('submit', async (e) => {
 """
 
 
+class Server(ThreadingHTTPServer):
+    """The page's server, alone on its port.
+
+    Python's server sets SO_REUSEADDR, and on Windows that lets a second program listen on a port that is in use.
+    Until 2026-11-22 a second start of the page printed the same address as the first and never moved to the next
+    port: the browser kept talking to the old process, and the new window received nothing. On Windows the port is
+    now taken for this process only, so the second start finds it in use and takes the next one.
+    """
+    allow_reuse_address = os.name != "nt"
+
+    def server_bind(self) -> None:
+        if os.name == "nt":
+            import socket
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the local group pipeline and read the final report")
     parser.add_argument("--port", type=int, default=PORT, help=f"The port to listen on (default {PORT}; the next free one if it is taken)")
@@ -707,9 +797,9 @@ def main() -> int:
     server = None
     for port in range(args.port, args.port + 10):
         try:
-            server = ThreadingHTTPServer(("127.0.0.1", port), Page)
+            server = Server(("127.0.0.1", port), Page)
             break
-        except OSError:
+        except (OSError, OverflowError):  # in use, or not a port number at all
             continue
     if server is None:
         print(f"No free port from {args.port} to {args.port + 9}. Give one with --port.", file=sys.stderr)
