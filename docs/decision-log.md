@@ -584,6 +584,28 @@ against its filings, re-checked the live record on EDGAR, and read the code behi
   Walmart's filings. A Mac run is still to be done, and no Google or OpenAI key has run the desk end to end.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-21: the LSEG session check passed with Workspace closed
+
+- **What AI got wrong: a check that could not fail.** On Windows, `check_lseg.py --session` printed
+  "Desktop session opened and closed" while LSEG Workspace was closed and nothing listened on its API ports.
+  The LSEG library's `open()` returns without an error when it cannot reach Workspace and leaves the session
+  closed; the check caught only errors. Its tests replaced the worker with a mock, so the probe itself never
+  ran in a test. A member who trusted it would have learned at the live run that there was no price.
+- **The fix.** The probe passes only when the session reports `Opened`. Two tests run the probe itself on a
+  stand-in library, one whose session stays closed and one whose session opens; against the old probe, the
+  first test fails. With Workspace closed, the check now prints "Desktop connection failed".
+- **Windows setup.** On 2026-11-21 `.venv-lseg` was created on Windows from `requirements-lseg.txt`: the
+  install and `pip check` passed, and `check_pipeline.py` and the offline `check_lseg.py` printed ok. With
+  Refinitiv Workspace open and signed in, the session check printed ok, and the closes reader returned
+  Lowe's close for 2026-11-17 from LSEG.
+- **Footers.** `docs/lseg-setup.md`, the error review, the hit-rate table and the page's review wrote their
+  own second line ("No human source verification is claimed.", "Calculations use saved views and sourced
+  closes.", or none), and the hit-rate table printed its footer before its agreement count. All four now
+  end with the course's three lines word for word; a test checks each. The error documents already in the
+  live-run folders keep their wording: those folders are the live record, and their files are not edited.
+- **Tests.** On Windows 11 and Python 3.13 on 2026-11-21, the four test folders ran 663 tests with no
+  failure; the four that create a symlink were skipped.
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.

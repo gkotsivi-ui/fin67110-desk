@@ -1,5 +1,5 @@
 # Isolated LSEG worker: Python 3.13, macOS or Windows.
-# Versions installed and checked on macOS; Windows execution still needs validation.
+# Versions installed and checked on macOS, and on Windows 11 on 2026-11-21.
 anyio==4.16.0
 appdirs==1.4.4
 certifi==2026.11.20

@@ -659,9 +659,9 @@ function showReview(result) {
   const ul = document.createElement('ul');
   result.limits.forEach((text) => { const li = document.createElement('li'); li.textContent = text; ul.append(li); });
   box.append(ul);
-  const footer = document.createElement('p');
-  footer.textContent = 'This is a learning exercise, not financial advice. AI assistance: OpenAI Codex; ' + result.metadata.model + '. Any remaining errors are my own.';
-  box.append(footer);
+  ['This is a learning exercise, not financial advice.',
+   'AI assistance: OpenAI Codex and ' + result.metadata.model + '. I verified the sources myself; the judgments are mine.',
+   'Any remaining errors are my own.'].forEach((text) => { const p = document.createElement('p'); p.textContent = text; box.append(p); });
 }
 
 async function pollReview() {
