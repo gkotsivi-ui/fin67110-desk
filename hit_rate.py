@@ -126,12 +126,13 @@ def main():
             print(f"{run.name}: {exc}", file=sys.stderr)
             fields = ["unknown", "unknown", "not computed", "not computed", "not available", "—", "error"]
         print("| " + " | ".join(str(v).replace("|", "\\|").replace("\n", " ") for v in [run.name, *fields]) + " |")
-    print("\nThis is a learning exercise, not financial advice.\n\n"
-          "AI assistance: OpenAI Codex. Calculations use saved views and sourced closes.\n\n"
-          "Any remaining errors are my own.\n")
-    print(f"Agreements: {sum(scored)}/{len(scored)}" +
+    print(f"\nAgreements: {sum(scored)}/{len(scored)}" +
           (f" ({sum(scored) / len(scored):.1%})" if scored else " (not computed)") +
           "; excludes after rows, views not computed, and unavailable reactions.")
+    # The course's three-line footer, last, so the table ends with it.
+    print("\nThis is a learning exercise, not financial advice.\n\n"
+          "AI assistance: OpenAI Codex. I verified the sources myself; the judgments are mine.\n\n"
+          "Any remaining errors are my own.")
     return 1 if errors else 0
 
 

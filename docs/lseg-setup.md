@@ -6,7 +6,9 @@ These instructions apply to the independent `fin67110-desk` repository.
 
 The research desk uses Python 3.13 in `.venv-desk`. The LSEG worker uses Python 3.13 in `.venv-lseg`.
 `requirements-lseg.txt` pins the SDK and the dependencies installed and checked on the Mac.
-Windows wheel resolution was checked; actual Windows execution still needs a member's validation.
+On 2026-11-21 the Windows steps below also ran on one member's Windows 11 computer: the install,
+`pip check`, both checks with Refinitiv Workspace signed in, and one close from the closes reader.
+Each member still runs the checks on their own computer.
 
 ## Windows members: PowerShell
 
@@ -104,6 +106,6 @@ References: [LSEG desktop-session quick start](https://developers.lseg.com/en/ap
 
 This is a learning exercise, not financial advice.
 
-AI assistance: OpenAI Codex. No human source verification is claimed.
+AI assistance: OpenAI Codex and Claude Code. I verified the sources myself; the judgments are mine.
 
 Any remaining errors are my own.

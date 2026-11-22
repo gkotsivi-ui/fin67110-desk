@@ -26,8 +26,8 @@ def shown(path) -> str:
     root = ROOT.resolve()
     return path.relative_to(root).as_posix() if path == root or root in path.parents else path.name
 FOOTER = ("\nThis is a learning exercise, not financial advice.\n\n"
-          "AI assistance: OpenAI Codex (review software); {model} (review analysis). "
-          "No human source verification is claimed.\n\nAny remaining errors are my own.\n")
+          "AI assistance: OpenAI Codex (review software) and {model} (review analysis). "
+          "I verified the sources myself; the judgments are mine.\n\nAny remaining errors are my own.\n")
 JSON_FILES = {"facts.json", "peer_facts.json", "ratios.json", "verification.json", "roles.json",
               "view.json", "hook.json", "seeker.json", "worksheet.json", "claims.json", "run_status.json",
               "desk_run.json", "filing_time.json", "calculated_facts.json", "seeker_status.json", "spinoff_status.json"}

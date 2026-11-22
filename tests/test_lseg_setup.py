@@ -1,11 +1,53 @@
 """Synthetic setup probes never use credentials or a live desktop session."""
 import json
+import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import Mock
 import check_lseg
+
+# A stand-in for lseg.data with the parts the probe uses: a desktop session whose open() either opens it or,
+# as the real library did with Workspace closed, returns without an error and leaves it closed.
+SYNTHETIC_LSEG = '''
+import enum, os
+
+
+class OpenState(enum.Enum):
+    Opened = 'opened'
+    Pending = 'pending'
+    Closed = 'closed'
+
+
+class _Session:
+    def __init__(self):
+        self.open_state = OpenState.Closed
+
+    def open(self):
+        if os.environ.get('SYNTHETIC_OPENS') == '1':
+            self.open_state = OpenState.Opened
+
+    def close(self):
+        self.open_state = OpenState.Closed
+
+
+class _Definition:
+    def __init__(self, app_key):
+        self.app_key = app_key
+
+    def get_session(self):
+        return _Session()
+
+
+class _Desktop:
+    Definition = _Definition
+
+
+class session:
+    desktop = _Desktop
+'''
 
 
 class LsegSetupTests(unittest.TestCase):
@@ -60,6 +102,35 @@ class LsegSetupTests(unittest.TestCase):
         runner=Mock(side_effect=subprocess.TimeoutExpired('synthetic',45,output='secret'))
         result=check_lseg.check(self.config,runner=runner)
         self.assertEqual(result['stage'],'timeout');self.assertNotIn('secret',str(result))
+
+
+class ProbeSessionStateTests(unittest.TestCase):
+    """The probe itself, run on a stand-in library: a desktop session passes only when it reports Opened.
+
+    On 2026-11-21 on Windows, with Workspace closed, the real library's open() returned without an error and
+    left the session closed, and check_lseg.py --session printed that the session had opened."""
+
+    def run_probe(self, opens):
+        root=Path(self.enterContext(tempfile.TemporaryDirectory()))
+        (root/'lseg'/'data').mkdir(parents=True)
+        (root/'lseg'/'__init__.py').write_text('',encoding='utf-8')
+        (root/'lseg'/'data'/'__init__.py').write_text(SYNTHETIC_LSEG,encoding='utf-8')
+        (root/'lseg_data-2.1.1.dist-info').mkdir()
+        (root/'lseg_data-2.1.1.dist-info'/'METADATA').write_text('Metadata-Version: 2.1\nName: lseg-data\nVersion: 2.1.1\n',encoding='utf-8')
+        env={**os.environ,'PYTHONPATH':str(root),'LSEG_APP_KEY':'synthetic-test-key','SYNTHETIC_OPENS':'1' if opens else '0'}
+        done=subprocess.run([sys.executable,'-c',check_lseg.PROBE,'--session'],env=env,capture_output=True,
+                            text=True,encoding='utf-8',timeout=60)
+        return json.loads(done.stdout.strip().splitlines()[-1])
+
+    def test_a_session_left_closed_fails(self):
+        result=self.run_probe(opens=False)
+        self.assertEqual((result['ok'],result.get('stage')),(False,'desktop_session'))
+        self.assertNotIn('synthetic-test-key',json.dumps(result))
+
+    def test_an_opened_session_passes(self):
+        result=self.run_probe(opens=True)
+        self.assertEqual((result['ok'],result['version'],result['session']),(True,'2.1.1',True))
+
 
 class LegacyWorkerTests(unittest.TestCase):
     def test_legacy_reader_uses_sdk_worker_and_preserves_query_dates(self):

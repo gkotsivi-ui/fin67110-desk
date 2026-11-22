@@ -25,6 +25,10 @@ try:
             stage = 'desktop_session'
             session = ld.session.desktop.Definition(app_key=os.environ['LSEG_APP_KEY']).get_session()
             session.open()
+            # On 2026-11-21, with Workspace closed, open() returned without an error and left the session
+            # closed, and this check printed that the session had opened. Only an opened session passes.
+            if session.open_state != ld.OpenState.Opened:
+                raise RuntimeError('desktop session not opened')
     result = {'ok': True, 'version': installed, 'session': '--session' in sys.argv}
 except Exception as error:
     # Do not print SDK errors: they can contain credentials or account identifiers.
