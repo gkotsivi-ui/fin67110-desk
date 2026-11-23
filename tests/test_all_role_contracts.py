@@ -55,6 +55,28 @@ class AllRoleContracts(unittest.TestCase):
         output,path=self.save('Strategy Manager',raw)
         return raw,output,path
 
+    def test_a_managers_saved_output_is_checked_against_the_drafts_it_was_given(self):
+        # 2026-11-23, a Dell run on Claude Sonnet 5.5: the manager sent the Research Analyst's part back, the rewrite was
+        # saved as Research_Analyst_2, and the final check refused the first manager's output, which had selected
+        # Research_Analyst_1 as it should, and stopped a run whose agent team had finished.
+        raw,first,path=self.manager()
+        given={'Research Analyst':'nodes/Research_Analyst_1/draft.md','Financial Analyst':'nodes/Financial_Analyst_1/draft.md',
+               'Investment Advisor':'nodes/Investment_Advisor_1/draft.md'}
+        write_json(path.with_name('input.json'),{'task':'Review','context':{'assigned_context':{'role_files':given},'skill_output_files':[]},'expected_output':''})
+        self.save('Research Analyst',{'claims':[{'id':'c1','file':'10-K.txt','line':1,'quote':'Income was $100.','value':'$100'}],
+                  'draft':'== 1. OVERVIEW ==\nIncome was {c1} in the year.\nGrowth is supported by {c1}.\nInsight: Income supports the business at {c1}.'},number=2)
+        self.assertEqual(verify_output(self.run,first,'Strategy_Manager_1'),[])
+        self.assertEqual(Hook(self.run,Sources(self.run,'')).check('team',[path])['status'],'PASS')
+        # Without its node, a manager's output is held to the newest drafts, as when its call is checked as it returns.
+        self.assertTrue(verify_output(self.run,first))
+        # A second manager given the rewrite must select it.
+        second=path.parent.with_name('Strategy_Manager_2');second.mkdir()
+        write_json(second/'input.json',{'task':'Review','context':{'role_files':{**given,'Research Analyst':'nodes/Research_Analyst_2/draft.md'}}})
+        self.assertTrue(any('must select the latest saved draft' in e for e in verify_output(self.run,first,'Strategy_Manager_2')))
+        # A saved input naming a file the desk does not write is refused.
+        write_json(path.with_name('input.json'),{'context':{'role_files':{'Research Analyst':'../outside/draft.md'}}})
+        self.assertTrue(verify_output(self.run,first,'Strategy_Manager_1'))
+
     def test_financial_uses_saved_computation_and_rechecks_it(self):
         result=validate(self.run,'Financial Analyst',{'claims':[{'id':'c1','computed':'free_cash_flow'}],'draft':'== 1. CASH ==\nCash {c1}.'})
         self.assertTrue(result.ok,result.errors)

@@ -817,6 +817,28 @@ critical and six high. The table is in [code-audit-2026-11.md](code-audit-2026-1
   hook read every date layout the same way. `python check_all.py`: 949 tests, no failure, four skipped.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-23: a run stopped after its agent team had finished, because the manager sent a part back
+
+- **What happened.** A practice run on Dell with Claude Sonnet 5.5 (`MODEL` set for that run only). The
+  Strategy Manager sent the Research Analyst's part back once; the rewrite was saved as `Research_Analyst_2`;
+  the manager's second call compiled the report, and the Verifier marked its 156 claims correct. Then the final
+  check of the team part refused `nodes/Strategy_Manager_1/output.json` ("Overview must select the latest saved
+  draft of Research Analyst") and stopped the run.
+- **Cause.** The check of a saved manager output compared its selections with the newest draft in the run, not
+  with the drafts that call was given. The first manager had selected `Research_Analyst_1`, the newest draft when
+  it ran. Any run in which the manager sends a part back stops the same way, whatever the model; the Opus run on
+  Dell the same morning sent nothing back.
+- **What changed.** A saved manager output is checked against the drafts its saved input records
+  (`role_files`); the check as each manager call returns is unchanged. A saved input that names a file the desk
+  does not write is refused (`desk_role_contracts.py`, `desk_hook.py`).
+- **How we checked.** The replay of the stopped run, from its saved files, rechecked every saved output with no
+  error; before the change it printed the same refusal. A new test fails on the code before the change and
+  passes after it. `python check_all.py`: 950 tests, no failure, four skipped.
+- **The two models on Dell, one run each.** Opus 5.5: the team part 779 seconds, the Verifier 229 correct and 1
+  unsupported, two or three replies for each role. Sonnet 5.5: 281 seconds, 156 correct, one reply for each role,
+  one part sent back. One run each is not enough to choose a model.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.
