@@ -5,7 +5,7 @@ The amounts are the ones Lowe's and Walmart filed in their latest 10-Ks (read fr
 """
 import unittest
 
-from equity_research_desk import DEBT_TOTAL, Desk
+from equity_research_desk import DEBT_CURRENT_LINE, DEBT_TOTAL, Desk
 
 END, PRIOR_END = "2026-01-30", "2025-01-31"
 ACCN = "0000000000-26-000001"
@@ -64,6 +64,39 @@ class DebtPairs(unittest.TestCase):
         noncurrent, current = debt(company(LongTermDebtNoncurrent=(34_624e6, None),
                                            LongTermDebtAndCapitalLeaseObligationsCurrent=(2_431e6, None)))
         self.assertNotIn("debt_basis", noncurrent)
+
+    def test_dells_debtcurrent_line_is_its_current_portion_because_it_adds_up_to_the_total(self):
+        # Dell's 10-K for fiscal 2026 (SEC company facts, read 2026-11-22) files no LongTermDebtCurrent: its balance
+        # sheet's current line is DebtCurrent, and LongTermDebt equals the two lines in both years. The 10-K says no
+        # commercial paper was outstanding.
+        noncurrent, current = debt(company(LongTermDebt=(31_503e6, 24_567e6), LongTermDebtNoncurrent=(23_513e6, 19_363e6),
+                                           DebtCurrent=(7_990e6, 5_204e6)))
+        self.assertEqual((noncurrent["tag"], current["tag"]), ("LongTermDebtNoncurrent", DEBT_CURRENT_LINE))
+        self.assertEqual((noncurrent["debt_basis"], noncurrent["value"] + current["value"]), ("pair", 31_503e6))
+        self.assertIn(DEBT_TOTAL, noncurrent["note"])
+        self.assertNotRegex(noncurrent["note"], r"\d")
+
+    def test_a_debtcurrent_line_that_does_not_add_up_to_the_total_is_not_read(self):
+        # The difference can be short-term borrowings, which claim 7 leaves out.
+        noncurrent, current = debt(company(LongTermDebt=(31_503e6, None), LongTermDebtNoncurrent=(23_513e6, None),
+                                           DebtCurrent=(9_000e6, None)))
+        self.assertNotIn("debt_basis", noncurrent)
+
+    def test_a_debtcurrent_line_without_the_total_is_not_read(self):
+        noncurrent, current = debt(company(LongTermDebtNoncurrent=(23_513e6, None), DebtCurrent=(7_990e6, None)))
+        self.assertNotIn("debt_basis", noncurrent)
+
+    def test_a_debtcurrent_line_from_another_filing_is_not_read(self):
+        payload = company(LongTermDebt=(31_503e6, None), LongTermDebtNoncurrent=(23_513e6, None))
+        payload["facts"]["us-gaap"]["DebtCurrent"] = {"units": {"USD": [fact(7_990e6, accn="0000000000-26-000002")]}}
+        noncurrent, current = debt(payload)
+        self.assertNotIn("debt_basis", noncurrent)
+
+    def test_the_current_maturities_line_wins_over_debtcurrent(self):
+        noncurrent, current = debt(company(LongTermDebt=(38_166e6, None), LongTermDebtNoncurrent=(34_624e6, None),
+                                           LongTermDebtCurrent=(3_542e6, None), DebtCurrent=(10_138e6, None)))
+        self.assertEqual(current["tag"], "LongTermDebtCurrent")
+        self.assertNotIn("note", noncurrent)
 
 
 if __name__ == "__main__":

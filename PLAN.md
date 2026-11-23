@@ -135,7 +135,7 @@ be made at all, the run stops and names the part and the cause. The desk never f
 | EDGAR's facts are not yet the new 10-K's, or the filer moved its revenue to a tag the desk does not read | F8, done: no annual fact is stated, with the reason; the quarter's claims and the rest of the report go on |
 | No operating income fact | Omit claim 3 |
 | A noncontrolling interest | Net income and equity on the parent's tags only; else omit |
-| Debt under another tag, one part only, or no debt at all | F1, done: "not computed", with the reason. Of 17 real 10-Ks, 5 are in this group, Oracle and Dell among them |
+| Debt under another tag, one part only, or no debt at all | F1, done: "not computed", with the reason. Of 17 real 10-Ks, 5 were in this group, Oracle and Dell among them; since 2026-11-22 Dell's `DebtCurrent` line is read when `LongTermDebt` checks it, so 4 remain |
 | A bank, an insurer or a REIT | Omit the claims that do not apply (operating margin, debt to equity, free cash flow) and say why; jcleeper65/Analyst has a check to port |
 | A recent IPO or spinoff with one year of statements | Omit growth and return on average equity |
 | No 10-K yet, or no 10-Q yet | Today the run stops. Change: run on what exists and omit the rest |

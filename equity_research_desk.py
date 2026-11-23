@@ -36,6 +36,12 @@ DEBT_PAIRS = (
     ("LongTermDebtAndCapitalLeaseObligations", "LongTermDebtAndCapitalLeaseObligationsCurrent"),
 )
 DEBT_TOTAL = "LongTermDebt"
+# A balance sheet whose current debt line is tagged DebtCurrent (Dell's 10-K for fiscal 2026). EDGAR describes that tag
+# as "short-term debt and current maturity of long-term debt", so it can hold short-term borrowings, which claim 7
+# leaves out. It is read as the current portion only when DEBT_TOTAL, in the same filing at the same date, equals
+# LongTermDebtNoncurrent plus DebtCurrent: then nothing in the line lies outside the company's own long-term debt. The
+# amount is still the two balance-sheet lines; the total is only the check (docs/decision-log.md, 2026-11-22).
+DEBT_CURRENT_LINE = "DebtCurrent"
 CONCEPTS: dict[str, dict[str, Any]] = {
     # Prefer total Revenues when a filer reports it. Fall back to other
     # standard revenue concepts when that tag is unavailable for a peer.
@@ -711,8 +717,9 @@ class Desk:
         """The balance sheet's two lines of long-term debt, read as one pair from the same filing (DEBT_PAIRS).
 
         When no pair is filed, the first pair's noncurrent line stands alone only if the total tag holds the same
-        amount: then there is no current portion. Otherwise the defaults are kept, and debt to equity is not stated.
-        A missing current line is never read as zero.
+        amount: then there is no current portion. A current line tagged DEBT_CURRENT_LINE pairs with that noncurrent
+        line only if the two add up to the total tag, all three from the same filing at the same date. Otherwise the
+        defaults are kept, and debt to equity is not stated. A missing current line is never read as zero.
         """
         def entry(tag: str, metric: str) -> dict[str, Any]:
             rows = self.fact_rows(facts, tag, "USD", "instant")
@@ -731,6 +738,14 @@ class Desk:
             alone["debt_basis"] = "no current portion"
             alone["note"] = f"no current portion: {DEBT_TOTAL} holds the same amount as {DEBT_PAIRS[0][0]}, and no current line is filed"
             return alone, {**current_default, "tag": None, "value": None, "filing": None}
+        line = entry(DEBT_CURRENT_LINE, "current_portion_of_long_term_debt")
+        checked = (alone, line, total)
+        if (all(item["value"] is not None for item in checked) and len({item["filing"] for item in checked}) == 1
+                and len({item["period_end"] for item in checked}) == 1 and alone["value"] + line["value"] == total["value"]):
+            alone["debt_basis"] = "pair"
+            alone["note"] = (f"the current line is {DEBT_CURRENT_LINE}, which can include short-term borrowings; it is read as the current "
+                             f"portion because {DEBT_TOTAL} in the same filing equals {DEBT_PAIRS[0][0]} plus {DEBT_CURRENT_LINE}")
+            return alone, line
         # No pair and no proof of a zero current portion: the lines stay as facts, and debt to equity is not stated.
         return noncurrent_default, current_default
 
@@ -853,7 +868,7 @@ class Desk:
         debt_inputs_sourced = bool(debt_components) and all(self.has_fact_source(item) for item in debt_components)
         debt_definition = ("long-term debt with its current portion, the balance sheet's noncurrent and current lines filed as one "
                            "pair in the same 10-K, divided by year-end stockholders' equity; short-term borrowings are not included")
-        if debt_item.get("debt_basis") == "no current portion":
+        if debt_item.get("debt_basis") in ("no current portion", "pair") and debt_item.get("note"):
             debt_definition += "; " + debt_item["note"]
         cfo_sourced = self.has_fact_source(f["cash_from_operations"])
         capex_sourced = self.has_fact_source(f["additions_to_property_and_equipment"])

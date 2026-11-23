@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import lab03_app as app  # noqa: E402
-from lab02_desk import DEBT_PAIRS, DEBT_TOTAL, Desk, debt_at, html_to_text, is_annual, numbers_in  # noqa: E402
+from lab02_desk import DEBT_CURRENT_LINE, DEBT_PAIRS, DEBT_TOTAL, Desk, debt_at, html_to_text, is_annual, numbers_in  # noqa: E402
 
 
 def fact(start: str | None, end: str, val: float, unit: str = "USD") -> dict[str, Any]:
@@ -152,8 +152,29 @@ class DebtRuleTests(unittest.TestCase):
         self.assertEqual((debt["value"], debt["tags"]), (6300e6, (LEASE_NONCURRENT, LEASE_CURRENT)))
         self.assertIn("lease", debt["note"])
 
+    def test_a_debtcurrent_line_that_adds_up_to_the_total_is_the_current_part(self) -> None:
+        # Dell's 10-K for fiscal 2026 (SEC company facts, read 2026-11-22): its current debt line is tagged DebtCurrent,
+        # and LongTermDebt equals the two lines. The 10-K says no commercial paper was outstanding at that date.
+        debt = debt_at({NONCURRENT: 23_513e6, DEBT_CURRENT_LINE: 7_990e6, DEBT_TOTAL: 31_503e6})
+        self.assertEqual((debt["value"], debt["tags"]), (31_503e6, (NONCURRENT, DEBT_CURRENT_LINE)))
+        self.assertIn(DEBT_CURRENT_LINE, debt["note"])
+
+    def test_a_debtcurrent_line_that_does_not_add_up_is_not_taken(self) -> None:
+        # The difference can be short-term borrowings, which claim 7 leaves out.
+        debt = debt_at({NONCURRENT: 23_513e6, DEBT_CURRENT_LINE: 9_000e6, DEBT_TOTAL: 31_503e6})
+        self.assertIsNone(debt["value"])
+        self.assertIn(DEBT_CURRENT_LINE, debt["why"])
+
+    def test_a_debtcurrent_line_without_the_total_is_not_taken(self) -> None:
+        self.assertIsNone(debt_at({NONCURRENT: 23_513e6, DEBT_CURRENT_LINE: 7_990e6})["value"])
+
+    def test_the_current_maturities_line_wins_over_debtcurrent(self) -> None:
+        debt = debt_at({NONCURRENT: 5000e6, CURRENT: 100e6, DEBT_CURRENT_LINE: 700e6, DEBT_TOTAL: 5700e6})
+        self.assertEqual((debt["value"], debt["tags"]), (5100e6, (NONCURRENT, CURRENT)))
+
     def test_a_note_holds_no_digit_so_the_verifier_can_redo_the_division(self) -> None:
-        for values in ({NONCURRENT: 5000e6, DEBT_TOTAL: 5000e6}, {LEASE_NONCURRENT: 6000e6, LEASE_CURRENT: 300e6}):
+        for values in ({NONCURRENT: 5000e6, DEBT_TOTAL: 5000e6}, {LEASE_NONCURRENT: 6000e6, LEASE_CURRENT: 300e6},
+                       {NONCURRENT: 23_513e6, DEBT_CURRENT_LINE: 7_990e6, DEBT_TOTAL: 31_503e6}):
             note = debt_at(values)["note"]
             self.assertTrue(note.startswith("(") and note.endswith(")") and not re.search(r"\d", note), note)
 
@@ -214,6 +235,14 @@ class DebtInTheStepsTests(unittest.TestCase):
         self.assertEqual((ratio["shown"], ratio["arithmetic"]), ("0.255", "(5,000.0 + 100.0) / 20,000.0"))
         self.assertEqual((desk.fact_rows["long_term_debt"]["tag"], desk.fact_rows["current_debt"]["tag"]), (NONCURRENT, CURRENT))
         self.assertAlmostEqual(desk.debt["prior"]["value"], 4050e6)
+        self.assertNotIn("debt", not_found(printed))
+
+    def test_debt_to_equity_from_a_debtcurrent_line_that_adds_up_to_the_total(self) -> None:
+        desk, printed = desk_after_steps_4_and_5({NONCURRENT: [fact(None, YEAR_END, 5000e6)],
+                                                  DEBT_CURRENT_LINE: [fact(None, YEAR_END, 700e6)],
+                                                  DEBT_TOTAL: [fact(None, YEAR_END, 5700e6)]})
+        self.assertEqual(self.debt_to_equity(desk)["shown"], "0.285")
+        self.assertEqual((desk.fact_rows["long_term_debt"]["tag"], desk.fact_rows["current_debt"]["tag"]), (NONCURRENT, DEBT_CURRENT_LINE))
         self.assertNotIn("debt", not_found(printed))
 
     def test_no_current_portion_when_the_total_says_so(self) -> None:
