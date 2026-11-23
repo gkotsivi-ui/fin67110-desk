@@ -7,8 +7,10 @@ claims in code, and has four roles write a five-part report. A Verifier then mar
 against the saved filings, and the worksheet gives the client's view. Nothing in the code names a
 company: the ticker is an argument.
 
-Team: gkotsivi-ui, jcleeper65 and lee4276 (the team's name is to be added). The thing we own: the
-intelligent error review application. How the parts are joined: [docs/group-pipeline.md](docs/group-pipeline.md).
+Team LLK Analytics: gkotsivi-ui, jcleeper65 and lee4276. The thing we own: the intelligent error review
+application. The team's proposal (Checkpoint 3): [docs/checkpoint-3.md](docs/checkpoint-3.md).
+
+How the parts are joined: the pipeline everywhere, with the hook as the guard: each part reads only the files the parts before it saved in one run folder, and no role calls the seeker or the worksheet as a tool ([docs/group-pipeline.md](docs/group-pipeline.md)).
 
 ## Run the desk: the quick start
 
