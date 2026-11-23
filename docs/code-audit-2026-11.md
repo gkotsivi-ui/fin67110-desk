@@ -1,16 +1,18 @@
 # Code audit, November 2026
 
-A full audit of the team desk, made 2026-11-21 and 2026-11-22 on branch `full-audit`. The branch stands on
-`origin/main` at `140c4b3`. The audit was committed as `086a312`. Six independent reviewers then read that
-commit, and what they found is fixed in the commit after it (section 4, "Found by an independent review").
-Nothing is pushed until a member has seen the file list and the key scan.
+A full audit of the team desk, made 2026-11-21 and 2026-11-22 on branch `full-audit`. The branch was cut
+from `origin/main` at `140c4b3`. The audit was committed as `086a312`. Six independent reviewers then read
+that commit, and what they found is fixed in the commit after it, `0226521` (section 4, "Found by an
+independent review"). On 2026-11-22 `main` was merged in at `1d94e2a`, with two commits a member had made
+meanwhile; they closed two items this file had listed as open, and it says so where they stood. The
+branch is pull request 12 of the team's repository. A member decides on the merge.
 
 **Result.** `python check_all.py` runs 928 tests with no failure, 4 skipped, and every other check
 passes, on Windows 11 without UTF-8 mode. Before the audit the four test folders held 663 tests, and the
 required check, as `AGENTS.md` wrote it, failed on Windows. The audit fixed 56 findings, nine of them
 critical. The review of its commit then returned 50 findings, each reproduced: 26 had come with the audit's
 own commit (one critical, six high), 13 were older than the audit, and 11 were rules with no test that could
-fail. They are fixed in 27 groups, each with a test on made-up data. 22 findings are open and listed with
+fail. They are fixed in 27 groups, each with a test on made-up data. 21 findings are open and listed with
 the reason in section 4. No model was called and no real run was made: the model account has had no credit
 since 2026-11-21 (section 5).
 
@@ -348,7 +350,7 @@ before the audit was right and the audit made it wrong. Line numbers are those o
 | B1 | high, base desk | network | `lab03_app.py:327-336`; `team.py` | The base desk has no retry and no saved record of a stop (the Week 4 failure). A fix is on the unmerged branch `stopped-run-record` | The group desk is the live path now; merging the branch is a member's call | open, section 6 item 8 |
 | B2 | medium, base desk | layout | `lab02_desk.py:678`; `lab03_app.py:815` | The quarter's column is named "the column for 2026" (NVIDIA error 2). A fix is on the unmerged branch `one-desk` | as B1 | open, section 6 item 8 |
 | B3 | medium, base desk | setting | `prices.py`; the page | When LSEG does not answer, the price comes from financialdatasets.ai and only the report's second line says so (open since 2026-11-12) | Base desk only; the group desk has no second source | open |
-| H3 | medium | docs | `docs/checkpoint-3.md:29-33` | The course footer stands in the middle of the file, with notes after it | A member's checkpoint document | open, section 6 item 9 |
+| H3 | medium | docs | `docs/checkpoint-3.md:29-33` | The course footer stood in the middle of the file, with notes after it | A member's checkpoint document. A member finished the page on `main` (`1d94e2a`, 2026-11-22): it ends with the footer | closed by a member |
 | S1 | low | docs | `skills/us-spinoff-seeker/SKILL.md:8`, `:12`, `:49`, `:79`; `desk_error_review.py:653-655` | An empty code span where a path was removed; "eight", "five" and "six" factors in one file; `--practice` changes nothing | The skill files came with the copied pipeline and are tracked by hash in `docs/pipeline-import.json` | open |
 | X2 | medium | layout | `equity_research_desk.py` step 2 | The quarter's claims (9 to 11) are still not checked against XBRL (known since 2026-11-11, "F2b") | A design the team has not chosen | open |
 | W1 | medium | layout | `desk_rules.py` `release_among`, `release.py` `has_income_statement` | An exhibit counts as the release when one short line of it is a statement's title. A slide deck in Exhibit 99.1 with a slide titled "Income Statement", before the release in 99.2, would be read as the release | Telling a statement from its title alone needs the table under it; not built | open |
@@ -410,10 +412,11 @@ In order of what threatens the next live run first.
    member's own, take the change back or rewrite it.
 8. **Three branches are not merged:** `one-desk` (the quarter column's label, base desk), `openai-key`,
    `stopped-run-record` (the base desk's retry and stop record). Merge or close each. Nothing was deleted.
-9. **Files no AI writes, where the audit saw something and changed nothing:** `docs/checkpoint-3.md` has its
-   footer in the middle (H3); `AGENTS.md` rule 5 names `roles/` and not `pipeline_roles/`, which the group
-   desk reads; `persona-why-cheap.md`, `spinoff-rules.md` and `roles/*.md` have no footer, and a footer there
-   would enter a prompt; `spinoff-rules.md:24` says "Placeholder assumption".
+9. **Files no AI writes, where the audit saw something and changed nothing:** `AGENTS.md` rule 5 names
+   `roles/` and not `pipeline_roles/`, which the group desk reads; `persona-why-cheap.md`, `spinoff-rules.md`
+   and `roles/*.md` have no footer, and a footer there would enter a prompt; `spinoff-rules.md:24` says
+   "Placeholder assumption". (`docs/checkpoint-3.md` had its footer in the middle, H3; a member has since
+   finished that page.)
 10. **Under `runs/live/`, nothing was changed.** Seen there: `runs/live/README.md:20` and `:31` give commands
     with no environment (`desk.py TICKER --live`, `python live_record.py`); the two `audit.md` files have no
     footer; three review files end with another second footer line. Document them the way `AGENTS.md` says.
@@ -421,9 +424,12 @@ In order of what threatens the next live run first.
     - A run takes 10 to 35 minutes (README); the presentation is 11 minutes with a live run and one retry.
     - The two live reports have no worksheet view under them; Labs 07 and 09 ask for one. The hit-rate table
       can score at most Weeks 6 and 7.
-    - The README's top has no line that says who joined what under whose part.
     - `manual.md` is mostly placeholders: the diagram, the joins, the audit counts, the hit-rate table, the
-      base rate, "what we will not delegate again", the three-column table, the roles paragraphs.
+      base rate, "what we will not delegate again", the three-column table, the roles paragraphs. The
+      drawing itself is in the repository since 2026-11-22 (`docs/desk-diagram.png`); the manual does not
+      show it yet.
+    - Closed since the site was read: the README's top had no line that says who joined what under whose
+      part. A member added the team's name and the join line on `main` (`1d94e2a`).
     - "A missing claim costs nothing" (`AGENTS.md`) is stronger than the site, which says "Every desk states
       them" and shows the missing count.
     - `audits.md` is an AI draft whose footer says "I verified the sources myself"; it uses "Correct*",
