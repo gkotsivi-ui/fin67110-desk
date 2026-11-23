@@ -72,8 +72,15 @@ class ThePriorYearIsTheSameFilingsComparative(unittest.TestCase):
         self.assertEqual((revenue["value"], revenue["prior_value"], revenue["prior_filing"]), (100, None, None))
 
     def test_a_53_week_year_is_still_the_year_before(self):
-        payload = company([row(100, "2026-01-30", THIS_10K, start="2025-02-01"), row(90, "2025-01-31", THIS_10K, start="2024-02-03")])
-        self.assertEqual(read(payload, "2026-01-30").facts["revenue"]["prior_value"], 90)
+        # 371 days between the two year ends. Until 2026-11-22 this test used a 52-week year (364 days) and passed
+        # with the upper bound of the rule cut to 366 (found by an independent review).
+        payload = company([row(100, "2026-01-31", THIS_10K, start="2025-01-26"), row(90, "2025-01-25", THIS_10K, start="2024-01-28")])
+        self.assertEqual(read(payload, "2026-01-31").facts["revenue"]["prior_value"], 90)
+
+    def test_a_period_half_a_year_back_is_not_the_prior_year(self):
+        payload = company([duration(100, END, THIS_10K), duration(80, PRIOR_END, THIS_10K)],
+                          [row(50, END, THIS_10K), row(45, "2025-12-31", THIS_10K)])   # a balance sheet 181 days earlier
+        self.assertIsNone(read(payload).facts["stockholders_equity"]["prior_value"])
 
     def test_a_period_two_years_back_is_not_the_prior_year(self):
         payload = company([duration(100, END, THIS_10K), duration(70, "2024-06-30", THIS_10K)])

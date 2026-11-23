@@ -111,14 +111,16 @@ class Sources:
             self.previous_request=time.monotonic()
             try:
                 response=self.transport(url,headers=headers,timeout=timeout,allow_redirects=False)
-            except (requests.ConnectionError,requests.Timeout,ConnectionError,TimeoutError) as error:
+            # A page cut off while it is read is requests' ChunkedEncodingError, which is no ConnectionError.
+            except (requests.ConnectionError,requests.Timeout,requests.exceptions.ChunkedEncodingError,ConnectionError,TimeoutError) as error:
                 if wait is None:raise
                 problem=type(error).__name__
             else:
                 if response.status_code not in (429,500,502,503,504) or wait is None:return response
                 problem='status '+str(response.status_code)
                 asked=str((getattr(response,'headers',None) or {}).get('Retry-After',''))
-                if asked.isdigit():wait=min(60,max(wait,int(asked)))
+                # The wait SEC asks for, up to a minute. Only plain digits: str.isdigit is also true for "¹".
+                if asked.isascii() and asked.isdigit():wait=min(60,max(wait,int(asked)))
             print(f'SEC EDGAR did not answer ({problem}); asking again in {wait} seconds.',flush=True)
             time.sleep(wait)
 

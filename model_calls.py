@@ -38,6 +38,21 @@ def status_of(error: BaseException) -> int | None:
     return None
 
 
+class TimeLimitPassed(TimeoutError):
+    """A call the desk itself gave up on (within_time_limit). It is not made again: the call it gave up on is
+    still running, and a second one would run beside it."""
+
+
+# A provider that refuses for lack of credit says so in words. One of them sends that refusal as HTTP 429, the
+# status of a rate limit; waiting a minute does not fill an account.
+NO_CREDIT = ("insufficient_quota", "exceeded your current quota", "credit balance", "billing")
+
+
+def no_credit(error: BaseException) -> bool:
+    said = " ".join(str(part) for part in (error, getattr(error, "code", ""), getattr(error, "body", ""), getattr(error, "message", ""))).lower()
+    return any(words in said for words in NO_CREDIT)
+
+
 def retry_reason(error: BaseException | None) -> str | None:
     """"rate limit" or "dropped" when the same call may be made once more, read through the whole chain of
     causes; None when the call must not be repeated."""
@@ -46,6 +61,8 @@ def retry_reason(error: BaseException | None) -> str | None:
     while error is not None and id(error) not in seen:
         seen.add(id(error))
         status, name = status_of(error), type(error).__name__
+        if isinstance(error, TimeLimitPassed) or no_credit(error):
+            return None
         if status == RATE_LIMIT_STATUS or name in RATE_LIMIT_ERRORS:
             return "rate limit"
         if isinstance(error, (ConnectionError, TimeoutError)) or name in CONNECTION_ERRORS or status in SERVER_STATUS:
@@ -60,11 +77,12 @@ def dropped_connection(error: BaseException | None) -> bool:
 
 
 def within_time_limit(call: Callable[[], Any], seconds: float, what: str) -> Any:
-    """call(), or TimeoutError when it has not returned in time.
+    """call(), or TimeLimitPassed when it has not returned in time.
 
     The call runs in a helper thread, because the Google client takes no time limit and a stalled request never
     returns. The thread is a daemon: a call that never returns cannot keep the program alive, and its late
-    answer is thrown away.
+    answer is thrown away. The error stops the run (retry_reason): until 2026-11-22 it was a plain TimeoutError,
+    which the retry rule read as a dropped connection, so the role was called again beside the call still running.
     """
     box: dict[str, Any] = {}
 
@@ -78,7 +96,7 @@ def within_time_limit(call: Callable[[], Any], seconds: float, what: str) -> Any
     thread.start()
     thread.join(seconds)
     if thread.is_alive():
-        raise TimeoutError(f"{what}: the model did not answer in {int(seconds // 60)} minutes")
+        raise TimeLimitPassed(f"{what}: the model did not answer in {int(seconds // 60)} minutes")
     if "error" in box:
         raise box["error"]
     return box["value"]

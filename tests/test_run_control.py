@@ -14,6 +14,8 @@ from datetime import datetime
 import io
 import json
 from pathlib import Path
+import shutil
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -166,6 +168,125 @@ class Resume(RunControl):
         with self.assertRaisesRegex(ValueError, "changed after it stopped: verified_report.md"):
             desk.resume(stopped.run, parts_factory=FakeParts)
 
+    # The next five were found by an independent review of the first form of --resume, on 2026-11-22.
+    def finish(self, run, parts=FakeParts, hook=Hook):
+        with redirect_stdout(io.StringIO()), local_sockets_only():
+            runner = desk.resume(run, parts_factory=parts, hook_factory=hook)
+            return runner.finish(runner.run / "verified_report.md")
+
+    def test_a_second_resume_is_not_refused_for_what_the_first_set_aside(self):
+        class WritesThenFails(FakeParts):
+            def worksheet(self, started, output_hook):
+                (self.run / "Spinoff worksheet, ZZZZ, model input.json").write_text('{"persona": "p", "input": {}}', encoding="utf-8")
+                raise ValueError("invented: the provider refused the call")
+        stopped, _ = self.run_desk(parts=WritesThenFails)
+        FakeParts.failure = "worksheet"                      # the second attempt stops before it saves anything
+        with self.assertRaisesRegex(ValueError, "invented worksheet failure"):
+            self.finish(stopped.run)
+        FakeParts.failure = None
+        self.assertEqual(self.finish(stopped.run), stopped.run / "final_report.md")
+        self.assertEqual(self.state(stopped)["status"], "complete")
+        self.assertEqual([p.name for p in (stopped.run / "earlier_attempt").iterdir()], ["Spinoff worksheet, ZZZZ, model input.json"])
+        with redirect_stdout(io.StringIO()):
+            self.assertEqual(desk.replay(stopped.run), stopped.run / "final_report.md")
+
+    def test_a_resume_that_cannot_start_changes_nothing(self):
+        class SettingsNotReady(FakeParts):
+            def validate_setup(self):
+                raise ValueError("The settings are not ready (invented).")
+        stopped = self.failed_in_the_worksheet()
+        before = {p.relative_to(stopped.run).as_posix(): p.read_bytes() for p in stopped.run.rglob("*") if p.is_file()}
+        with self.assertRaisesRegex(ValueError, "settings are not ready"):
+            self.finish(stopped.run, parts=SettingsNotReady)
+        after = {p.relative_to(stopped.run).as_posix(): p.read_bytes() for p in stopped.run.rglob("*") if p.is_file()}
+        self.assertEqual(after, before)                       # status "failed" still, nothing moved aside
+        self.assertEqual(self.finish(stopped.run), stopped.run / "final_report.md")
+
+    def test_a_view_edited_after_the_stop_refuses_the_resume(self):
+        stopped = self.failed_in_the_worksheet()
+        view = json.loads((stopped.run / "view.json").read_text(encoding="utf-8"))
+        self.assertEqual(view["direction"], "not computed")
+        view.update(direction="up", view_time="2026-11-10T09:00:00-05:00", time="2026-11-10T09:00:00-05:00")
+        (stopped.run / "view.json").write_text(json.dumps(view, indent=2) + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "changed after it stopped: view.json"):
+            desk.resume(stopped.run, parts_factory=FakeParts)
+
+    def test_a_stop_in_the_final_report_is_resumed_without_the_worksheet_again(self):
+        class RejectsOnce(Hook):
+            reject = True
+
+            def check(self, phase, paths, **kwargs):
+                if phase == "final report" and RejectsOnce.reject:
+                    raise HookFailure("an invented failure of the final check")
+                return super().check(phase, paths, **kwargs)
+        stopped, error = self.run_desk(hook=RejectsOnce)
+        self.assertIsInstance(error, HookFailure)
+        worksheet = (stopped.run / "Spinoff worksheet, ZZZZ.md").read_bytes()
+        FakeParts.calls, RejectsOnce.reject = [], False
+        self.assertEqual(self.finish(stopped.run, hook=RejectsOnce), stopped.run / "final_report.md")
+        self.assertEqual(FakeParts.calls, [])                 # the worksheet's model is not called a second time
+        self.assertEqual((stopped.run / "Spinoff worksheet, ZZZZ.md").read_bytes(), worksheet)
+        self.assertEqual([p.name for p in (stopped.run / "earlier_attempt").iterdir()], ["final_report.rejected.md"])
+        self.assertEqual(self.state(stopped)["status"], "complete")
+        with redirect_stdout(io.StringIO()):
+            self.assertEqual(desk.replay(stopped.run), stopped.run / "final_report.md")
+
+    def test_a_resume_on_another_model_names_both_models_in_the_footer(self):
+        # A run that stopped because one provider refused is resumed on another: the worksheet's judgment is then
+        # the second model's, and the footer saved at the start named the first for it.
+        stopped = self.failed_in_the_worksheet()
+        with patch.object(desk, "dotenv_values", return_value={"SEC_USER_AGENT": "Synthetic offline test identity", "MODEL": "gemini/a-second-made-up-model"}):
+            final = self.finish(stopped.run)
+        line = next(line for line in final.read_text(encoding="utf-8").splitlines() if line.startswith("AI assistance:"))
+        self.assertIn("anthropic/a-made-up-model (the roles)", line)
+        self.assertIn("gemini/a-second-made-up-model (the worksheet's judgment)", line)
+        self.assertEqual(self.state(stopped)["resumed"][0]["model"], "gemini/a-second-made-up-model")
+        with patch.object(desk, "dotenv_values", return_value={}), redirect_stdout(io.StringIO()):
+            self.assertEqual(desk.replay(stopped.run), final)          # the footer is the run's, on any computer
+
+    def test_the_view_of_a_stopped_run_is_kept_through_the_resume(self):
+        # The real worksheet saves its view through view_record.freeze_view, which keeps a view that is there.
+        class KeepsTheView(FakeParts):
+            def worksheet(self, started, output_hook):
+                kept = (self.run / "view.json").read_bytes()
+                path = super().worksheet(started, output_hook)
+                (self.run / "view.json").write_bytes(kept)
+                return path
+        stopped = self.failed_in_the_worksheet()
+        frozen = (stopped.run / "view.json").read_bytes()
+        self.finish(stopped.run, parts=KeepsTheView)
+        self.assertEqual((stopped.run / "view.json").read_bytes(), frozen)
+        self.assertEqual(json.loads(frozen)["direction"], "not computed")
+
+    def test_a_run_with_no_checked_team_report_is_not_resumed(self):
+        stopped = self.failed_in_the_worksheet()
+        (stopped.run / "verified_report.md").unlink()
+        with self.assertRaisesRegex(ValueError, "holds no checked team report"):
+            desk.resume(stopped.run, parts_factory=FakeParts)
+
+    def test_a_run_stopped_by_hand_replays_as_a_stopped_run(self):
+        class StoppedInTheTeam(FakeParts):
+            def team(self, ticker, started, output_hook):
+                raise KeyboardInterrupt()
+        runner, _ = self.run_desk(parts=StoppedInTheTeam)
+        with redirect_stdout(io.StringIO()), self.assertRaisesRegex(ValueError, "Saved part team failed"):
+            desk.replay(runner.run)
+
+    def test_a_failed_run_replays_as_a_failed_run(self):
+        runner = self.failed_in_the_worksheet()
+        with redirect_stdout(io.StringIO()), self.assertRaisesRegex(ValueError, "Saved part worksheet failed"):
+            desk.replay(runner.run)
+
+    def test_a_program_exit_inside_a_part_is_a_failure_not_a_stop_by_hand(self):
+        class Exits(FakeParts):
+            def team(self, ticker, started, output_hook):
+                raise SystemExit(3)
+        runner, error = self.run_desk(parts=Exits)
+        self.assertIsInstance(error, SystemExit)
+        state = self.state(runner)
+        self.assertEqual((state["status"], state["failed_part"]), ("failed", "team"))
+        self.assertNotIn("by hand", state["error"])
+
     def test_the_command_says_how_to_resume(self):
         FakeParts.failure = "worksheet"
         out = io.StringIO()
@@ -216,7 +337,7 @@ class TheLiveRecordReadsTheRunsState(unittest.TestCase):
         folder = root / "runs" / "live" / "ZZZZ_2026-11-24_17-00-00.000000"
         folder.mkdir(parents=True)
         if state is not None:
-            (folder / "desk_run.json").write_text(json.dumps(state), encoding="utf-8")
+            (folder / "desk_run.json").write_text(state if isinstance(state, str) else json.dumps(state), encoding="utf-8")
         for name in reports:
             (folder / name).write_text(self.LINE + "\nA report.\n", encoding="utf-8")
         now = datetime.fromisoformat("2026-11-24T18:00:00-05:00")
@@ -241,6 +362,20 @@ class TheLiveRecordReadsTheRunsState(unittest.TestCase):
         text = live_record.render([row], datetime.fromisoformat("2026-11-24T18:00:00-05:00"), True, "Claude Code")
         self.assertIn("Runs that did not finish:", text)
 
+    def test_a_state_file_that_cannot_be_read_is_a_problem_not_a_live_report(self):
+        # Only a folder with no state file at all is a base-desk run. A state cut short, or one that is not an
+        # object, was read the same way, and the report of a run that failed in its team became a row.
+        for damaged in ('{"status": "failed", "failed_part": "te', "[]", "", '"complete"'):
+            with self.subTest(damaged=damaged):
+                row = self.folder(damaged, "verified_report.md", "report.md")
+                self.assertIn("desk_run.json cannot be read", row["problem"])
+                self.assertTrue(live_record.late(row))
+
+    def test_a_run_that_stopped_after_its_team_is_never_shown_by_a_final_report(self):
+        row = self.folder({"status": "failed", "failed_part": "final report"}, "final_report.md", "verified_report.md", "report.md")
+        self.assertTrue(row["report"].endswith("/verified_report.md"))
+        self.assertIn('stopped in the part "final report"', row["note"])
+
     def test_a_base_desk_run_has_no_state_and_is_read_as_before(self):
         row = self.folder(None, "verified_report.md", "report.md")
         self.assertEqual((row["problem"], row["note"]), ("", ""))
@@ -260,6 +395,55 @@ class NoHomeFolderInARunsFiles(unittest.TestCase):
         rules.write_text(json.dumps({"facts": {}}), encoding="utf-8")
         self.assertEqual(worksheet.load_worksheet(rules)["worksheet_source"], "rules.json")
 
+
+
+class ASettingsFileThatCannotBeRead(unittest.TestCase):
+    def test_the_command_names_the_cause_and_makes_no_run_folder(self):
+        # A .env that Windows PowerShell wrote as UTF-16. The desk made its run folder first and then stopped with
+        # "'utf-8' codec can't decode byte 0xff", which names neither .env nor the cure; with --live the empty folder
+        # stood in runs/live (found by an independent review, 2026-11-22; the audit had listed this as fixed).
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root, True)
+
+        def utf16(path):
+            raise UnicodeDecodeError("utf-8", b"\xff\xfe", 0, 1, "invalid start byte")
+        said = io.StringIO()
+        with patch.object(desk, "dotenv_values", utf16), patch.dict("os.environ", {"SEC_USER_AGENT": "", "MODEL": "", "AI_TOOLS": ""}), \
+                patch.object(desk, "validate_local_options"), \
+                patch("sys.stderr", said), redirect_stdout(io.StringIO()):
+            self.assertEqual(desk.main(["ZZZZ", "--runs-root", str(root)]), 1)
+        self.assertIn(".env is not saved as UTF-8", said.getvalue())
+        self.assertEqual(list(root.iterdir()), [])
+
+
+class ALiveRunKeepsItsBytesInGit(unittest.TestCase):
+    """A run seals the SHA-256 of every file it saved, and --replay rechecks them. On Windows the desk writes CR LF,
+    and the repository's rule "* text=auto eol=lf" made git store LF: a clone of a live run held other bytes than
+    the run had sealed, and its replay stopped at the first file (found by an independent review, 2026-11-22). The
+    desk's run folders are now stored as they are. The two graded records of the base desk keep the old rule."""
+    def stored(self, relative, data):
+        folder = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, folder, True)
+        (folder / ".gitattributes").write_bytes((desk.ROOT / ".gitattributes").read_bytes())
+        path = folder / relative
+        path.parent.mkdir(parents=True)
+        path.write_bytes(data)
+        for command in (["init", "--quiet"], ["add", "--", relative]):
+            subprocess.run(["git", *command], cwd=folder, check=True, capture_output=True)
+        return subprocess.run(["git", "cat-file", "blob", ":" + relative], cwd=folder, check=True, capture_output=True).stdout
+
+    def test_git_stores_a_desk_run_folder_byte_for_byte(self):
+        made_on_windows = b"Filings read: a made-up line\r\n\r\nA report.\r\n"
+        for relative in ("runs/live/ZZZZ_2026-11-24_17-00-00.000000/final_report.md", "runs/live/ZZZZ_2026-11-24_17-00-00.000000/desk_run.json",
+                         "runs/live/ZZZZ_2026-11-24_17-00-00.000000/sources/http/0a1b2c.bin", "runs/live/BRK.B_2026-11-24_17-00-00.000000/nodes/Verifier_1/output.json"):
+            with self.subTest(file=relative):
+                self.assertEqual(self.stored(relative, made_on_windows), made_on_windows)
+
+    def test_every_other_file_keeps_the_rule_of_one_line_ending(self):
+        made_on_windows = b"one\r\ntwo\r\n"
+        for relative in ("docs/a-made-up-note.md", "runs/live/CSCO_20261113_093231/report.md", "runs/live/README.md"):
+            with self.subTest(file=relative):
+                self.assertEqual(self.stored(relative, made_on_windows), b"one\ntwo\n")
 
 
 class TheTicker(unittest.TestCase):

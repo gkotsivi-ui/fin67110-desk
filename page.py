@@ -133,6 +133,8 @@ def arguments(body: dict[str, Any]) -> tuple[list[str], str]:
         args += ["--refresh-screen", refresh]
     registry = str(body.get("registry", "")).strip()
     if registry:
+        if network_path(registry):  # refused by its text, before the file system is asked about it
+            return [], "Select a saved registry JSON inside this repository."
         path = (ROOT / registry).resolve()
         if ROOT.resolve() not in path.parents or not path.is_file() or path.suffix != ".json":
             return [], "Select a saved registry JSON inside this repository."
@@ -153,6 +155,20 @@ def arguments(body: dict[str, Any]) -> tuple[list[str], str]:
     return args, ""
 
 
+def network_path(value: str) -> bool:
+    """True for a path that names another computer: two slashes and a host name. Windows signs in to that host as
+    soon as a program asks the file system about such a path, so the page refuses it by its text.
+
+    A repository that itself sits on a network drive has such a path too, and its own files are not another
+    computer's: the first form of this check (2026-11-22) refused them, and the page then listed no run of the desk.
+    """
+    text = value.replace("/", "\\").lower()
+    if not text.startswith("\\\\"):
+        return False
+    here = {str(root).replace("/", "\\").lower().rstrip("\\") for root in (ROOT, ROOT.resolve())}
+    return not any(text == root or text.startswith(root + "\\") for root in here)
+
+
 def safe_report(relative: str) -> Path | None:
     """The report file, when it is a checked report of a saved run; None for any other path.
 
@@ -160,7 +176,7 @@ def safe_report(relative: str) -> Path | None:
     Until 2026-11-22 any Markdown file under output/ was served, drafts included, and a network path
     (two slashes and a host name) reached the file system, which makes Windows sign in to that host.
     """
-    if not relative or relative.replace("/", "\\").startswith("\\\\"):
+    if not relative or network_path(relative):
         return None
     try:
         path = (ROOT / relative).resolve()
@@ -192,6 +208,84 @@ def report_link(printed: str) -> str:
     return path.relative_to(ROOT.resolve()).as_posix() if path else ""
 
 
+TABLE_CUT = "A row of this table has more cells than its header, so the table is shown as it is written:"
+CODE_SPAN = re.compile(r"(`+)(?!`)(.+?)(?<!`)\1(?!`)", re.S)
+
+
+def whole_tables(text: str, table: Any) -> str:
+    """The report's text with every table whose row has more cells than its header turned into plain text.
+
+    Python-Markdown builds as many cells as the header has and drops the rest of a row without a word. Which lines
+    are a table, and how a row splits into cells, is asked of the library's own table reader. Until 2026-11-22
+    this was a second set of rules: a table with a short separator ("|--|--|") was not seen and still lost its
+    cells, and a good table with an empty last cell, or with a bar inside code, was shown as plain text.
+    """
+    blocks = []
+    for block in re.sub(r"(?m)^[ \t]+$", "", text).split("\n\n"):
+        lines = block.split("\n")
+        # A table starts a block, or follows a heading line, which the library takes off the block first.
+        for start in [0] + [k + 1 for k, line in enumerate(lines) if re.match(r" {0,3}#{1,6}(?:\s|$)", line)]:
+            if start < len(lines) and table.test(None, "\n".join(lines[start:])):
+                rows = [row.strip(" ") for row in lines[start:]]
+                width = len(table._split_row(rows[0]))
+                if any(len(table._split_row(row)) > width for row in rows[2:]):
+                    block = "\n".join([*lines[:start], "", TABLE_CUT, "", *("    " + row for row in lines[start:])]).lstrip("\n")
+                break
+        blocks.append(block)
+    return "\n\n".join(blocks)
+
+
+# Bold as a writer means it: two stars that open before a word and close after one, not between numbers.
+BOLD = re.compile(r"(?<![\w)*\\])\*\*(?=[^\s*])(.+?)(?<=[^\s*])\*\*(?![\w*])")
+NUMBERED = re.compile(r"( {0,3})(\d{1,9})([.)])(\s)")
+
+
+def stars_as_typed(line: str) -> str:
+    """One line with every star that is not bold or a list's mark made a plain star."""
+    plain = lambda part: re.sub(r"(?<!\\)\*", r"\\*", part)
+    mark = re.match(r"\s*\* +", line)  # a list written with stars stays a list
+    head, rest = (mark.group(0), line[mark.end():]) if mark else ("", line)
+    out, last = [head], 0
+    for bold in BOLD.finditer(rest):
+        out += [plain(rest[last:bold.start()]), "**", plain(bold.group(1)), "**"]
+        last = bold.end()
+    return "".join(out) + plain(rest[last:])
+
+
+def literal_stars(text: str) -> str:
+    """The report's text with what Markdown would change made plain, so the page shows what the file holds.
+
+    A star alone is a star, not the start of italics: "2*3*4" was shown as 234 (2026-11-22). Two stars are bold
+    only around words: "2**3**4" is a power. A line "[1]: address" is shown, where Markdown takes it for a link's
+    definition and removes it. A numbered list that skips a number keeps its numbers, where Markdown counts on
+    from the first. Code is left as typed: a code span, and a line indented as code, which is how whole_tables
+    shows a table.
+    """
+    def outside_code(part: str) -> str:
+        lines = part.split("\n")
+        numbers = [NUMBERED.match(line) for line in lines]
+        # A run of numbered lines that skips a number is shown as typed, every line of it.
+        typed, k = set(), 0
+        while k < len(lines):
+            end = k
+            while end < len(lines) and numbers[end]:
+                end += 1
+            if any(int(numbers[i + 1].group(2)) != int(numbers[i].group(2)) + 1 for i in range(k, end - 1)):
+                typed.update(range(k, end))
+            k = max(end, k + 1)
+        for k, line in enumerate(lines):
+            if re.match(r" {4}|\t", line):
+                continue
+            line = re.sub(r"^( {0,3})\[(?=[^\]\n]+\]:\s*\S)", r"\1\\[", stars_as_typed(line))
+            lines[k] = NUMBERED.sub(r"\1\2\\\3\4", line, count=1) if k in typed else line
+        return "\n".join(lines)
+    out, last = [], 0
+    for span in CODE_SPAN.finditer(text):
+        out += [outside_code(text[last:span.start()]), span.group(0)]
+        last = span.end()
+    return "".join(out) + outside_code(text[last:])
+
+
 def render(path: Path) -> str:
     """The report as HTML. Its text is escaped first, so nothing in a filing or a model's reply becomes markup.
 
@@ -204,25 +298,11 @@ def render(path: Path) -> str:
     text = html.escape(path.read_text(encoding="utf-8-sig"), quote=False)
     # Reports verified before the Verifier's fix escape a quoted table bar twice (\\|), which would split the row.
     text = text.replace("\\\\|", "\\|")
-    text = re.sub(r"(?<![*\\])\*(?!\*)", r"\\*", text)  # a star alone is a star; ** stays bold
-    lines, kept, i = text.split("\n"), [], 0
-    while i < len(lines):
-        if "|" in lines[i] and i + 1 < len(lines) and re.fullmatch(r"\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*", lines[i + 1]):
-            end = i + 2
-            while end < len(lines) and "|" in lines[end]:
-                end += 1
-            cells = [len(re.split(r"(?<!\\)\|", row.strip().strip("|"))) for row in lines[i:end]]
-            if len(set(cells)) > 1:
-                kept += ["A row of this table does not have as many cells as its header, so the table is shown as it is written:", "",
-                         *("    " + row for row in lines[i:end]), ""]
-            else:
-                kept += lines[i:end]
-            i = end
-        else:
-            kept.append(lines[i])
-            i += 1
-    made = markdown.markdown("\n".join(kept), extensions=["tables", "sane_lists", "nl2br"])
-    made = re.sub(r"<img\b[^>]*?(?:alt=\"([^\"]*)\")?[^>]*>", lambda m: m.group(1) or "", made)
+    writer = markdown.Markdown(extensions=["tables", "sane_lists", "nl2br"])
+    made = writer.convert(literal_stars(whole_tables(text, writer.parser.blockprocessors["table"])))
+    # An image is shown as its words. Until 2026-11-22 the pattern here never read the words: an image and its
+    # text both vanished, and the test of it used an image with no words.
+    made = re.sub(r"<img\b[^>]*>", lambda tag: (re.search(r"\balt=\"([^\"]*)\"", tag.group(0)) or [None, ""])[1], made)
     made = re.sub(r"<a\s+href=\"(?!https?://)[^\"]*\"[^>]*>(.*?)</a>", r"\1", made, flags=re.S)
     made = made.replace("<a href=\"", "<a rel=\"noopener noreferrer\" target=\"_blank\" href=\"")
     # The text was escaped before Markdown, and Markdown escapes code once more.
@@ -243,6 +323,8 @@ class Page(BaseHTTPRequestHandler):
         so that another website cannot start a run that spends the API key."""
         port = self.server.server_address[1]
         allowed = {f"127.0.0.1:{port}", f"localhost:{port}"}
+        if port == 80:
+            allowed |= {"127.0.0.1", "localhost"}  # a browser leaves ":80" out of the Host line
         if self.headers.get("Host") not in allowed:
             self.send_json({"error": "This page answers only at its own address."}, HTTPStatus.FORBIDDEN)
             return False
@@ -250,9 +332,9 @@ class Page(BaseHTTPRequestHandler):
         # open in another tab could start the setup check or ask for any report address with a GET.
         origin = self.headers.get("Origin")
         # The page itself is the one exception: the README shows its address as a link, and a click on that link
-        # on GitHub is a request from another website. It opens the page, as a whole page only, and nothing else.
-        a_link_to_the_page = (self.command == "GET" and urlparse(self.path).path == "/" and not origin
-                              and self.headers.get("Sec-Fetch-Dest", "document") == "document")
+        # on GitHub is a request from another website; an editor's preview pane shows the page inside a frame.
+        # Either opens the page, which holds no data, and nothing else.
+        a_link_to_the_page = self.command == "GET" and urlparse(self.path).path == "/" and not origin
         if not a_link_to_the_page and ((origin and origin.removeprefix("http://") not in allowed)
                                        or self.headers.get("Sec-Fetch-Site", "same-origin") not in ("same-origin", "none")):
             self.send_json({"error": "This page answers only its own requests."}, HTTPStatus.FORBIDDEN)
@@ -262,6 +344,26 @@ class Page(BaseHTTPRequestHandler):
                 self.send_json({"error": "Send JSON."}, HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
                 return False
         return True
+
+    def small_body(self) -> bytes:
+        """The request's body, when it is small; ValueError when it is not.
+
+        A body that is too long is still read, up to a megabyte, and thrown away before the page answers. Answering
+        with bytes left unread makes Windows drop the connection, and then the sender sometimes got no answer at
+        all: the test of this failed about one run in eight until 2026-11-22.
+        """
+        length = int(self.headers.get("Content-Length") or 0)
+        if length < 0:
+            raise ValueError("invalid request length")
+        if length > 16384:
+            left = min(length, 1 << 20)
+            while left > 0:
+                read = self.rfile.read(min(left, 65536))
+                if not read:
+                    break
+                left -= len(read)
+            raise ValueError("the request is too long")
+        return self.rfile.read(length)
 
     def do_GET(self) -> None:
         if not self.from_here():
@@ -320,10 +422,7 @@ class Page(BaseHTTPRequestHandler):
         try:
             # A small body, read whole. Until 2026-11-22 a length of -1 or of a gigabyte held the handler for good,
             # and JSON nested a hundred thousand deep ended it with no answer.
-            length = int(self.headers.get("Content-Length") or 0)
-            if not 0 <= length <= 16384:
-                raise ValueError("invalid request length")
-            body = json.loads(self.rfile.read(length) or b"{}")
+            body = json.loads(self.small_body() or b"{}")
         except (ValueError, RecursionError):
             self.send_json({"error": "Send JSON."}, HTTPStatus.BAD_REQUEST)
             return
@@ -355,12 +454,9 @@ class Page(BaseHTTPRequestHandler):
     def route_review_start(self):
         global REVIEW_JOB
         try:
-            length = int(self.headers.get("Content-Length") or 0)
-            if not 0 < length <= 16384:
-                raise ValueError("invalid request length")
-            body = json.loads(self.rfile.read(length))
+            body = json.loads(self.small_body())
             folder = str(body.get("folder", ""))
-            if folder.replace("/", "\\").startswith("\\\\"):
+            if network_path(folder):
                 raise ValueError("a network path is not a run folder")
             folder = review_folder(folder)
             number = body.get("record_number")

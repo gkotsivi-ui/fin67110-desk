@@ -707,6 +707,56 @@ coding agent in the weeks before, and passed that agent's own tests.
   failure, four skipped, without UTF-8 mode. Before the audit the four folders held 663.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-22: an independent review of the audit's own commit
+
+The audit above was committed as `086a312`. Before anything was pushed, six reviewers that had no share in
+writing it read the commit, one part each (the data steps, the ledger, the run's control, the model calls and
+sources, the page, and the tests), and each had to prove a finding on made-up data. They returned 50
+findings, all reproduced again before any change. 26 had come with the audit's own commit, one of them
+critical and six high. The table is in [code-audit-2026-11.md](code-audit-2026-11.md), rows V1 to V27.
+
+- **What AI got wrong: fixes that made a right answer wrong.** The audit's new row reader counted "(5" as
+  an amount when a negative change is printed "(5" then ")%", dropped the row, and published another row's
+  figure: a count of shares, "$204", as GAAP diluted EPS. Its new scale rule printed "$43,440" bare for
+  $43,440 million, because "a year ago" read as "a year", and "$4,828 thousand" for millions, because a
+  row's own unit read as a header. Its time limit was itself retried, so a stalled role was called a second
+  time beside the first. Its `--resume` could be used once: a second was refused for the files the first
+  had moved. Its page check refused the repository's own files on a network drive. **How it was caught:**
+  each reviewer wrote the inputs the author had not thought of, and ran the code before the audit beside
+  the new code, so that "worse than before" could be told from "still not right".
+- **What AI got wrong: rules that refused honest text.** The ledger's new word rules refused "a third
+  party", "double taxation", "twice in the filing" and "Basel III points to", and left "double-digit" no
+  way through at all. Of 147 honest analyst sentences the first commit refused 50 that the old ledger
+  accepted. The setup check told a member named Fillmore to write a name and email, on every run, because
+  the example says "fill in". **How it was caught:** by writing sentences a person would write, not
+  sentences that attack. The rules are narrowed to what changes a number; 11 of the 147 are still refused,
+  each a typed sign, scale, citation or number in words.
+- **What AI got wrong: "fixed" in the audit file, and not fixed.** A UTF-16 `.env` was listed as handled;
+  `desk.py` itself still printed the codec error and left an empty run folder. The registry field was
+  listed as refusing a network path; it did not. An image was listed as shown by its words; it vanished
+  with them, and its test used an image with no words. **How it was caught:** the reviewers read each row
+  of the audit's table against the code, not against the audit's tests.
+- **What AI got wrong: tests that could not fail, again.** One page test failed about one run in eight
+  on Windows and never reached the rule it named. The test of a 53-week year used a 52-week year. Several
+  rules of the first commit could be deleted with no test failing. **How it was caught:** by deleting each
+  rule in a copy and running its tests. Each now has a test, and each bound of the one-year rule was broken
+  on purpose to see a test fail.
+- **What was older than the audit and the audit had missed.** A non-GAAP statement read as GAAP when its
+  title was a row of its own table; two change columns giving a growth of 8,909%; a run made on Windows
+  that does not recheck from a clone, because git stored other line endings than the run had sealed; two
+  reply shapes that crashed the run where a repair was due.
+- **What AI got wrong in these fixes, and how it was caught.** The first fix of the table's unit lost the
+  unit of a real release, which prints it beside its years: the replay of the saved Walmart pages showed
+  "USD as shown" where the commit had read "USD millions". The widened scan for lists of closes called the
+  one price a run saves a list, which would have failed the first live run that had a price: the test of a
+  whole run caught it. A key-shaped string in a new test tripped the repository's own scan. All three were
+  caught by checks the audit had added.
+- **What was not done.** Still no real model, SEC or LSEG run. The fixes were checked in a worktree, not in
+  a second fresh clone. Six things the review raised are left open, with the reason (rows W1 to W6).
+- **Tests.** On Windows 11 and Python 3.13 on 2026-11-22, `python check_all.py` ran 928 tests with no
+  failure, four skipped.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.

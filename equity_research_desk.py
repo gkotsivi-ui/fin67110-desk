@@ -83,12 +83,34 @@ REVENUE_TIERS = (r"total\s+(?:net\s+)?revenues?|revenues?,?\s+total", r"(?:net\s
 # A row or a per-share heading with one of these words is another measure, never GAAP diluted EPS.
 NOT_GAAP = re.compile(r"adjusted|non-?\s?gaap|\bcore\b|excluding|continuing|discontinued", re.I)
 # A table under one of these headings is not the income statement.
-NOT_THE_STATEMENT = re.compile(r"non-?\s?gaap|reconciliation|adjusted|outlook|guidance|forecast", re.I)
+# "Adjusted EBITDA" and "adjusted results" name other measures; "per share amounts adjusted for the stock split"
+# does not, and until 2026-11-22 that note in a statement's title made the desk skip the statement.
+NOT_THE_STATEMENT = re.compile(r"non-?\s?gaap|reconciliation|\badjusted\s+(?!for\b)\w|outlook|guidance|forecast", re.I)
 SPAN = re.compile(r"\b(?:(?:[A-Za-z-]+|\d+)\s+(?:Months|Weeks)|Quarter|(?:Fiscal\s+)?Year)s?\s+Ended\b", re.I)
 SPAN_WORDS = {"three": 3, "six": 6, "nine": 9, "twelve": 12, "thirteen": 13, "fourteen": 14, "sixteen": 16, "seventeen": 17}
 QUARTER_TOKEN = re.compile(r"(?:Q([1-4])\s*['’]?\s*(\d{2})|([1-4])\s*Q\s*['’]?\s*(\d{2}))", re.I)
-EPS_ROW = re.compile(r"diluted\s+(?:net\s+)?(?:earnings|income)(?:\s+\(loss\))?\s+per\s+(?:common\s+)?share", re.I)
+# "Diluted earnings per share", and the same label with the word at its end: "Net income per share - diluted".
+EPS_ROW = re.compile(r"diluted\s+(?:net\s+)?(?:earnings|income|loss)(?:\s+\((?:loss|income)\))?\s+per\s+(?:common\s+)?share"
+                     r"|(?:net\s+)?(?:earnings|income|loss)(?:\s+\((?:loss|income)\))?\s+per\s+(?:common\s+)?share\s*(?:[-–—:,]\s*|\()diluted\b\)?", re.I)
 PER_SHARE_HEADING = re.compile(r"(?:earnings|income).*per\s+(?:common\s+)?share|per\s+share", re.I)
+# A heading that counts shares. "Shares used in computing net income per share:" says "per share" and heads the
+# rows "Basic" and "Diluted" of a share count: until 2026-11-22 the desk published that count as diluted EPS.
+SHARE_COUNT_HEADING = re.compile(r"\bshares\b|weighted|outstanding", re.I)
+# A heading row that opens a section of other measures inside a table, and one that returns to GAAP.
+OTHER_MEASURES = re.compile(r"non-?\s?gaap|\badjusted\b", re.I)
+BACK_TO_GAAP = re.compile(r"(?:U\.S\.\s+)?GAAP\b|as\s+reported\b", re.I)
+# How many title lines above a table are read: a company's name, the statement's title, its unit, "(Unaudited)"
+# and a date line are five already.
+TITLE_LINES = 8
+BLOCKS = ["p", "div", "li", "center", "h1", "h2", "h3", "h4", "h5", "h6"]
+
+
+def other_measures_after(label: str, before: bool) -> bool:
+    """Whether the rows under this heading row are other measures than GAAP: a section headed "Non-GAAP" or
+    "Adjusted results" lasts until a heading says GAAP again. A per-share heading inside it does not end it."""
+    if OTHER_MEASURES.search(label) and not PER_SHARE_HEADING.search(label):
+        return True
+    return before and not BACK_TO_GAAP.match(label)
 
 
 def row_amounts(cells: list[str]) -> list[str | None]:
@@ -102,7 +124,10 @@ def row_amounts(cells: list[str]) -> list[str | None]:
     cells = [cell.strip() for cell in cells]
     amounts: list[str | None] = []
     for k, cell in enumerate(cells):
-        if next((c for c in cells[k + 1:] if c), "").startswith("%"):
+        # The percent sign may stand in the next cell, alone or behind the closing parenthesis of a negative
+        # change: "(5" then ")%". Until 2026-11-22 only a next cell that starts with "%" was known, so "(5" was
+        # an amount, the row held one too many and was dropped, and another row's figure was published.
+        if re.match(r"[)\s]*%", next((c for c in cells[k + 1:] if c), "")):
             continue
         if DASH_CELL.fullmatch(cell):
             amounts.append(None)
@@ -193,6 +218,10 @@ def read_quarter_table(rows: list[list[str]]) -> dict[str, Any] | None:
     period_row = next((i for i in range(head, min(head + 4, len(rows))) if sum(cell_period(c) is not None for c in rows[i]) >= 2), None)
     if period_row is None:
         return None
+    # The rows down to the period columns are the table's own title. A statement that calls itself non-GAAP there
+    # is not the income statement, wherever the lines above the table point (2026-11-22).
+    if NOT_THE_STATEMENT.search(" ".join(texts[:period_row + 1])):
+        return None
     labels = [c.strip() for c in rows[period_row] if cell_period(c) is not None]
     count = len(labels)
     if count % groups:
@@ -203,7 +232,11 @@ def read_quarter_table(rows: list[list[str]]) -> dict[str, Any] | None:
         return None
     latest, prior = group * size + columns[0], None if columns[1] is None else group * size + columns[1]
     # Lowe's prints each period's amount and then its percentage of sales; only a header that says so pairs them.
-    paired = any(sum("%" in c for c in row) >= count and not row_amounts(row[1:]) for row in rows[head:period_row + 3])
+    # A column of change is not a share of sales: "% Change" beside "% Change in Constant Currency" made two "%"
+    # cells for two periods, the rows were read as pairs, and last year's revenue became 11.1 (2026-11-22).
+    def share_of_sales(cell: str) -> bool:
+        return "%" in cell and not re.search(r"change|growth|increase|decrease|\bvar|\bvs\b|currency|y/y|yoy", cell, re.I)
+    paired = any(sum(share_of_sales(c) for c in row) >= count and not row_amounts(row[1:]) for row in rows[head:period_row + 3])
 
     def amounts(row: list[str]) -> list[str | None] | None:
         values = row_amounts(row[1:])
@@ -214,6 +247,7 @@ def read_quarter_table(rows: list[list[str]]) -> dict[str, Any] | None:
     revenue: dict[int, tuple[str, list[str | None]]] = {}
     eps = None
     heading = ""
+    other_measures = False
     for row in rows[period_row + 1:]:
         if not row:
             continue
@@ -221,13 +255,18 @@ def read_quarter_table(rows: list[list[str]]) -> dict[str, Any] | None:
         values = amounts(row)
         if not values:
             heading = label or heading
+            if label:
+                other_measures = other_measures_after(label, other_measures)
+            continue
+        if other_measures:
             continue
         for tier, pattern in enumerate(REVENUE_TIERS):
             if tier not in revenue and re.fullmatch(pattern, label, re.I) and values[latest] and not values[latest].startswith("-"):
                 revenue[tier] = (label, values)
         if eps is None and values[latest] is not None and not NOT_GAAP.search(label) and (
                 EPS_ROW.match(label)
-                or (re.fullmatch(r"diluted", label, re.I) and PER_SHARE_HEADING.search(heading) and not NOT_GAAP.search(heading))
+                or (re.fullmatch(r"diluted", label, re.I) and PER_SHARE_HEADING.search(heading)
+                    and not NOT_GAAP.search(heading) and not SHARE_COUNT_HEADING.search(heading))
                 or (re.fullmatch(r"GAAP", label, re.I) and EPS_ROW.search(heading))):
             eps = (label if EPS_ROW.match(label) else f"{heading}: {label}", values)
     if not revenue or eps is None:
@@ -256,10 +295,13 @@ def read_quarter_token_table(rows: list[list[str]]) -> dict[str, Any] | None:
     top = max(keys)
     if keys.count(top) != 1:
         return None
+    if NOT_THE_STATEMENT.search(" ".join(" ".join(row) for row in rows[:header + 1])):
+        return None  # the table's own title says it is another statement
     latest, year_ago = keys.index(top), (top[0] - 1, top[1])
     prior = keys.index(year_ago) if keys.count(year_ago) == 1 else None
     revenue = eps = None
     heading = ""
+    other_measures = False
     for row in rows[header + 1:]:
         if not row:
             continue
@@ -267,6 +309,10 @@ def read_quarter_token_table(rows: list[list[str]]) -> dict[str, Any] | None:
         values = row_amounts(row[1:])
         if len(values) != len(keys):
             heading = label or heading
+            if label:
+                other_measures = other_measures_after(label, other_measures)
+            continue
+        if other_measures:
             continue
         if revenue is None and re.fullmatch(r"(?:(?:total|net)\s+)?revenues?(?:\s*[-–]\s*reported)?", label, re.I) and values[latest] and not values[latest].startswith("-"):
             revenue = (label, values)
@@ -282,27 +328,55 @@ def read_quarter_token_table(rows: list[list[str]]) -> dict[str, Any] | None:
 
 
 def table_heading(table: Any) -> str:
-    """The lines printed just above a release table, up to four: its title, and often its unit."""
-    above: list[str] = []
+    """The title lines printed just above a release table, up to TITLE_LINES, in the order the page prints them:
+    its title, and often its unit.
+
+    A line is one block of the page, whatever bold or footnote tags split it into. A sentence is not a title, and
+    neither is a footnote of the table before; what stands above either belongs to it. The paragraph before a
+    release's statements usually speaks of outlook, guidance and non-GAAP measures: on 2026-11-22 the desk took
+    those words for the table's title and skipped the income statement itself. It also read only four pieces of
+    text, so a title five lines up, or one that tags had cut in pieces, was not seen at all.
+    """
+    lines: list[str] = []
+    seen: set[int] = set()
     if table is not None:
-        for text in table.find_all_previous(string=True, limit=40):
+        for text in table.find_all_previous(string=True, limit=120):
             if text.find_parent("table") is not None:
                 break  # an earlier table: its heading is not this one's
-            if text.strip():
-                above.append(text.strip())
-            if len(above) == 4:
+            block = text.find_parent(BLOCKS)
+            if block is not None and block.find(["table", "br"]) is None:
+                if id(block) in seen:
+                    continue
+                seen.add(id(block))
+                line = " ".join(block.get_text(" ").split())
+            else:
+                line = " ".join(text.split())
+            if not line:
+                continue
+            sentence = line.rstrip("\"'”’").endswith(".") and line != line.upper()
+            if sentence or re.match(r"\(\w{1,2}\)\s+\w|\*+\s*\w", line):
                 break
-    return " ".join(above)
+            lines.append(line)
+            if len(lines) == TITLE_LINES:
+                break
+    return " ".join(reversed(lines))
 
 
 def table_unit(table: Any, rows: list[list[str]]) -> str:
-    """A release table's unit: "in millions" in one of its cells, or else in the lines printed just above it.
+    """A release table's unit: "in millions" in the table's own title rows, or else in the lines printed just above it.
 
     On 2026-11-21 Lowe's printed "In Millions, Except Per Share and Percentage Data" above its table, not in it, and
-    the desk called its net sales "USD as shown"; an analyst who guessed the unit would write a wrong claim.
+    the desk called its net sales "USD as shown"; an analyst who guessed the unit would write a wrong claim. The
+    title rows end with the row of period columns (one filer prints its unit beside its years), or, in a table
+    without one, before the first row of amounts. A row's own unit below them ("Weighted average shares (in
+    thousands)") is that row's: until 2026-11-22 it was printed as the unit of the whole table.
     """
     pattern = r"\bin (millions|thousands|billions)\b"
-    found = re.search(pattern, " ".join(cell for row in rows for cell in row), re.I) or re.search(pattern, table_heading(table), re.I)
+    first_amounts = next((i for i, row in enumerate(rows) if any(amount is not None for amount in row_amounts(row[1:]))), len(rows))
+    periods = next((i for i, row in enumerate(rows) if sum(cell_period(cell) is not None for cell in row) >= 2), None)
+    end = periods + 1 if periods is not None and periods <= first_amounts else first_amounts
+    title = " ".join(cell for row in rows[:end] for cell in row)
+    found = re.search(pattern, title, re.I) or re.search(pattern, table_heading(table), re.I)
     return f"USD {found.group(1).lower()}" if found else "USD as shown"
 
 
@@ -913,29 +987,10 @@ class Desk:
             }
             print(f"  Computed quarter total-revenue growth = ({self.number(current_quarter_revenue)} - {self.number(prior_quarter_revenue)}) / {self.number(prior_quarter_revenue)} * 100 = {self.number(quarter_revenue_growth)}% | inputs: current [{revenue_source}]; prior-year [{prior_revenue_source}]")
 
-        def first_amount_after(start: int) -> str | None:
-            """The amount on the line after a label, when that line is a plain amount. A loss, a dash or words there
-            mean the desk cannot say which figure belongs to the label, so it states none."""
-            for candidate in lines[start + 1:]:
-                value = candidate.strip()
-                if value in ("", "$"):
-                    continue
-                return value.replace("$", "").strip() if re.fullmatch(r"\$?\s*\d[\d,]*(?:\.\d+)?", value) else None
-            return None
+        # The quarter's figures come from a table a reader placed in columns, or not at all. Until 2026-11-22 a
+        # fallback stated the first amount on the lines after "Total revenue" or "Diluted net income per common
+        # share": last year's figure when the older column stands first, the nine months' when that group does.
         eps_printed = found["eps"] if found else None
-        if not table_revenue_hit and not revenue_hits:
-            total_revenue_i = next((i for i, line in enumerate(lines) if re.fullmatch(r"Total revenue", line.strip(), re.I)), None)
-            total_revenue = first_amount_after(total_revenue_i) if total_revenue_i is not None else None
-            if total_revenue:
-                hits.append(f"Total revenue (quarterly; the unit was not read): {total_revenue}")
-        if not table_eps_hit and not eps_hits:
-            diluted_i = next((i for i, line in enumerate(lines) if re.search(r"diluted\s+net income per common share", line, re.I)), None)
-            if diluted_i is None:
-                income_i = next((i for i, line in enumerate(lines) if re.search(r"NET INCOME PER COMMON SHARE", line, re.I)), None)
-                diluted_i = next((i for i, line in enumerate(lines) if income_i is not None and i > income_i and re.fullmatch(r"Diluted", line.strip(), re.I)), None)
-            eps_printed = first_amount_after(diluted_i) if diluted_i is not None else None
-            if eps_printed:
-                hits.append(f"Diluted earnings per share (quarterly): ${eps_printed}")
         print("  Release lines that state quarterly total revenue and diluted EPS:")
         for line in hits:
             print(f"  {line}")

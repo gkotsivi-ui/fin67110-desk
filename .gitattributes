@@ -2,3 +2,8 @@
 * text=auto eol=lf
 *.bat text eol=crlf
 *.command text eol=lf
+# A run folder of the desk is stored byte for byte. Each run seals the SHA-256 of its files and --replay
+# rechecks them, so git must not change a line ending there: a run made on Windows holds CR LF, and so can a
+# saved SEC page. The pattern is the desk's folder name, TICKER_YYYY-MM-DD_HH-MM-SS.ffffff. The two records
+# of the base desk (TICKER_YYYYMMDD_HHMMSS) keep the rule above.
+/runs/**/*_[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9]-[0-9][0-9]-[0-9][0-9].[0-9]*/** -text

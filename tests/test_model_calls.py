@@ -41,8 +41,12 @@ class WhatIsTriedOnceMore(unittest.TestCase):
     def test_a_refusal_is_never_asked_again(self):
         for made in (error("BadRequestError", status_code=400), error("AuthenticationError", status_code=401),
                      error("NotFoundError", status_code=404), error("ClientError", code=400),
-                     error("APIError", code="insufficient_quota"), ValueError("Role did not read assigned files")):
-            with self.subTest(error=type(made).__name__):
+                     error("APIError", code="insufficient_quota"), ValueError("Role did not read assigned files"),
+                     # An empty credit balance comes as a 429 from one provider: it is a refusal, not a rate limit.
+                     error("RateLimitError", status_code=429, code="insufficient_quota"),
+                     error("RateLimitError", status_code=429, body={"error": {"type": "insufficient_quota"}}),
+                     type("RateLimitError", (Exception,), {"status_code": 429})("You exceeded your current quota, please check your plan and billing details.")):
+            with self.subTest(error=type(made).__name__, fields=vars(made)):
                 self.assertIsNone(model_calls.retry_reason(made))
 
     def test_the_cause_inside_a_wrapped_error_is_read(self):
@@ -65,6 +69,17 @@ class TheTimeLimit(unittest.TestCase):
         with self.assertRaisesRegex(TimeoutError, "A role: the model did not answer"):
             model_calls.within_time_limit(lambda: time.sleep(5), 0.05, "A role")
         self.assertEqual(model_calls.retry_reason(TimeoutError()), "dropped")
+
+    def test_the_desks_own_time_limit_is_not_tried_again(self):
+        # The limit raised a TimeoutError, and the retry rule read every TimeoutError as a dropped connection: a role
+        # past its twenty minutes was called a second time, for twenty more, while the first call was still running
+        # and still reading the role's files (found by an independent review, 2026-11-22).
+        with self.assertRaises(model_calls.TimeLimitPassed) as caught:
+            model_calls.within_time_limit(lambda: time.sleep(5), 0.05, "A role")
+        self.assertIsNone(model_calls.retry_reason(caught.exception))
+        outer = RuntimeError("the flow failed")
+        outer.__cause__ = caught.exception
+        self.assertIsNone(model_calls.retry_reason(outer))
 
     def test_an_error_inside_the_call_comes_out_as_itself(self):
         def refuse():
@@ -96,6 +111,24 @@ class TheTeamsRoleCall(unittest.TestCase):
         self.assertEqual((output, calls), ({"draft": "ok"}, 2))
         record = json.loads((folder / "nodes/Legacy_Financial_1/dropped_connections.json").read_text(encoding="utf-8"))
         self.assertEqual([r["reason"] for r in record], ["rate limit"])
+
+
+    def test_a_role_past_its_time_limit_is_stopped_and_not_called_a_second_time(self):
+        folder = Path(tempfile.mkdtemp())
+        rt = team.Runtime.__new__(team.Runtime)
+        rt.set_output_dir(folder)
+        rt.role_call_counts, rt.skill_files, rt.output_hook, rt.llm = {}, [], None, object()
+        rt.instructions = lambda name: "Answer in JSON."
+
+        def stalls(*args, **kwargs):
+            time.sleep(1)
+            return SimpleNamespace(raw='{"draft": "too late"}')
+        with patch.object(team, "Agent"), patch.object(team, "Task"), patch.object(team, "Crew") as crew, \
+                patch.object(team, "RETRY_WAIT_SECONDS", 0), patch.object(team, "CALL_TIME_LIMIT_SECONDS", 0.1):
+            crew.return_value.kickoff.side_effect = stalls
+            with self.assertRaisesRegex(model_calls.TimeLimitPassed, "Legacy Financial 1: the model did not answer"):
+                rt.role_call("Legacy Financial", "legacy.md", {"task": "Answer.", "context": {}, "expected_output": "JSON"})
+        self.assertEqual(crew.return_value.kickoff.call_count, 1)
 
 
 class TheTeamsSettings(unittest.TestCase):
@@ -143,6 +176,26 @@ class TheWorksheetsCall(unittest.TestCase):
         with patch.dict("os.environ", self.ENV), patch.object(self.worksheet, "RATE_LIMIT_WAIT_SECONDS", 0), patch("requests.post", side_effect=[limited, good]) as post:
             self.assertEqual(self.worksheet.judge_once("A persona", {})["judgment"], "Supported.")
         self.assertEqual(post.call_count, 2)
+
+
+    def test_a_model_that_is_not_claude_runs_under_the_time_limit_and_is_not_called_twice(self):
+        # No test failed when the time limit was taken off this call (found by an independent review, 2026-11-22).
+        made = []
+
+        class Stalls:
+            def __init__(self, **settings):
+                made.append(settings)
+
+            def call(self, messages):
+                time.sleep(1)
+                return "{}"
+        env = {"MODEL": "gemini/a-made-up-model", "API_KEY": "the-team-key"}
+        with patch.dict("os.environ", env), patch("crewai.LLM", Stalls), patch.object(self.worksheet.calls, "REQUEST_TIME_LIMIT_SECONDS", 0.1), \
+                patch.object(self.worksheet, "RETRY_WAIT_SECONDS", 0):
+            with self.assertRaises(self.worksheet.calls.TimeLimitPassed):
+                self.worksheet.judge_once("A persona", {})
+        self.assertEqual(len(made), 1)
+        self.assertEqual(made[0]["timeout"], 0.1)                # the request's own limit is handed to the client too
 
 
 class AReplyWithWindowsLineEnds(unittest.TestCase):

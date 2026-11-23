@@ -1,15 +1,18 @@
 # Code audit, November 2026
 
 A full audit of the team desk, made 2026-11-21 and 2026-11-22 on branch `full-audit`. The branch stands on
-`origin/main` at `140c4b3`. Nothing here is committed or pushed until a member has seen the file list and
-the key scan.
+`origin/main` at `140c4b3`. The audit was committed as `086a312`. Six independent reviewers then read that
+commit, and what they found is fixed in the commit after it (section 4, "Found by an independent review").
+Nothing is pushed until a member has seen the file list and the key scan.
 
-**Result.** `python check_all.py` runs 840 tests with no failure, 4 skipped, and every other check
+**Result.** `python check_all.py` runs 928 tests with no failure, 4 skipped, and every other check
 passes, on Windows 11 without UTF-8 mode. Before the audit the four test folders held 663 tests, and the
-required check, as `AGENTS.md` wrote it, failed on Windows. 56 findings are fixed, nine of them critical,
-each with a test on made-up data (the documents, F3, were read against the code); 16 are open and listed
-with the reason in section 4. No model was called and no real run was
-made: the model account has had no credit since 2026-11-21 (section 5).
+required check, as `AGENTS.md` wrote it, failed on Windows. The audit fixed 56 findings, nine of them
+critical. The review of its commit then returned 50 findings, each reproduced: 26 had come with the audit's
+own commit (one critical, six high), 13 were older than the audit, and 11 were rules with no test that could
+fail. They are fixed in 27 groups, each with a test on made-up data. 22 findings are open and listed with
+the reason in section 4. No model was called and no real run was made: the model account has had no credit
+since 2026-11-21 (section 5).
 
 **Read first, before the next live run:** section 6, items 1 to 4.
 
@@ -195,7 +198,7 @@ Measured on Windows 11, Python 3.13.15, `.venv-desk`, with no `.env` in the fold
 
 | Check of `python check_all.py` | Result |
 |---|---|
-| `tests` | 625 tests, 4 skipped |
+| `tests` | 713 tests, 4 skipped |
 | `hooks/tests` | 74 tests |
 | `skills/spinoff-worksheet/tests` | 38 tests |
 | `skills/us-spinoff-seeker/tests` | 103 tests |
@@ -204,11 +207,11 @@ Measured on Windows 11, Python 3.13.15, `.venv-desk`, with no `.env` in the fold
 | `live_record.py --offline --no-save` | ran, 2 of 4 weeks, as before |
 | `check_public.py` | nothing private in what git tracks or would add |
 
-840 tests, 177 more than before, in 16 new test files. The same command was run on 2026-11-22 in a
-fresh clone of `origin/main` at `140c4b3` with this branch's changes applied and a new `.venv-desk` made
-from `requirements-pipeline.txt` and `constraints-pipeline.txt` (`pip check`: no broken requirements),
-with no `.env` in the folder: 839 tests, every check passed. One test was added after that run, with the
-page's link fix (P10).
+928 tests, 265 more than before, in 17 new test files. On 2026-11-22 the same command was run in a
+fresh clone of `origin/main` at `140c4b3`, with the audit's first commit applied and a new `.venv-desk` made
+from `requirements-pipeline.txt` and `constraints-pipeline.txt` (`pip check`: no broken requirements), with no
+`.env` in the folder: 839 tests, every check passed. The fixes after the review were checked in a worktree
+with the first `.venv-desk`, not in a second fresh clone.
 
 **Replays on real saved data** (2026-11-22, no network, no model). The practice runs of 2026-11-19 and
 2026-11-20 saved the SEC pages they read and every reply their models gave. They are not in the repository
@@ -219,7 +222,8 @@ made-up data.
 |---|---|
 | The seven data steps, old code and new, on the saved pages of one Lowe's run and one Walmart run | All seven steps ran in both. Every amount, ratio and quarter figure is the same. What differs: each prior-year value now cites the 10-K the desk read, not last year's (N2); the filings carry the exhibit's label (X1); a footnote mark is gone from one row's label |
 | 17 replies of the three analyst roles, from three runs, through the old ledger and the new | The same errors for every reply, and the replies the old ledger accepted are rendered to the same text, line for line. The first form of two new rules refused honest sentences in them (a claim in parentheses; "percent" after a bare table cell): 18 errors the old ledger did not give. Both rules were loosened, test first |
-| 548 reasons and corrections the Verifier wrote, against the new one-line rule (C5) | None refused |
+| 548 reasons and corrections the Verifier wrote, against the audit's first one-line rule (C5) | None refused. The rule no longer refuses: a reason is put on one line |
+| After the review's fixes: the same two data-step replays and the 17 replies again, and 20 saved reports through the page | The data steps give the same values as the first commit. The ledger gives the same errors and the same rendered text as the code before the audit; one real Walmart reply that typed "billion" after a number, where the filing prints "billion" on the next saved line, passes again. All 20 reports are rendered the same as by the first commit |
 | The Strategy Manager's and the Verifier's stages as a whole | Not replayed: the saved drafts were rendered by the code of their day, and old and new code alike answer "rendering differs" |
 
 ## 4. Findings
@@ -245,8 +249,8 @@ report; high = a run is lost or a check does not check; medium and low = the res
 | C1 | critical | code changes a number | `desk_claims.py:169-196` | Any "$" value cited in an Item under "(amounts in millions...)" got "million": "$1.16 million" for a dividend, "$20 million" for an hourly wage | The scale goes only on whole dollars with a thousands separator; a per-share or per-hour amount keeps its unit; anything else in doubt is refused with the reason | `tests/test_ledger_gaps.py` | fixed |
 | C2 | critical | layout | `desk_claims.py:34` | "(in millions, ...)", the wording of both saved live filers, was not read: "$93,900" was printed bare | The header is read in both wordings | `tests/test_ledger_gaps.py` | fixed |
 | C3 | critical | model text | `desk_claims.py:384-400` | A scale, a sign or a multiplier typed next to a placeholder passed: "$9,200 [cited] billion", "-$4.1 billion", "twice $4.1 billion" | Refused; the claim's own value must hold its scale and sign. A rate typed after a bare table cell ("32.95 [cited] percent of sales") and a claim in parentheses are not refused: a real model's replies hold both, and the first form of this fix refused them (section 3, the replays). Whether the label fits the cell is C8 | `tests/test_ledger_gaps.py` | fixed |
-| C4 | critical | model text | `desk_claims.py:64-65`, `:395` | Spelled and non-ASCII numbers passed with no claim: "eleven per cent", "two bn", superscripts, fractions, Roman numerals | Refused | `tests/test_ledger_gaps.py` | fixed |
-| C5 | critical | model text | `desk_role_contracts.py:288-295` | A Verifier reason with line breaks published free text and a heading in `verified_report.md`, outside the marks table | A reason or correction is one line, with no pipe and no heading | `tests/test_published_report.py` | fixed |
+| C4 | critical | model text | `desk_claims.py:64-65`, `:395` | Spelled and non-ASCII numbers passed with no claim: "eleven per cent", "two bn", superscripts, fractions, Roman numerals | Refused. The first form also refused every multiplier in words ("doubled", "twice", "twofold"), and with them "double taxation", "a third party" and three real Verifier reasons: the review found it, and such a word alone is no longer refused (V23) | `tests/test_ledger_gaps.py` | fixed |
+| C5 | critical | model text | `desk_role_contracts.py:288-295` | A Verifier reason with line breaks published free text and a heading in `verified_report.md`, outside the marks table | A reason or correction is put on one line, and the table writes it into one cell. The first form refused such a reply, which could stop a run at its last model stage (V25) | `tests/test_published_report.py` | fixed |
 | C6 | high | a negative read as a positive | `desk_claims.py:105` | "(1,234)" and an en-dash minus were accepted as "1,234" and "0.4" | A value cannot be cut out of its parentheses or from behind a dash | `tests/test_ledger_gaps.py` | fixed |
 | C7 | high | model text | `desk_role_contracts.py:240-262` | A number the Verifier marked wrong was left out of its own part and printed two parts later through the Advisor's reference to it; a reference could point at a draft the Manager sent back | A line that repeats a flagged claim, or a claim whose author has since changed its value, is left out and listed | `tests/test_published_report.py` | fixed |
 | C10 | high | model text | `desk_claims.py` `check` | A typed citation ("[10-K.txt:L999]") was never checked; a draft could hold a table that reads as the desk's own claims table or marks table | Both refused; a role's own numbered heading still passes | `tests/test_ledger_gaps.py` | fixed |
@@ -258,7 +262,7 @@ report; high = a run is lost or a check does not check; medium and low = the res
 | M5 | high | setting | `worksheet.py` `judge_once` | A Claude model took `ANTHROPIC_API_KEY` from the shell before the team's `API_KEY`: one run on two accounts. A refusal printed only "400 Client Error" and saved nothing | `API_KEY` only; the provider's own message in the error, and the answer saved | `tests/test_model_calls.py` | fixed |
 | M6 | medium | setting | `equity_research_agent_team.py` `Runtime` | With no `MODEL` line the team ran on a Gemini model, whatever the key | No default; the error names `MODEL` | `tests/test_model_calls.py` | fixed |
 | M7 | high | Windows | `desk_claims.py` `parse_response` | A reply whose draft used CR LF passed the checks, was saved, read back with doubled line ends, and stopped the run at the hook | Line ends made one kind when the reply is parsed | `tests/test_model_calls.py` | fixed |
-| M8 | medium | setting | `check_pipeline.py`, `desk_parts.py` | A `.env` that Windows PowerShell wrote as UTF-16 stopped the group desk with a traceback | The message names the cause and the cure | `tests/test_one_rule_one_place.py` | fixed |
+| M8 | medium | setting | `check_pipeline.py`, `desk_parts.py`, `desk.py` | A `.env` that Windows PowerShell wrote as UTF-16 stopped the group desk with a traceback | The message names the cause and the cure. The first fix reached the setup check only: `desk.py` itself still printed the codec error and left an empty run folder (V16) | `tests/test_one_rule_one_place.py`, `tests/test_run_control.py` | fixed |
 | M9 | high | setting | `desk_error_review.py:670-680`; `lab03_app.py:40-46`, `:280` | The error review's `--model` replaced `anthropic/MODEL` with another model without a word, and sent an OpenAI key to Anthropic | The model written with its provider is the model used; an OpenAI key or model is refused before any request | `tests/test_one_rule_one_place.py` | fixed |
 | R1 | high | no way back | `desk.py` | A failure in the worksheet's model call, the last of a run, threw away the finished, paid-for team report | `desk.py --resume RUN`, for a stop in the worksheet or the final report; saved files are checked against their hashes first; the view keeps its first time | `tests/test_run_control.py` | fixed |
 | R2 | medium | a name given too early | `desk.py:138-141` | `final_report.md` was written, then checked, and stayed when the check failed | A final report that fails its check is renamed `final_report.rejected.md` | `tests/test_run_control.py` | fixed |
@@ -290,6 +294,43 @@ report; high = a run is lost or a check does not check; medium and low = the res
 | T5 | low | weak test | `desk.py` `main` | No test held the ticker pattern | Tests | `tests/test_run_control.py` | fixed |
 | F3 | low | docs | `README.md`, `docs/group-pipeline.md`, `docs/lseg-setup.md`, `.env.example`, `AGENTS.md`, `manual.md` | Test counts and the required command; three install lines without the constraints file; "refresh a screen first" for a fresh checkout; "every line must say ok"; "the reader reads LSEG only"; a default model that no longer exists; settings the code reads and no document named | Corrected, and the stops a member can now see are in the README's table | read against the code; no test | fixed |
 
+### Found by an independent review of the first commit, and fixed
+
+On 2026-11-22, after the audit was committed as `086a312`, six reviewers read the commit, one part each, with
+no share in writing it. Each had to prove a finding on made-up data. They returned 50 findings. Every one was
+reproduced again before any change, and each fix has a test that failed first. "Regression" means the code
+before the audit was right and the audit made it wrong. Line numbers are those of `086a312`.
+
+| ID | Severity | Class | Where | Evidence: what was wrong | The fix | Test | Status |
+|---|---|---|---|---|---|---|---|
+| V1 | critical, regression | layout | `equity_research_desk.py:104-112` `row_amounts` | A negative change is printed "(5" then ")%". Only a next cell that starts with "%" marked a percentage, so "(5" was an amount, the row held one too many and was dropped, and another row was published in its place: a part of revenue for total revenues, a count of shares for EPS | A percent sign behind a closing parenthesis marks a percentage too | `tests/test_quarter_layouts.py` | fixed |
+| V2 | high, regression | layout | `:86`, `:284-295`, `:843` | The four pieces of text above a table were its "title": a GAAP statement under a paragraph that says "outlook", "guidance" or "non-GAAP", under the footnote of the table before, or with a title line "amounts adjusted for the stock split", was skipped, and the quarter's three claims were missing | A title is read by block of the page, up to eight lines, in order; a sentence or a footnote ends it; "adjusted for" is not "adjusted results" | `tests/test_quarter_layouts.py` | fixed |
+| V3 | high | layout | `:284-295`, `:841-853` | A non-GAAP statement was read as GAAP when its title was a row of its own table, five lines above it, or cut in pieces by bold tags; a section "Non-GAAP" inside a table was read too. The code before the audit did the same | A table's own title rows are read; rows under a heading "Non-GAAP" or "Adjusted" are skipped until a heading says GAAP | `tests/test_quarter_layouts.py` | fixed |
+| V4 | high | layout | `:90-91`, `:228-232` | "Shares used in computing net income per share:" says "per share", so its rows "Basic" and "Diluted", a count of shares, were published as GAAP diluted EPS ("$204"). The code before the audit did the same | A heading that counts shares heads no EPS; labels that end with "diluted" and loss-per-share labels are read | `tests/test_quarter_layouts.py` | fixed |
+| V5 | high | layout | `:206` | Two change columns ("% Change", "% Change in Constant Currency") made the reader pair each amount with a percentage: last year's revenue became 11.1 and growth 8,909%. The code before the audit did the same | Only a share-of-sales column pairs; a change column never does | `tests/test_quarter_layouts.py` | fixed |
+| V6 | medium | a reader that guesses | `:916-938` | With no table read, a fallback stated the first amount after "Diluted net income per common share": last year's when the older column stands first, the nine months' when that group does | Removed: no table read, no figure | `tests/test_quarter_layouts.py` | fixed |
+| V7 | medium | layout | `:304-306` | One row's own unit, "Weighted average shares (in thousands)", was printed as the unit of the whole table. The first fix then lost a unit printed beside the years, which a replay of a saved release showed | The unit is read from the table's title rows, down to the row of periods, then from the lines above | `tests/test_quarter_layouts.py` | fixed |
+| V8 | medium, regression | layout | `release.py:24`, `desk_rules.py:53-66` | A release whose statement is titled "Statement of Results of Operations" did not count as holding an income statement, and a slide deck in the next exhibit with a slide "Income Statement" was read as the release | That title is known | `tests/test_release_exhibit.py` | fixed |
+| V9 | low | weak test | `tests/test_annual_facts.py`, `tests/test_release_exhibit.py` | The test of a 53-week year used a 52-week year; nothing held the lower bound of "a year earlier", the 10-K's year end taken from EDGAR's list, or the file type of an exhibit | Tests. Each bound was then broken on purpose and a test failed | the same files | fixed |
+| V10 | high, regression | network | `model_calls.py:44-84`, `equity_research_agent_team.py:279-294` | The desk's own time limit raised `TimeoutError`, which the retry rule read as a dropped connection: a role past twenty minutes was called a second time, for twenty more, while the first call was still running and still reading the role's files | The limit raises `TimeLimitPassed`, which is never tried again | `tests/test_model_calls.py` | fixed |
+| V11 | medium | Windows | `.gitattributes`, `desk.py:242-244`, `hooks/worksheet_format.py:358-371` | A run seals the hash of every file. On Windows the desk writes CR LF, and git stored LF: a clone of a live run held other bytes than the run sealed, so `--replay` and the hook's recheck failed there at the first file. A saved SEC page with CR LF had the same fate on any computer | The desk's run folders are stored byte for byte (`-text`); the two graded records keep the old rule | `tests/test_run_control.py` | fixed |
+| V12 | medium | network | `desk_sources.py:114-121`, `model_calls.py:50` | A page cut off while it was read was not asked for again; a `Retry-After` of "¹" ended the run; a refusal for lack of credit that comes as HTTP 429 was tried again | Each fixed; the documents say the wait is at most a minute | `tests/test_setup_checks.py`, `tests/test_model_calls.py` | fixed |
+| V13 | high, regression | no way back | `desk.py:293-312` | A second `--resume` was refused for the files the first had set aside; a resume that could not start left the run "running" with files moved; an edited `view.json` was published, because only the parts' records were checked; a stop in the final report called the worksheet's model again | The whole folder as the stop sealed it is checked, the view with it; nothing changes before the settings are ready; the folder is sealed again; a finished worksheet is kept | `tests/test_run_control.py` | fixed |
+| V14 | medium, regression | docs | `desk.py:87-90`, `:306-309` | After a resume on another model the footer still named the first model for the worksheet's judgment | The run saves its model; a resume on another names both | `tests/test_run_control.py` | fixed |
+| V15 | medium, regression | setting | `check_pipeline.py:16`, `:42-59` | The setup check looked for "fill" and "paste" anywhere in a value: a member named Fillmore or Pasternak was told to write a name and email on every run. It passed `anthropic/MODEL_ID`, a key that is only "sk-ant-", and "@" for a name and email. An empty value in the terminal hid the one in `.env` | Whole example phrases; a model after its provider; a key longer than its start; a name and an email; one reading order | `tests/test_setup_checks.py` | fixed |
+| V16 | medium | setting | `desk.py:58-81` | A UTF-16 `.env` still stopped `desk.py` with "'utf-8' codec can't decode byte 0xff" and left an empty run folder, in `runs/live` with `--live`. The audit had listed this as fixed (M8) | The same message as the setup check's, before any folder is made | `tests/test_run_control.py` | fixed |
+| V17 | medium | public | `check_public.py:27-33`, `:65-95` | The scan knew one shape of a list of closes; a series keyed by date, pandas' forms, another column name, a `.jsonl`, a `.tsv` and a Markdown table passed. A file that was not UTF-8 was skipped whole, a key in it unseen. A web address with `/home/` and a long dashed name were called a home path and a key | Each shape, any encoding, and the two false alarms; the docstring says other shapes are not seen | `tests/test_check_public.py` | fixed |
+| V18 | low | the record counts a failed run | `live_record.py:135-139` | A `desk_run.json` that could not be read was taken for "no state", so a failed run's report became a row | A state file that is there and cannot be read is a problem row | `tests/test_run_control.py` | fixed |
+| V19 | medium, regression | the page | `page.py:163` | A repository on a network drive has a path that starts with two backslashes. The page refused every such path, its own included: it listed no run of the desk and called a finished run stopped | A network path is refused unless it is the repository's own | `tests/test_page_findings.py` | fixed |
+| V20 | low | the page | `page.py:136-137`, `:207-229` | An image vanished with its words; a star inside code gained a backslash; "2**3**4" was shown as 234; a list written with stars was plain lines; a table with a short separator still lost cells and a good table with an empty last cell was shown as text; a line "[1]: address" vanished; a numbered list with a gap was renumbered; the registry field still asked the file system about a network path; on port 80 every request was refused; the page inside an editor's preview frame was refused | Tables are judged by the Markdown library's own reader; stars, source lines and list numbers are kept as typed; the rest each fixed | `tests/test_page_findings.py` | fixed |
+| V21 | medium | weak test | `page.py:323-327`, `tests/test_page_findings.py` | The page answered an over-long request without reading it, so Windows dropped the connection and the sender sometimes got no answer: the test of it failed about one run in eight, in the required check | The body is read and thrown away before the answer; the nesting and the length limit have tests of their own | `tests/test_page_findings.py` (25 runs of 25) | fixed |
+| V22 | high, regression | code changes a number | `desk_claims.py:39`, `:265-268` | The new scale rule published three amounts at a wrong scale: "$43,440 a year ago" bare (read as an amount "a year"), "$1,980" bare after "per diluted share, compared with", and "$4,828 thousand" for millions, because a row's own unit, "Membership cardholders (in thousands)", was taken for the section's header | The per-unit patterns are exact; a header is a header by its place and wording, not any parenthesis | `tests/test_ledger_gaps.py` | fixed |
+| V23 | medium, regression | false refusals | `desk_claims.py:48-50`, `:147-148`, `:474` | Honest text was refused: "a third party", "double taxation", "twice in the filing", "Basel III points to", "in 2026 thousands of members", "the core claims above", "CO₂", "the second half {c1}", a percentage in a sentence's parentheses, the upper end of a range written with a dash. "Double-digit" had no way through at all | Multipliers in words are not amounts; the other rules are narrowed. Of 147 honest sentences the first commit refused 50 that the old code accepted; 11 remain, each a typed sign, scale, citation or number in words | `tests/test_ledger_gaps.py` | fixed |
+| V24 | medium, regression | false refusals | `desk_claims.py:46` | A scale typed after a claim was refused even where the filing prints it on the next saved line ("approximately $", "99.6", "billion"), which is the only way that scale can reach the reader. A real reply of 2026-11-19 does this | The typed scale passes when it is the first word the filing prints after the number, and only then | `tests/test_ledger_gaps.py` | fixed |
+| V25 | low, regression | a stop that no repair covers | `desk_role_contracts.py:142-143` | The one-line rule for a Verifier's reason was a refusal no mend covers: three replies with a line break in a reason stopped the run at its last model stage | The reason is put on one line; the table keeps it in one cell | `tests/test_published_report.py` | fixed |
+| V26 | medium | a crash in place of a repair | `desk_role_contracts.py:80`, `:91` | An author's reply with no draft raised `KeyError`, and a Manager's failure whose part is a list raised `TypeError`, out of the check and past every repair. The code before the audit did the same | Both are errors the role is sent back with | `tests/test_published_report.py` | fixed |
+| V27 | medium | weak test | several | Rules of the first commit that could be deleted with no test failing: the dash half of C6, the words before a claim, the per-unit exemptions of the scale rule, the time limit on the worksheet's call, the view through a resume, a stopped run's row in the live record, the replay of a stopped run | A test for each | `tests/test_ledger_gaps.py`, `tests/test_model_calls.py`, `tests/test_run_control.py` | fixed |
+
 ### Open
 
 | ID | Severity | Class | Where | Evidence: what is wrong | Why it is open | Status |
@@ -310,6 +351,12 @@ report; high = a run is lost or a check does not check; medium and low = the res
 | H3 | medium | docs | `docs/checkpoint-3.md:29-33` | The course footer stands in the middle of the file, with notes after it | A member's checkpoint document | open, section 6 item 9 |
 | S1 | low | docs | `skills/us-spinoff-seeker/SKILL.md:8`, `:12`, `:49`, `:79`; `desk_error_review.py:653-655` | An empty code span where a path was removed; "eight", "five" and "six" factors in one file; `--practice` changes nothing | The skill files came with the copied pipeline and are tracked by hash in `docs/pipeline-import.json` | open |
 | X2 | medium | layout | `equity_research_desk.py` step 2 | The quarter's claims (9 to 11) are still not checked against XBRL (known since 2026-11-11, "F2b") | A design the team has not chosen | open |
+| W1 | medium | layout | `desk_rules.py` `release_among`, `release.py` `has_income_statement` | An exhibit counts as the release when one short line of it is a statement's title. A slide deck in Exhibit 99.1 with a slide titled "Income Statement", before the release in 99.2, would be read as the release | Telling a statement from its title alone needs the table under it; not built | open |
+| W2 | low | network | `model_calls.py` `no_credit` | One provider sends both a rate limit and a used-up quota as 429 with the same words; the desk cannot tell them apart and tries once more after a minute | Costs a minute and one refused call | open |
+| W3 | low | the page | `page.py` `literal_stars` | Text in single stars is shown with its stars, not in italics; two saved practice reports have six or seven such places | Chosen: a star between numbers must not vanish | open |
+| W4 | low | false refusals | `desk_claims.py` `WORD_AMOUNT` | "A one-two punch" and "a five-member committee" are refused as numbers in words | The first is an idiom; the second is a count with no source | open |
+| W5 | low | weak test | `desk_role_contracts.py` `core_claims_table`, `published_sections` | The quarter-growth line of the claims table and the second pass of the left-out rule have no test of their own | Covered only through whole-report tests | open |
+| W6 | low | no way back | `desk.py` `resume` | `--resume` has been run only with stand-in parts: with the real worksheet it needs a model call | Needs credit (section 6, item 1) | open |
 
 ## 5. What could not be verified
 
@@ -325,9 +372,10 @@ report; high = a run is lost or a check does not check; medium and low = the res
    hook's reading of it have not been seen with Workspace open.
 4. **macOS.** Every result is from one Windows 11 computer. The Mac run of the test folders was last done on
    2026-11-21, before this branch.
-5. **The page in a browser.** The page's server was tested through its routes, with the headers a browser
-   sends for a typed address, a clicked link and the page's own requests. Its script was read, not run in
-   a browser: the session's preview could start only the page of `main`.
+5. **The page in a browser.** A reviewer opened the page of the first commit in one browser (Chromium), on a
+   made-up folder: it loads, the setup banner shows, a report is shown. The form's Run and Stop buttons were
+   not clicked there: their requests were sent with the headers that browser sends. Firefox, Safari and a
+   Mac were not tried, and the page after the review's fixes was tested through its routes only.
 6. **Google and OpenAI keys.** Their error shapes were tested on stand-ins. No such key has run the desk end to end.
 7. **The proposed GitHub workflow** (section 7) has never run.
 8. **The course site's Week 6, 7 and 8 pages** were placeholders on 2026-11-21, so nothing here was checked
@@ -410,6 +458,12 @@ In order of what threatens the next live run first.
 8. **Check a setting where the run starts**, not where it is first used (`check_pipeline.settings_problems`).
 9. **Nothing licensed in a tracked folder.** A list of closes goes under `sources/licensed/`.
 10. **Write what AI got wrong, and how it was caught**, in `docs/decision-log.md`, with the test's name.
+11. **Have someone who did not write a fix read it.** The audit's own tests passed, and a review of its
+    commit still found 26 defects that had come with it: the tests were sentences and tables the author had
+    thought of. A reader with no share in the fix thinks of others.
+12. **After changing a reader or the ledger, replay what real runs saved.** The pages and the replies of the
+    practice runs are on the computer that made them (`runs/practice/`). The same values and the same
+    accepted text as before is the result to look for; a difference is either the fix or a new fault.
 
 **Proposed, not added: checks on every push.** The file below would be `.github/workflows/checks.yml`. It is
 not in the repository: adding it creates something on GitHub, which waits for a member's yes. It needs no

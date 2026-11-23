@@ -69,6 +69,65 @@ class WhatMustNotBePublic(unittest.TestCase):
                          ["a path that names a user's home folder", "a path that names a user's home folder", "the closes reader's own log is tracked"])
 
 
+    # The next four were found by an independent review, 2026-11-22.
+    ROWS = [{"date": f"2026-01-{day:02d}", "close": 10 + day / 10} for day in (2, 5, 6, 7)]
+
+    def test_a_list_of_closes_in_the_other_shapes_a_script_writes(self):
+        rows = self.ROWS
+        shapes = {
+            "by_date.json": json.dumps({"output": {r["date"]: {"close": r["close"]} for r in rows}}),
+            "dates_to_prices.json": json.dumps({r["date"]: r["close"] for r in rows}),
+            "pandas_default.json": json.dumps({"date": {str(i): r["date"] for i, r in enumerate(rows)}, "close": {str(i): r["close"] for i, r in enumerate(rows)}}),
+            "pandas_split.json": json.dumps({"columns": ["date", "close"], "data": [[r["date"], r["close"]] for r in rows]}),
+            "another_column_name.json": json.dumps([{"Date": r["date"], "Close Price": r["close"]} for r in rows]),
+            "five_deep.json": json.dumps({"a": {"b": {"c": {"d": {"e": {"rows": rows}}}}}}),
+            "rows.jsonl": "\n".join(json.dumps(r) for r in rows) + "\n",
+            "table.tsv": "date\tclose\n" + "\n".join(f"{r['date']}\t{r['close']}" for r in rows) + "\n",
+            "in_a_report.md": "| Date | Close |\n|---|---|\n" + "\n".join(f"| {r['date']} | {r['close']} |" for r in rows) + "\n",
+        }
+        for name, text in shapes.items():
+            with self.subTest(shape=name):
+                self.assertEqual(len(self.found({"runs/live/ZZZZ_1/" + name: text})), 1)
+
+    def test_one_close_and_the_two_closes_of_a_reaction_are_not_a_list(self):
+        reaction = {"before_close": 10.5, "after_close": 11.0, "before_close_time": "2026-01-05T16:00:00-05:00", "after_close_time": "2026-01-06T16:00:00-05:00"}
+        view = {"direction": "up", "view_time": "2026-01-05T17:00:00-05:00", "filing_time": "2026-01-05T16:05:00-05:00"}
+        report = "| Claim | Value |\n|---|---|\n| Close before the release | $10.50 |\n| Date of the 10-K | 2026-01-02 |\n"
+        # The one price a run saves, as the desk writes it: one row under a name that holds the word "close". The
+        # first widened form of the scan called it a list, and would have failed the first live run with a price;
+        # the test of a whole run caught it.
+        price = {"selected_close": {"date": "2026-01-05", "close": 10.5, "volume": 100000.0, "close_time": "2026-01-05T16:00:00-05:00"},
+                 "filing_cutoff": "2026-01-06T08:00:00-05:00"}
+        self.assertEqual(self.found({"runs/live/ZZZZ_1/reaction.json": json.dumps(reaction), "runs/live/ZZZZ_1/view.json": json.dumps(view),
+                                     "runs/live/ZZZZ_1/market_price.json": json.dumps(price), "runs/live/ZZZZ_1/facts.json": json.dumps({"market": price}),
+                                     "runs/live/ZZZZ_1/final_report.md": report}), [])
+
+    def test_a_file_that_is_not_utf8_is_read_too(self):
+        # A file made with ">" in Windows PowerShell is UTF-16. The scan skipped every file it could not read as UTF-8.
+        path = self.root / "setup_log.txt"
+        path.write_text(f"API_KEY={ANTHROPIC}\n", encoding="utf-16")
+        self.assertEqual(check_public.problems(self.root, ["setup_log.txt"], {}), ["setup_log.txt:1: an Anthropic key"])
+        (self.root / "page.bin").write_bytes(b"\x93a saved page\x94 " + OPENAI.encode() + b"\n")
+        self.assertEqual(check_public.problems(self.root, ["page.bin"], {}), ["page.bin:1: an OpenAI key"])
+
+    def test_a_web_address_and_a_long_dashed_name_are_not_a_path_or_a_key(self):
+        self.assertEqual(self.found({"runs/live/ZZZZ_1/report.md": "See https://investor.made-up.example/home/default.aspx and https://made-up.example/Users/guide.\n",
+                                     "docs/a_note.md": "See docs/risk-factors-and-forward-looking-statements-of-2026.md for the list.\n"}), [])
+
+
+    def test_a_linux_home_folder_is_found(self):
+        linux = "/home" + "/someone/desk/runs"   # in pieces: this file holds no such path
+        self.assertEqual(self.found({"docs/server.md": f"the run is in {linux}\n"}), ["docs/server.md:1: a path that names a user's home folder"])
+
+    def test_what_git_would_add_is_scanned_and_what_it_ignores_is_not(self):
+        import subprocess
+        subprocess.run(["git", "init", "--quiet"], cwd=self.root, check=True, capture_output=True)
+        for name, text in ((".gitignore", "ignored.txt\n"), ("tracked.txt", "a\n"), ("new.txt", "b\n"), ("ignored.txt", "c\n")):
+            (self.root / name).write_text(text, encoding="utf-8")
+        subprocess.run(["git", "add", "tracked.txt"], cwd=self.root, check=True, capture_output=True)
+        self.assertEqual(sorted(check_public.tracked(self.root)), [".gitignore", "new.txt", "tracked.txt"])
+
+
 class ThisRepository(unittest.TestCase):
     def test_what_git_tracks_here_is_clean(self):
         names = check_public.tracked(ROOT)

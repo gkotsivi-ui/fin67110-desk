@@ -74,6 +74,10 @@ def validate(run,role,raw):
     if not isinstance(raw,dict):
         result.errors.append('Return a JSON object.');return result
     if role in AUTHORS:
+        # A reply with no draft is an error the role can repair. Until 2026-11-22 it raised KeyError out of this
+        # check, which no repair catches, and the run stopped.
+        if not isinstance(raw.get('draft'),str) or not raw['draft'].strip():
+            result.errors.append('draft must be the text of your part, as a string; received '+type(raw.get('draft')).__name__+'.');return result
         try:result=values_for(run,role,raw)
         except (ValueError,OSError,TypeError) as error:result.errors.append(str(error));return result
         if result.ok:
@@ -88,7 +92,8 @@ def validate(run,role,raw):
             result.errors.append(manager_contract(run));return result
         prose=[]
         for item in failures:
-            if not isinstance(item,dict) or item.get('part') not in PART_OWNERS or item.get('role')!=PART_OWNERS.get(item.get('part')) or not isinstance(item.get('feedback'),str):
+            # A part that is a list or an object cannot be looked up: it is the same error, not a TypeError.
+            if not isinstance(item,dict) or not isinstance(item.get('part'),str) or item.get('part') not in PART_OWNERS or item.get('role')!=PART_OWNERS.get(item.get('part')) or not isinstance(item.get('feedback'),str):
                 result.errors.append('Each failure must name a required part, its owner, and feedback.');continue
             prose.append(item['feedback'])
         try:
@@ -137,10 +142,12 @@ def validate(run,role,raw):
                 seen.add(key)
                 if item.get('status') not in ('correct','wrong','unsupported'):raise ValueError('Invalid verification status')
                 if not all(isinstance(item.get(k,''),str) for k in ('reason','correction')):raise ValueError('Reason and correction must be templates')
-                # One line each, in one table cell. Until 2026-11-22 a reason with line breaks left the marks table
-                # and was published under it as free text, with a heading of its own.
-                if any(re.search(r'[\r\n|]',item.get(k,'')) or item.get(k,'').lstrip().startswith('#') for k in ('reason','correction')):
-                    raise ValueError('A reason or a correction is one line of plain text: no line break, no "|" and no heading')
+                # One line each. Until 2026-11-22 a reason with line breaks left the marks table and was published
+                # under it as free text, with a heading of its own. The audit's first cure refused such a reply; no
+                # mend covers a refusal here, so a Verifier that repeated it stopped the run at its last stage. The
+                # reason is put on one line instead, and the table writes it into one cell (verified_text).
+                for k in ('reason','correction'):
+                    if k in item:item[k]=' '.join(item[k].split())
                 prose.extend([item.get('reason',''),item.get('correction','')])
             if seen!=required:raise ValueError('Verifier must check every published claim exactly once')
             checked=values_for(run,role,{'claims':raw.get('claims',[]),'draft':'\n'.join(prose)})

@@ -27,7 +27,7 @@ Windows (`utf8_mode.py`), which covers what they print. The test harness is port
 symlink checks run only where the system permits a symlink, the ordinary secret and excluded-file checks
 always run, and the seeded CrewAI tests allow loopback sockets, which Windows' event loop needs, while
 blocking every external connection. On Windows 11 and Python 3.13 on 2026-11-22, `check_all.py` ran
-840 tests with no failure; the four that create a symlink were skipped. The macOS run has not been
+928 tests with no failure; the four that create a symlink were skipped. The macOS run has not been
 redone since 2026-11-21.
 
 Configure only this repo's `.env`. It needs `SEC_USER_AGENT`, `API_KEY`, and an explicit `MODEL`.
@@ -107,11 +107,13 @@ that says so, and its mark stays. A reply of the wrong shape, or one with nothin
 
 A model call whose reply never came, because the connection dropped or timed out or the provider answered
 with a server error, is made once more after thirty seconds. A call the provider limits (429) is made once
-more after sixty. The role's `dropped_connections.json` records it. A second failure stops the run. The
-worksheet's one model call is tried once more by the same rule, which both read from `model_calls.py`. One
-request may take ten minutes and one role's call twenty; past that the run stops and names the role. SEC
-EDGAR is asked for a page up to three times, waiting two and then eight seconds, or as long as its
-`Retry-After` header asks.
+more after sixty. A refusal for lack of credit is not tried again, whatever status it comes with. The role's
+`dropped_connections.json` records each retry. A second failure stops the run. The worksheet's one model
+call is tried once more by the same rule, which both read from `model_calls.py`. The provider's client is
+given ten minutes for a request, and may try a stalled request again on its own. One role's call is given
+twenty minutes; past that the run stops and names the role, and that call is not made again. SEC EDGAR is
+asked for a page up to three times, waiting two and then eight seconds, or as long as its `Retry-After`
+header asks, up to a minute.
 
 A run that stops in its worksheet or its final report, after the team's verified report is saved and
 checked, can be finished without calling the team's models again:

@@ -132,10 +132,16 @@ def read_run(folder: Path, desk: Desk | None, now: datetime, root: Path = ROOT) 
     # A group-desk run saves its state. Until 2026-11-22 this program never read it, so the report of a run that
     # failed its checks, or was killed, was read as a live report. A run that stopped after its team report was
     # checked is shown by that report, with a note; a run that stopped earlier holds no checked report.
-    try:
-        state = json.loads((folder / "desk_run.json").read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        state = None
+    # Only a folder with no state file is a base-desk run. A state file that is there and cannot be read (cut
+    # short, or not an object) says nothing about how the run ended, so its report is not a live report.
+    state = None
+    if (folder / "desk_run.json").is_file():
+        try:
+            state = json.loads((folder / "desk_run.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            state = "unreadable"
+        if not isinstance(state, dict):
+            return {**row, "problem": "desk_run.json cannot be read, so the run's end is not known: its report is not counted"}
     if isinstance(state, dict) and state.get("status") != "complete":
         where = state.get("failed_part") or state.get("current_part") or "a part it did not record"
         if where in ("worksheet", "final report") and (folder / "verified_report.md").is_file():

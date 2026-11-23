@@ -118,8 +118,7 @@ class NothingTypedNextToAClaim(unittest.TestCase):
 class NoNumberWithoutAClaim(unittest.TestCase):
     def test_numbers_in_words_and_in_other_numerals(self):
         for draft in ("Revenue grew eleven per cent.", "Revenue grew eleven % this year.", "An eleven-percent rise in revenue.",
-                      "Debt of two bn is due.", "It runs nine hundred locations.", "Debt tripled and margins fell by a half.",
-                      "Growth was double-digit.", "Sales rose twofold.", "Revenue grew ¹²%.", "Margin fell ½ point.",
+                      "Debt of two bn is due.", "It runs nine hundred locations.", "Revenue grew ¹²%.", "Margin fell ½ point.",
                       "Revenue grew XII percent.", "Revenue grew Ⅻ percent."):
             with self.subTest(draft=draft):
                 self.assertFalse(run([], draft).ok)
@@ -200,6 +199,124 @@ class ASavedFactIsADollarAmount(unittest.TestCase):
     def test_every_fact_the_desk_saves_is_in_dollars(self):
         from equity_research_desk import CONCEPTS
         self.assertEqual({spec["unit"] for spec in CONCEPTS.values()} - {"USD", "USD/shares"}, set())
+
+
+REVIEW = "\n".join([
+    "Item 7. Management's Discussion and Analysis",                                                                              # 1
+    "(amounts in millions, except per share data)",                                                                              # 2
+    "Net sales increased 11.2 percent to $48,310 in fiscal 2026 from $43,440 a year ago.",                                       # 3
+    "Net income was $2,150, or $4.82 per diluted share, compared with $1,980, or $4.41 per diluted share, in the prior year.",   # 4
+    "Selling expenses were $6,120, or 12.7% of net sales, compared with $5,560 a year earlier.",                                 # 5
+    "Membership cardholders (in thousands) 71,400",                                                                              # 6
+    "Membership fee revenue was $4,828 and the renewal rate was 92.9%.",                                                         # 7
+    "The membership fee is $65 a year and the starting wage is $20 an hour.",                                                    # 8
+    "The effective tax rate is expected to be in the range of 24.5%–25.5%.",                                                     # 9
+    "Segment operating margin—12.3 percent—was a record.",                                                                       # 10
+    "Operating income increased $412 million (9%) to $4,990 million.",                                                           # 11
+    "Operating margin changed –0.4 points",                                                                                      # 12
+    "Net loss $(1,234)",                                                                                                         # 13
+    "Statements of Cash Flows (in thousands)",                                                                                   # 14
+    "Cash paid for interest was $7,845 in the year.",                                                                            # 15
+])
+
+
+def reviewed(line, value, draft="The figure was {c1}."):
+    made_up = {"id": "c1", "file": "10-K.txt", "line": line, "quote": REVIEW.splitlines()[line - 1], "value": value}
+    return check({"claims": [made_up], "draft": draft}, {"10-K.txt": REVIEW})
+
+
+class WhatAnIndependentReviewFound(unittest.TestCase):
+    """The audit's first form of the scale rule and of the word rules, read by someone else on 2026-11-22.
+
+    Three sentences were published at a wrong scale where the code before the audit was right: "$43,440 a year ago"
+    was taken for an amount "a year", "$1,980" after "per diluted share, compared with" for a per-share amount, and
+    a row's own unit, "Membership cardholders (in thousands)", for the scale of the whole section. And honest
+    words were refused as amounts: "a third party", "double taxation", "twice in the filing".
+    """
+    def test_the_headers_scale_goes_on_amounts_that_only_look_like_per_unit_amounts(self):
+        for line, value, printed in ((3, "$43,440", "$43,440 million"), (5, "$5,560", "$5,560 million"), (4, "$1,980", "$1,980 million"),
+                                     (4, "$2,150", "$2,150 million"), (7, "$4,828", "$4,828 million")):
+            with self.subTest(value=value):
+                result = reviewed(line, value)
+                self.assertTrue(result.ok, result.errors)
+                self.assertIn(f"The figure was {printed} [10-K.txt:L{line}]", result.rendered)
+
+    def test_an_amount_per_share_per_year_or_per_hour_keeps_its_own_unit(self):
+        for line, value in ((4, "$4.82"), (4, "$4.41"), (8, "$65"), (8, "$20")):
+            with self.subTest(value=value):
+                result = reviewed(line, value)
+                self.assertTrue(result.ok, result.errors)
+                self.assertIn(f"The figure was {value} [10-K.txt:L{line}]", result.rendered)
+
+    def test_a_statements_title_gives_the_scale_and_a_rows_label_does_not(self):
+        self.assertIn("$7,845 thousand [10-K.txt:L15]", reviewed(15, "$7,845").rendered)
+
+    def test_a_percentage_in_a_sentences_parentheses_or_after_a_range_dash_is_whole(self):
+        for line, value in ((11, "9%"), (9, "25.5%"), (9, "24.5%"), (10, "12.3 percent")):
+            with self.subTest(value=value):
+                result = reviewed(line, value)
+                self.assertTrue(result.ok, result.errors)
+
+    def test_a_loss_and_a_decline_still_keep_their_sign(self):
+        for line, value in ((13, "1,234"), (13, "$1,234"), (12, "0.4 points"), (12, "0.4")):
+            with self.subTest(value=value):
+                self.assertFalse(reviewed(line, value).ok)
+
+    def test_ordinary_words_are_not_amounts(self):
+        for draft in ("The work is done by a third party.", "A quarter of weak traffic followed, by a quarter of the stores' count.",
+                      "The story will unfold over the year, on a scaffold of new stores.", "Management doubled down on its plan.",
+                      "Double taxation is a risk, and the lease is triple-net.", "The reasons are twofold: price and mix.",
+                      "The figure appears twice in the filing.", "Basel III points to higher capital, and Phase II points to more.",
+                      "In 2026 thousands of members joined.", "The core claims above show the same.", "CO₂ emissions are in the filing.",
+                      "Net income more than doubled from the prior year.", "Management expects low double-digit growth."):
+            with self.subTest(draft=draft):
+                result = run([], draft)
+                self.assertTrue(result.ok, result.errors)
+
+    def test_the_second_half_is_not_a_half_of_a_claim(self):
+        income = claim(8, "$4.1 billion")
+        self.assertTrue(run([income], "In the second half {c1} of income was reported.").ok)
+        for draft in ("Income was half of {c1}.", "Income was twice {c1}.", "Income was double {c1}."):
+            with self.subTest(draft=draft):
+                self.assertFalse(run([income], draft).ok)
+
+    def test_a_scale_the_filing_prints_right_after_the_number_may_be_typed(self):
+        # The desk saves each tagged piece of a filing on a line of its own: "approximately $", "99.6", "billion,
+        # $", "79.3", "billion". The scale cannot be part of the claim's value, which is one line. A real reply of
+        # 2026-11-19 wrote "{c33} billion" for such a number, rightly, and the rule refused it.
+        pieces = "Of total net sales, approximately $\n99.6\nbillion were online, and $\n79.3\nmillion came from clubs.\nOther income\n12.5\n"
+        number = {"id": "c1", "file": "10-K.txt", "line": 2, "quote": "99.6", "value": "99.6"}
+        other = {"id": "c1", "file": "10-K.txt", "line": 7, "quote": "12.5", "value": "12.5"}
+        ask = lambda claim, draft: check({"claims": [claim], "draft": draft}, {"10-K.txt": pieces})
+        self.assertTrue(ask(number, "Online net sales were {c1} billion.").ok, ask(number, "Online net sales were {c1} billion.").errors)
+        self.assertFalse(ask(number, "Online net sales were {c1} million.").ok)      # the filing says billion
+        self.assertFalse(ask(number, "Online net sales were {c1} bn.").ok)           # the filing's own word, or none
+        self.assertFalse(ask(other, "Other income was {c1} billion.").ok)            # no scale follows this number
+
+    def test_each_word_before_a_claim_that_changes_it(self):
+        income = claim(8, "$4.1 billion")
+        for word in ("negative", "minus", "twice", "thrice", "double", "triple", "half of"):
+            with self.subTest(word=word):
+                self.assertFalse(run([income], f"The result was {word} {{c1}}.").ok)
+
+    def test_a_per_share_amount_named_before_or_after_it_and_each_unit_word(self):
+        lines = "\n".join(["Item 7. Results", "(amounts in millions, except per share data)", "Diluted earnings per share of $4.82 rose.",
+                           "The fee is $120 per member and $10 each month, or $3 a day.", "Net sales were $9,226."])
+        ask = lambda line, value: check({"claims": [{"id": "c1", "file": "10-K.txt", "line": line, "quote": lines.splitlines()[line - 1], "value": value}],
+                                         "draft": "It was {c1}."}, {"10-K.txt": lines})
+        for line, value in ((3, "$4.82"), (4, "$120"), (4, "$10"), (4, "$3")):
+            with self.subTest(value=value):
+                self.assertIn(f"It was {value} [10-K.txt:L{line}]", ask(line, value).rendered)
+        self.assertIn("It was $9,226 million [10-K.txt:L5]", ask(5, "$9,226").rendered)
+
+    def test_the_whole_amount_behind_a_dash_passes(self):
+        self.assertTrue(reviewed(12, "–0.4 points").ok)
+
+    def test_amounts_in_words_are_still_refused(self):
+        for draft in ("Revenue grew eleven per cent.", "Debt of two bn is due.", "It runs nine hundred locations.", "Revenue grew XII percent.",
+                      "Revenue grew ¹²%.", "### The core claims, read and computed in code", "Sales of Item 12 million in revenue."):
+            with self.subTest(draft=draft):
+                self.assertFalse(run([], draft).ok)
 
 
 if __name__ == "__main__":

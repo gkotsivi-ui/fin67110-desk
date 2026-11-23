@@ -5,6 +5,7 @@ wrong key or model stops before it asks SEC EDGAR or a model for anything.
 """
 from importlib.metadata import PackageNotFoundError, version
 import os
+import re
 from pathlib import Path
 import sys
 
@@ -12,21 +13,26 @@ ROOT = Path(__file__).resolve().parent
 REQUIRED = ("SEC_USER_AGENT", "API_KEY", "MODEL")
 # The start of a model's name, and the start of a key of that provider.
 PROVIDERS = {"anthropic/": "sk-ant-", "gemini/": "AIza", "openai/": "sk-"}
-# Words of the examples in README.md and .env.example. A setting that still holds one was never filled in.
-EXAMPLE_WORDS = ("your name", "your.email", "your model key", "your_", "fill", "paste")
+# The examples that README.md and .env.example print, as whole phrases. A setting that still holds one was never
+# filled in. The first form of this list (2026-11-22) held short words, "fill" and "paste", and looked for them
+# anywhere in a value: a member named Fillmore or Pasternak was told to write a name and email, on every run.
+EXAMPLE_WORDS = ("your name", "your.email", "your model key")
+MODEL_PLACEHOLDER = "model_id"
+# Windows PowerShell 5.1 writes a file made with ">" as UTF-16. The base desk's reader accepts it and python-dotenv
+# does not: until 2026-11-22 the group desk stopped on it with a codec error that named neither .env nor the cure.
+NOT_UTF8 = (".env is not saved as UTF-8. Open it in a text editor and save it with the encoding UTF-8 "
+            "(Windows PowerShell writes UTF-16 when a file is made with >).")
 
 
 def read_settings(root: Path = ROOT) -> dict:
-    """The desk's settings as a run reads them: the environment's value, or else the one in .env."""
+    """The desk's settings as a run reads them: the environment's value when it is not empty, or else the one in .env."""
     from dotenv import dotenv_values
     try:
         saved = dotenv_values(root / ".env")
     except UnicodeDecodeError:
-        # Windows PowerShell 5.1 writes a file made with ">" as UTF-16. The base desk's reader accepts it and
-        # python-dotenv does not: until 2026-11-22 the group desk stopped on it with a traceback.
-        raise ValueError(".env is not saved as UTF-8. Open it in a text editor and save it with the encoding UTF-8 "
-                         "(Windows PowerShell writes UTF-16 when a file is made with >).") from None
-    return {**{name: value for name, value in saved.items() if value is not None}, **os.environ}
+        raise ValueError(NOT_UTF8) from None
+    return {**{name: value for name, value in saved.items() if value is not None},
+            **{name: value for name, value in os.environ.items() if value.strip()}}
 
 
 def settings_problems(settings: dict) -> list[str]:
@@ -44,18 +50,25 @@ def settings_problems(settings: dict) -> list[str]:
 
     problems = []
     agent, key, model = value("SEC_USER_AGENT"), value("API_KEY"), value("MODEL")
-    if not agent or "@" not in agent or example(agent):
+    words = agent.split()
+    email = [word for word in words if re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", word.strip("<>(),;"))]
+    if not email or len(words) < 2 or example(agent):
         problems.append("SEC_USER_AGENT in .env must hold your own name and email: SEC EDGAR asks every program for them.")
-    if not key or example(key):
-        problems.append("API_KEY in .env is empty or still the example. Paste your model key.")
+    own_server = bool(value("LLM_BASE_URL"))  # a server of your own: its model names and keys follow no provider's form
     prefix = next((start for start in PROVIDERS if model.startswith(start)), None)
+    # A real key holds no space, and is more than the letters every key of its provider starts with.
+    no_key = not key or example(key) or " " in key or (not own_server and key in PROVIDERS.values())
+    if no_key:
+        problems.append("API_KEY in .env is empty, only the start of a key, or still the example. Paste your model key.")
     if not model:
         problems.append("MODEL in .env is empty. Write the model with its provider: anthropic/MODEL_ID, gemini/MODEL_ID or openai/MODEL_ID.")
-    elif value("LLM_BASE_URL"):
-        pass  # a server of your own: its model names and keys follow no provider's form
+    elif own_server:
+        pass
     elif prefix is None:
         problems.append("MODEL in .env must start with its provider: anthropic/, gemini/ or openai/, then a model ID your account can use.")
-    elif key and not example(key) and (not key.startswith(PROVIDERS[prefix]) or (prefix == "openai/" and key.startswith("sk-ant-"))):
+    elif model[len(prefix):].strip().lower() in ("", MODEL_PLACEHOLDER):
+        problems.append("MODEL in .env names a provider and no model: after " + prefix + " write a model ID your account can use.")
+    elif not no_key and (not key.startswith(PROVIDERS[prefix]) or (prefix == "openai/" and key.startswith("sk-ant-"))):
         problems.append(f"API_KEY and MODEL in .env are of two providers: MODEL starts with {prefix}, and that provider's keys start with {PROVIDERS[prefix]}.")
     return problems
 

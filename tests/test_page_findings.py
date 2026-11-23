@@ -16,6 +16,7 @@ import http.client
 import json
 import ntpath
 import os
+import html
 import re
 import shutil
 import tempfile
@@ -80,7 +81,7 @@ class Findings(unittest.TestCase):
         path = self.report(b"[x](javascript:alert(1))\n\n![](http://example.com/x)\n\n[d](data:text/html,x)\n\n[r][1]\n\n[1]: javascript:alert(2)\n")
         status, text = self.ask("GET", "/report?path=" + path)
         self.assertEqual(status, 200)
-        self.assertNotIn("javascript:", text)
+        self.assertNotIn('href="javascript', text.lower())   # the words may be shown; no link may hold them
         self.assertNotIn("<img", text)
         self.assertNotIn('href="data:', text)
 
@@ -97,6 +98,69 @@ class Findings(unittest.TestCase):
         path = self.report(b"| Line | Year 1 | Year 2 |\n|---|---|---|\n| Made-up debt | 5|6 | 100 | 200 |\n")
         status, text = self.ask("GET", "/report?path=" + path)
         self.assertIn("200", text)
+
+    # The next four were found by an independent review of the first form of these fixes, on 2026-11-22.
+    def made(self, text):
+        folder = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, folder, True)
+        (folder / "report.md").write_text(text, encoding="utf-8")
+        return page.render(folder / "report.md")
+
+    def shown(self, text):
+        return html.unescape(re.sub(r"<[^>]+>", "", self.made(text)))
+
+    def test_an_image_is_shown_as_its_words(self):
+        made = self.made("Chart: ![Made-up revenue rose 12% to 345 at R&D](http://example.com/c.png) end\n\n[![Made-up figure 77](http://example.com/x.png)](https://example.com/a)\n")
+        self.assertNotIn("<img", made)
+        self.assertIn("Chart: Made-up revenue rose 12% to 345 at R&amp;D end", made)
+        self.assertIn(">Made-up figure 77</a>", made)
+        self.assertNotIn("<img", self.made("![a \"quoted\" <b>word</b>](http://example.com/c.png)\n"))
+        self.assertNotIn("<b>", self.made("![a \"quoted\" <b>word</b>](http://example.com/c.png)\n"))
+
+    def test_a_star_inside_code_is_shown_as_typed(self):
+        for text in ("Value: `price * shares = 5 * 7` and 5 * 3 = 15\n", "```\nprice * shares = 35\nR&D < 5\n```\n",
+                     "| Line | Y1 | Y2 |\n|---|---|---|\n| Debt* R&D | 5 | 6 | 7 |\n"):
+            with self.subTest(text=text):
+                shown = self.shown(text)
+                self.assertNotIn("\\", shown)
+                self.assertEqual(shown.count("*"), text.count("*"))
+        self.assertIn("5 * 3 = 15", self.shown("Value: `price * shares = 5 * 7` and 5 * 3 = 15\n"))
+        self.assertIn("Debt* R&D", self.shown("| Line | Y1 | Y2 |\n|---|---|---|\n| Debt* R&D | 5 | 6 | 7 |\n"))
+
+    def test_an_extra_cell_is_never_cut_whatever_the_table_looks_like(self):
+        for text in ("| A | B |\n|--|--|\n| 1 | 2 | 3 |\n", "| A | B |\n|:-:|:-:|\n| 1 | 2 | 3 |\n", "| A | B |\n| - | - |\n| 1 | 2 | 3 |\n",
+                     "| A | B | C |\n|---|---|---|\n|| 1 | 2 | 3 |\n", "## A heading\n| A | B |\n|---|---|\n| 1 | 2 | 3 |\n"):
+            with self.subTest(text=text):
+                shown = self.shown(text)
+                self.assertEqual(re.sub(r"\D", "", shown), "123")
+                self.assertIn("more cells than its header", shown)
+
+    def test_stars_lists_and_source_lines_are_shown_as_the_file_holds_them(self):
+        # Two stars between numbers are a power, not bold: "2**3**4" was shown as 234.
+        for text in ("Growth of 2**3**4 units.\n", "(1.05)**5 and 200 * (1.03)**10\n"):
+            with self.subTest(text=text):
+                self.assertEqual(self.shown(text).count("*"), text.count("*"))
+        self.assertIn("<strong>Revenue</strong>: 5", self.made("**Revenue**: 5 and **Margin**: 6%\n"))
+        # A list written with stars is still a list; the first form of the star rule made it plain lines.
+        made = self.made("* first point 1\n* **second** point 2\n")
+        self.assertEqual((made.count("<li>"), "<strong>second</strong>" in made), (2, True))
+        # A line "[1]: address" is a link definition to Markdown, which removes it: a list of sources vanished.
+        shown = self.shown("Sources:\n\n[1]: https://example.com/made-up-0001\n[2]: https://example.com/made-up-0002\n")
+        self.assertIn("made-up-0001", shown)
+        self.assertIn("made-up-0002", shown)
+        # A numbered list with a gap (a line was left out) keeps its numbers; one that counts on stays a list.
+        self.assertEqual(re.sub(r"\D", "", self.shown("1. step a\n2. step b\n4. step d\n")), "124")
+        self.assertIn("<ol>", self.made("1. step a\n2. step b\n3. step c\n"))
+
+    def test_a_good_table_stays_a_table(self):
+        for text in ("| Line | Year 1 | Year 2 |\n|---|---|---|\n| Made-up cash | 5 ||\n| Made-up debt | 6 | 7 |\n",
+                     "| Rule | Year 1 | Year 2 |\n|---|---|---|\n| `a|b` | 5 | 6 |\n", "| Line | Y1 | Y2 |\n|---|---|---|\n| Total | 5 |\n",
+                     "| Line | Y1 | Y2 |\n|---|---|---|\n| a \\| b | 5 | 6 |\n", "| # | Claim | Mark |\n|---|---|---|\n| 1 | Revenue 5 | **correct** |\n"):
+            with self.subTest(text=text):
+                made = self.made(text)
+                self.assertIn("<table>", made)
+                self.assertNotIn("more cells", made)
+        self.assertNotIn("more cells", self.made("Sources: 10-K | 10-Q | 8-K\n---\nNext 5\n"))
 
     # P3
     def test_a_report_that_is_not_utf8_gets_an_answer(self):
@@ -122,7 +186,28 @@ class Findings(unittest.TestCase):
              mock.patch.object(ntpath, "_nt_readlink", guard(getattr(ntpath, "_nt_readlink", os.readlink)), create=True):
             self.assertIsNone(page.safe_report("\\\\made-up-host.invalid\\share\\output\\x.md"))
             self.assertIsNone(page.safe_report("//made-up-host.invalid/share/x.md"))
+            # The registry field of the form: the audit listed it as checked, and it was not (2026-11-22).
+            args, problem = page.arguments({"ticker": "EXM", "registry": "\\\\made-up-host.invalid\\share\\registry.json"})
+            self.assertEqual((args, problem), ([], "Select a saved registry JSON inside this repository."))
         self.assertEqual(touched, [])
+
+    @unittest.skipUnless(os.name == "nt", "the two-backslash form of a path is Windows'")
+    def test_a_repository_that_is_itself_on_such_a_path_shows_its_own_reports(self):
+        # A repository on a network drive has a path that starts with two backslashes. The first form of the check
+        # above refused every such path, the repository's own included: the page listed no run of the desk and
+        # called a finished run stopped (found by an independent review, 2026-11-22). The stand-in is this
+        # computer's own folder in its long form, which starts the same way and contacts nothing.
+        local = page.ROOT
+        there = Path("\\\\?\\" + str(local))
+        run = local / "runs" / "practice" / "EXM_2026-11-22_10-00-00.123456"
+        run.mkdir()
+        self.addCleanup(shutil.rmtree, run, True)
+        (run / "final_report.md").write_text("Filings read: a made-up line\n", encoding="utf-8")
+        (run / "desk_run.json").write_text(json.dumps({"status": "complete", "final_report": "final_report.md"}), encoding="utf-8")
+        with mock.patch.object(page, "ROOT", there), mock.patch.object(page, "OUTPUT", there / "output"):
+            printed = str(there / "runs" / "practice" / run.name / "final_report.md")      # as desk.py prints it
+            self.assertEqual(page.report_link(printed), f"runs/practice/{run.name}/final_report.md")
+            self.assertIsNone(page.safe_report("\\\\made-up-host.invalid\\share\\x.md"))
 
     # P5
     def test_drafts_that_never_passed_the_audit_are_not_served(self):
@@ -187,12 +272,24 @@ class Findings(unittest.TestCase):
         for headers in ({"Sec-Fetch-Site": "none", "Sec-Fetch-Mode": "navigate", "Sec-Fetch-Dest": "document"}, {"Sec-Fetch-Site": "same-origin"}, {}):
             self.assertEqual(self.ask("GET", "/", headers=headers)[0], 200, headers)
             self.assertEqual(self.ask("GET", "/status", headers=headers)[0], 200, headers)
-        # Only the page itself, and only as a whole page: not inside another site's frame, and no other address.
-        self.assertEqual(self.ask("GET", "/", headers={**clicked, "Sec-Fetch-Dest": "iframe"})[0], 403)
+        # An editor's preview pane shows the page inside a frame of its own: the page opens there too, as it did
+        # before the audit. Only the page itself is the exception, and no other address.
+        self.assertEqual(self.ask("GET", "/", headers={**clicked, "Sec-Fetch-Dest": "iframe"})[0], 200)
         for path in ("/status", "/runs", "/setup", "/report?path=runs/live/x/verified_report.md"):
             with mock.patch.object(page.subprocess, "run") as run:
                 self.assertEqual(self.ask("GET", path, headers=clicked)[0], 403, path)
                 run.assert_not_called()
+
+    def test_on_port_80_the_browser_names_the_host_without_a_port(self):
+        # A browser leaves ":80" out of the Host line, so the page started with --port 80 refused every request.
+        with mock.patch.object(page.Page, "server", mock.Mock(server_address=("127.0.0.1", 80)), create=True):
+            handler = page.Page.__new__(page.Page)
+            handler.command, handler.path, handler.headers = "GET", "/", {"Host": "127.0.0.1"}
+            handler.send_json = mock.Mock()
+            self.assertTrue(handler.from_here())
+            handler.headers = {"Host": "example.com"}
+            self.assertFalse(handler.from_here())
+        self.assertEqual(self.ask("GET", "/", headers={"Host": "127.0.0.1"})[0], 403)   # on any other port the port is named
 
     # P11
     def test_json_null_is_not_a_ticker_or_a_peer(self):
@@ -201,6 +298,27 @@ class Findings(unittest.TestCase):
         self.assertEqual(page.arguments({"ticker": "EXM", "peers": None})[0], ["EXM"])
 
     # P12
+    def test_json_nested_too_deep_to_read_gets_an_answer(self):
+        # Inside the length limit, so the page does read it: the reader gives up on the nesting, and the page
+        # answers. The test below is longer than the limit and never reached this (found by a review, 2026-11-22).
+        body = b"[" * 8000 + b"]" * 8000
+        with mock.patch.object(page, "Run") as run:
+            for _ in range(3):
+                status, text = self.ask("POST", "/run", body, {"Content-Type": "application/json"})
+                self.assertEqual((status, json.loads(text)), (400, {"error": "Send JSON."}))
+            run.assert_not_called()
+
+    def test_a_body_of_exactly_the_limit_is_read_and_one_byte_more_is_not(self):
+        fits = json.dumps({"ticker": "EXM", "peers": "A" * 16000})
+        fits = fits[:-2] + "A" * (16384 - len(fits)) + '"}'
+        self.assertEqual(len(fits), 16384)
+        with mock.patch.object(page, "arguments", return_value=([], "stopped here by the test")) as read:
+            self.assertEqual(self.ask("POST", "/run", fits, {"Content-Type": "application/json"})[0], 400)
+            self.assertEqual(read.call_count, 1)
+            longer = fits[:-2] + 'A"}'
+            self.assertEqual(self.ask("POST", "/run", longer, {"Content-Type": "application/json"})[0], 400)
+            self.assertEqual(read.call_count, 1)                   # the longer body was never parsed
+
     def test_deeply_nested_json_gets_an_answer(self):
         with mock.patch.object(page, "Run") as run:
             status, _ = self.ask("POST", "/run", b"[" * 100000 + b"]" * 100000, {"Content-Type": "application/json"})

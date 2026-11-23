@@ -83,6 +83,27 @@ class TheReleaseIsFoundByWhatItHolds(unittest.TestCase):
                           {f"{folder(NEW_8K)}/{NEW_8K}-index.html": index_page("2026-11-19 16:05:00", [("8-K", "main.htm"), ("EX-99.1", "release.htm")])})
         self.assertEqual((desk.filings["8-K"].release_label, desk.filings["8-K"].release_document), ("99.1", "release.htm"))
         self.assertFalse(any(url.endswith("release.htm") for url in web.asked))
+        # The 10-K's year end goes from EDGAR's list into the filing the desk keeps: the rule that states no annual
+        # fact of another year (desk_rules.annual_problem) reads it there, and never fires without it.
+        self.assertEqual(desk.filings["10-K"].report_date, "2026-06-30")
+
+
+    def test_a_statement_titled_results_of_operations_is_an_income_statement(self):
+        # The release, in 99.1, titles its statement "Consolidated Statement of Results of Operations", which the
+        # rule did not know, and the deck in 99.2 holds a slide "Income Statement": the deck was taken for the
+        # release (found by an independent review, 2026-11-22; the group desk before the audit took 99.1).
+        release = RELEASE.replace("Condensed Consolidated Statements of Income", "Consolidated Statement of Results of Operations")
+        slides = SLIDES.replace("Our strategy", "Income Statement")
+        desk, _ = step2([filing("8-K", NEW_8K, "2026-11-19", items="2.02,9.01")],
+                        {f"{folder(NEW_8K)}/{NEW_8K}-index.html": index_page("2026-11-19 16:05:00", [("8-K", "main.htm"), ("EX-99.1", "release.htm"), ("EX-99.2", "slides.htm")]),
+                         f"{folder(NEW_8K)}/release.htm": release, f"{folder(NEW_8K)}/slides.htm": slides})
+        self.assertEqual((desk.filings["8-K"].release_label, desk.filings["8-K"].release_document), ("99.1", "release.htm"))
+
+    def test_an_exhibit_99_that_is_a_picture_or_a_pdf_is_not_a_release(self):
+        desk, web = step2([filing("8-K", NEW_8K, "2026-11-19", items="2.02,9.01")],
+                          {f"{folder(NEW_8K)}/{NEW_8K}-index.html": index_page("2026-11-19 16:05:00", [("8-K", "main.htm"), ("EX-99.1", "chart.jpg"), ("EX-99.2", "deck.pdf"), ("EX-99.3", "release.htm")])})
+        self.assertEqual((desk.filings["8-K"].release_label, desk.filings["8-K"].release_document), ("99.3", "release.htm"))
+        self.assertFalse(any(url.endswith((".jpg", ".pdf")) for url in web.asked))
 
 
 class TheNewestEarnings8KIsTheOneRead(unittest.TestCase):
