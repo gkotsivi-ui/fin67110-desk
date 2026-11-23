@@ -378,14 +378,14 @@ class RuleTests(unittest.TestCase):
         reader = Mock(return_value=[{'ticker':'ZZZ','date':'2026-02-03','close':10}, {'ticker':'ZZZ','date':'2026-02-05','close':12}])
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); factors=root/'factors.json'
-            factors.write_text(json.dumps({'window_days':30,'factors':[{'name':'return_since_first_close','weight':1,'direction':'higher'}]}))
+            factors.write_text(json.dumps({'window_days':30,'factors':[{'name':'return_since_first_close','weight':1,'direction':'higher'}]}),encoding='utf-8')
             args = type('Args', (), {'as_of':'2026-02-05','start':'2026-02-02','factors':str(factors),'output':str(root/'out'),'index_start':'1994-07-01','no_prices':False})()
             with patch.object(s,'dotenv_values',return_value={'SEC_USER_AGENT':'test@example.invalid'}), patch.object(s,'Edgar',return_value=fake), patch.object(s,'index_urls',return_value=['https://www.sec.gov/fake/form.idx']), patch.object(s,'read_folder',side_effect=folders), patch.object(s,'load_reader',return_value=reader):
                 target = s.run(args)
-            report = target.read_text()
+            report = target.read_text(encoding='utf-8')
             self.assertTrue(report.rstrip().endswith('screens, not recommendations'))
             self.assertIn('2026-02-03', report)
-            registry = json.loads((root/'out/registry.json').read_text())
+            registry = json.loads((root/'out/registry.json').read_text(encoding='utf-8'))
             self.assertEqual(registry['candidates']['101']['stage'], 'in its window')
             self.assertEqual(registry['candidates']['101']['rank'], 1)
             self.assertTrue(target.with_suffix('.json').exists())
@@ -475,7 +475,7 @@ class RuleTests(unittest.TestCase):
 
     def test_json_can_point_to_source_pdf(self):
         with tempfile.TemporaryDirectory() as tmp:
-            p=Path(tmp)/'config.json';p.write_text(json.dumps({'source_pdf':'weights.pdf'}))
+            p=Path(tmp)/'config.json';p.write_text(json.dumps({'source_pdf':'weights.pdf'}),encoding='utf-8')
             expected={'window_days':365,'factors':[{'name':'a','weight':1,'direction':'higher'}]}
             with patch.object(s,'load_pdf_factors',return_value=expected) as loader:
                 self.assertEqual(s.load_factors(p),expected)
@@ -551,7 +551,7 @@ class RuleTests(unittest.TestCase):
     def test_named_factor_dictionary_and_early_return_days(self):
         config={'window_days':365,'early_return_days':20,'factors':{'insider_ownership':{'weight':.25,'direction':'higher'},'early_return':{'weight':.15,'direction':'lower'},'analyst_count':{'weight':0,'direction':'lower'}}}
         with tempfile.TemporaryDirectory() as tmp:
-            path=Path(tmp)/'factors.json';path.write_text(json.dumps(config))
+            path=Path(tmp)/'factors.json';path.write_text(json.dumps(config),encoding='utf-8')
             loaded=s.load_factors(path)
         self.assertEqual(loaded['early_performance_trading_days'],20)
         self.assertEqual([f['name'] for f in loaded['factors']],['insider_ownership_pct','early_price_performance','analyst_recommendations'])
@@ -559,7 +559,7 @@ class RuleTests(unittest.TestCase):
 
     def test_early_return_horizon_must_be_positive(self):
         with tempfile.TemporaryDirectory() as tmp:
-            path=Path(tmp)/'factors.json';path.write_text(json.dumps({'window_days':365,'early_return_days':0,'factors':{'early_return':{'weight':1,'direction':'lower'}}}))
+            path=Path(tmp)/'factors.json';path.write_text(json.dumps({'window_days':365,'early_return_days':0,'factors':{'early_return':{'weight':1,'direction':'lower'}}}),encoding='utf-8')
             with self.assertRaises(ValueError):s.load_factors(path)
 
     def test_filing_plan_limits_8k_history_but_keeps_registrations(self):
@@ -610,15 +610,15 @@ class RuleTests(unittest.TestCase):
         reader=Mock(side_effect=lambda ticker,start,end: [{'ticker':'PPP','date':'2026-02-03','close':20}] if ticker=='PPP' else [{'ticker':'ZZZ','date':day,'close':10+i} for i,day in enumerate(days)])
         weights={'insider_ownership':(.25,'higher'),'relative_size':(.20,'lower'),'insider_buying':(.15,'higher'),'early_return':(.15,'lower'),'debt_to_assets':(.15,'lower'),'market_cap':(.10,'lower'),'analyst_count':(0,'lower'),'unwanted_selling':(0,'higher')}
         with tempfile.TemporaryDirectory() as tmp:
-            root=Path(tmp);factor_file=root/'factors.json';factor_file.write_text(json.dumps({'window_days':365,'early_return_days':20,'factors':{k:{'weight':w,'direction':d} for k,(w,d) in weights.items()}}))
+            root=Path(tmp);factor_file=root/'factors.json';factor_file.write_text(json.dumps({'window_days':365,'early_return_days':20,'factors':{k:{'weight':w,'direction':d} for k,(w,d) in weights.items()}}),encoding='utf-8')
             args=type('Args',(),{'as_of':'2026-03-05','start':'2026-01-01','factors':str(factor_file),'output':str(root/'out'),'index_start':'1994-07-01','no_prices':False})()
             with patch.object(s,'dotenv_values',return_value={'SEC_USER_AGENT':'test@example.invalid'}),patch.object(s,'Edgar',return_value=fake),patch.object(s,'index_urls',return_value=['https://www.sec.gov/fake/form.idx']),patch.object(s,'read_folder',side_effect=folders),patch.object(s,'load_reader',return_value=reader):
                 target=s.run(args)
-            saved=json.loads(target.with_suffix('.json').read_text())['registry']['candidates']['101']
+            saved=json.loads(target.with_suffix('.json').read_text(encoding='utf-8'))['registry']['candidates']['101']
             self.assertEqual(saved['rank'],1);self.assertAlmostEqual(saved['total_points'],1)
             self.assertEqual(len(saved['points']),8)
             self.assertTrue(all(saved['metrics'][key]['source'] for key in ('insider_ownership_pct','size_relative_to_parent','insider_buying','early_price_performance','debt_to_assets','absolute_market_cap')))
-            text=target.read_text();self.assertIn('relative_size points',text)
+            text=target.read_text(encoding='utf-8');self.assertIn('relative_size points',text)
             self.assertTrue(text.rstrip().endswith('screens, not recommendations'))
 
     def test_bounded_batches_resume_without_repeating_processed_candidate(self):
@@ -627,15 +627,15 @@ class RuleTests(unittest.TestCase):
         fake=Mock();fake.get.return_value=index;fake.errors=[];fake.submissions.side_effect=lambda cik:({'name':'Registrant'},[])
         def folder(client,row):return [s.Document(row,row.folder+'doc.htm',[('Information Statement','Information Statement. Dates not supplied.')])],True
         with tempfile.TemporaryDirectory() as tmp:
-            root=Path(tmp);factors=root/'factors.json';factors.write_text(json.dumps({'window_days':365,'factors':[{'name':'days_since_distribution','weight':1,'direction':'lower'}]}))
+            root=Path(tmp);factors=root/'factors.json';factors.write_text(json.dumps({'window_days':365,'factors':[{'name':'days_since_distribution','weight':1,'direction':'lower'}]}),encoding='utf-8')
             args=type('Args',(),{'as_of':'2026-03-05','start':'2026-01-01','factors':str(factors),'output':str(root/'out'),'index_start':'1994-07-01','no_prices':True,'max_candidates':1,'resume':False})()
             with patch.object(s,'dotenv_values',return_value={'SEC_USER_AGENT':'test@example.invalid'}),patch.object(s,'Edgar',return_value=fake),patch.object(s,'index_urls',return_value=['https://www.sec.gov/fake/form.idx']),patch.object(s,'read_folder',side_effect=folder):
                 first=s.run(args)
-                self.assertIn('Coverage: PARTIAL','\n'.join(first.read_text().splitlines()[:12]))
-                self.assertFalse(json.loads((root/'out/registry.json').read_text())['complete'])
+                self.assertIn('Coverage: PARTIAL','\n'.join(first.read_text(encoding='utf-8').splitlines()[:12]))
+                self.assertFalse(json.loads((root/'out/registry.json').read_text(encoding='utf-8'))['complete'])
                 args.resume=True;s.run(args)
             self.assertEqual(fake.submissions.call_count,2)
-            self.assertTrue(json.loads((root/'out/registry.json').read_text())['complete'])
+            self.assertTrue(json.loads((root/'out/registry.json').read_text(encoding='utf-8'))['complete'])
 
     def test_xml_only_form4_folder_is_read(self):
         client=Mock();client.get.side_effect=[json.dumps({'directory':{'item':[{'name':'report.xml'}]}}),'<ownershipDocument><issuer><issuerCik>101</issuerCik></issuer></ownershipDocument>']
@@ -679,7 +679,7 @@ class RuleTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); registry = root/'registry.json'
             s.save_json(registry, {'candidates': {'101': candidate()}})
-            self.assertIn('101', json.loads(registry.read_text())['candidates'])
+            self.assertIn('101', json.loads(registry.read_text(encoding='utf-8'))['candidates'])
             p = s.save_report(root, 'screens, not recommendations\n', datetime(2026,2,2,12,30,1,123456,tzinfo=timezone.utc), date(2026,1,1))
             self.assertEqual(p.name,'Spinoffs, 2026-02-02, 12-30-01.123456, start 2026-01-01.md')
             s.save_json(p.with_suffix('.json'),{'run_time':'2026-02-02T12:30:01.123456+00:00'})

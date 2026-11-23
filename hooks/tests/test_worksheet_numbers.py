@@ -23,13 +23,13 @@ class NumberTests(unittest.TestCase):
         self.worksheet = self.run / 'Spinoff worksheet, TEST.md'
         (self.run / 'facts.json').write_text(json.dumps({'facts': {
             'earnings': {'tag':'NetIncomeLoss', 'period_end':'2026-08-30', 'value':100,
-                         'prior_period_end':'2025-08-31', 'prior_value':80}}}))
-        (self.run / '10-K.txt').write_text('Depreciation 20\nCapital spending 30\nShares 10\nScale 1000000\n')
+                         'prior_period_end':'2025-08-31', 'prior_value':80}}}), encoding='utf-8')
+        (self.run / '10-K.txt').write_text('Depreciation 20\nCapital spending 30\nShares 10\nScale 1000000\n', encoding='utf-8')
         rules = self.root / 'skills/spinoff-worksheet/SKILL.md'
         rules.parent.mkdir(parents=True)
-        rules.write_text('Low rate: 10%\nWeight: 0.5\n')
+        rules.write_text('Low rate: 10%\nWeight: 0.5\n', encoding='utf-8')
         (self.run / 'reader response.json').write_text(json.dumps([
-            {'ticker':'TEST','date':'2026-11-11','close':50,'volume':200}]))
+            {'ticker':'TEST','date':'2026-11-11','close':50,'volume':200}]),encoding='utf-8')
         self.valid = '\n'.join([
             'Worksheet as of 2026-11-12T09:22:40.444799-05:00; accession 0000909832-26-000093',
             'earnings = 100 [fact tag=NetIncomeLoss period=2026-08-30]',
@@ -45,7 +45,7 @@ class NumberTests(unittest.TestCase):
         ])
 
     def check(self, text):
-        self.worksheet.write_text(text)
+        self.worksheet.write_text(text, encoding='utf-8')
         return Auditor(self.run, self.root).check(self.worksheet)
 
     def test_valid_sources_and_chained_calculations(self):
@@ -66,9 +66,9 @@ class NumberTests(unittest.TestCase):
 
     def test_conflicting_tag_period_fails(self):
         path = self.run/'facts.json'
-        data = json.loads(path.read_text())
+        data = json.loads(path.read_text(encoding='utf-8'))
         data['facts']['conflict'] = {'tag':'NetIncomeLoss','period_end':'2026-08-30','value':101}
-        path.write_text(json.dumps(data))
+        path.write_text(json.dumps(data), encoding='utf-8')
         self.assertTrue(self.check(self.valid))
 
     def test_start_period_must_match_if_claimed(self):
@@ -106,12 +106,12 @@ class NumberTests(unittest.TestCase):
 
     def test_duplicate_reader_date_fails(self):
         path = self.run/'reader response.json'
-        data = json.loads(path.read_text())
-        path.write_text(json.dumps(data+data))
+        data = json.loads(path.read_text(encoding='utf-8'))
+        path.write_text(json.dumps(data+data), encoding='utf-8')
         self.assertTrue(self.check(self.valid))
 
     def test_companion_worksheet_is_not_a_reader_source(self):
-        (self.run/'Spinoff worksheet.json').write_text((self.run/'reader response.json').read_text())
+        (self.run/'Spinoff worksheet.json').write_text((self.run/'reader response.json').read_text(encoding='utf-8'), encoding='utf-8')
         self.assertTrue(self.check(self.valid.replace('reader response.json','Spinoff worksheet.json')))
 
     def test_unclassified_numeric_prose_and_code_fail(self):
@@ -149,7 +149,7 @@ class NumberTests(unittest.TestCase):
         self.assertTrue(self.check(text.replace('median_value = 40','median_value = 41')))
 
     def test_numeric_sign_and_fraction_are_not_lost(self):
-        (self.run/'10-K.txt').write_text('Negative −20\nFraction .5\n')
+        (self.run/'10-K.txt').write_text('Negative −20\nFraction .5\n', encoding='utf-8')
         self.assertEqual(self.check('−20 [filing path="10-K.txt" line=1]'), [])
         self.assertTrue(self.check('20 [filing path="10-K.txt" line=1]'))
         self.assertEqual(self.check('.5 [filing path="10-K.txt" line=2]'), [])
@@ -162,16 +162,16 @@ class NumberTests(unittest.TestCase):
     def test_other_skill_is_not_the_active_skill(self):
         path = self.root/'skills/other/SKILL.md'
         path.parent.mkdir(parents=True)
-        path.write_text('Rate 10%')
+        path.write_text('Rate 10%', encoding='utf-8')
         self.assertTrue(self.check('rate = 0.1 [rule path="skills/other/SKILL.md" line=1]'))
 
     def test_malformed_reader_output_reports_original_worksheet_line(self):
-        (self.run/'reader response.json').write_text('["not a price row"]')
+        (self.run/'reader response.json').write_text('["not a price row"]', encoding='utf-8')
         failures = self.check(self.valid)
         self.assertTrue(any(f.line == 9 and 'price = 50' in f.text for f in failures))
 
     def test_paths_cannot_leave_the_run(self):
-        (self.root/'outside.txt').write_text('20')
+        (self.root/'outside.txt').write_text('20', encoding='utf-8')
         self.assertTrue(self.check('20 [filing path="../outside.txt" line=1]'))
 
     def test_malformed_annotation_cannot_hide_a_number(self):
@@ -182,8 +182,8 @@ class NumberTests(unittest.TestCase):
         self.check(self.valid)
         cmd = [sys.executable, str(HOOKS/'worksheet_numbers.py'), '--run', str(self.run), '--workspace', str(self.root)]
         self.assertEqual(subprocess.run(cmd, capture_output=True).returncode, 0)
-        self.worksheet.write_text('Bad price 999')
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        self.worksheet.write_text('Bad price 999', encoding='utf-8')
+        result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
         self.assertEqual(result.returncode, 1)
         self.assertIn('Bad price 999', result.stderr)
         self.assertIn(':1:', result.stderr)
@@ -205,61 +205,61 @@ class HookTests(unittest.TestCase):
         return gate.handle({'hook_event_name':name,'session_id':'test',**kwargs})
 
     def test_start_baseline_excludes_old_worksheets(self):
-        self.path.write_text('Old number 999')
+        self.path.write_text('Old number 999', encoding='utf-8')
         self.assertEqual(self.event('SessionStart'), {})
         self.assertEqual(self.event('Stop'), {})
 
     def test_after_write_block_and_stop_still_blocks_on_continuation(self):
         self.event('SessionStart')
-        self.path.write_text('Bad claim 999')
+        self.path.write_text('Bad claim 999', encoding='utf-8')
         for event in ('PostToolUse','Stop','Stop'):
             result = self.event(event, stop_hook_active=True)
             self.assertEqual(result['decision'], 'block')
             self.assertIn('Bad claim 999',result['reason'])
 
     def test_existing_worksheet_edit_is_checked(self):
-        self.path.write_text('No numbers')
+        self.path.write_text('No numbers', encoding='utf-8')
         self.event('SessionStart')
-        self.path.write_text('Bad claim 999')
+        self.path.write_text('Bad claim 999', encoding='utf-8')
         self.assertEqual(self.event('PostToolUse')['decision'],'block')
 
     def test_correction_is_rechecked_and_releases_stop(self):
         self.event('SessionStart')
-        self.path.write_text('Bad claim 999')
+        self.path.write_text('Bad claim 999', encoding='utf-8')
         self.event('PostToolUse')
-        self.path.write_text('Missing amount: not known')
+        self.path.write_text('Missing amount: not known', encoding='utf-8')
         self.assertEqual(self.event('Stop'),{})
 
     def test_evidence_change_is_checked_without_worksheet_change(self):
         self.event('SessionStart')
-        (self.run/'filing.txt').write_text('20')
-        self.path.write_text('20 [filing path=filing.txt line=1]')
+        (self.run/'filing.txt').write_text('20', encoding='utf-8')
+        self.path.write_text('20 [filing path=filing.txt line=1]', encoding='utf-8')
         self.assertEqual(self.event('PostToolUse'),{})
-        (self.run/'filing.txt').write_text('21')
+        (self.run/'filing.txt').write_text('21', encoding='utf-8')
         self.assertEqual(self.event('Stop')['decision'],'block')
 
     def test_missing_session_start_checks_existing_files(self):
-        self.path.write_text('Bad claim 999')
+        self.path.write_text('Bad claim 999', encoding='utf-8')
         self.assertEqual(self.event('Stop')['decision'],'block')
 
     def test_deleted_pending_output_fails(self):
         self.event('SessionStart')
-        self.path.write_text('Bad claim 999')
+        self.path.write_text('Bad claim 999', encoding='utf-8')
         self.event('PostToolUse')
         self.path.unlink()
         self.assertEqual(self.event('Stop')['decision'],'block')
 
     def test_state_stores_no_numerical_evidence(self):
         self.event('SessionStart')
-        self.path.write_text('Bad claim 999')
+        self.path.write_text('Bad claim 999', encoding='utf-8')
         self.event('PostToolUse')
         for path in (self.root/'.state').glob('*.json'):
-            state = json.loads(path.read_text())
+            state = json.loads(path.read_text(encoding='utf-8'))
             self.assertEqual(set(state),{'observed','pending'})
-            self.assertNotIn('Bad claim',path.read_text())
+            self.assertNotIn('Bad claim',path.read_text(encoding='utf-8'))
 
     def test_hook_exception_returns_explicit_block_json(self):
-        result = subprocess.run([sys.executable,str(HOOKS/'worksheet_gate.py')],input='not json',capture_output=True,text=True)
+        result = subprocess.run([sys.executable,str(HOOKS/'worksheet_gate.py')],input='not json',capture_output=True,text=True,encoding='utf-8')
         self.assertEqual(result.returncode,0)
         self.assertEqual(json.loads(result.stdout)['decision'],'block')
 

@@ -52,17 +52,17 @@ class ReviewTests(unittest.TestCase):
         before = snapshot(self.run)
         result = review_run(self.run, self.history, 4, True, self.root,
                             self.proposal(), "synthetic-model")
-        loaded = json.loads(Path(result["outputs"]["findings"]).read_text())
+        loaded = json.loads(Path(result["outputs"]["findings"]).read_text(encoding="utf-8"))
         self.assertEqual(Path(result["outputs"]["human"]).parent, self.run.resolve())
         self.assertEqual(Path(result["outputs"]["ai"]).parent, self.run.resolve())
         self.assertNotIn(self.run.resolve(), Path(result["outputs"]["findings"]).parents)
         self.assertEqual(loaded["findings"], result["findings"])
         for kind in ("human", "ai"):
-            text = Path(result["outputs"][kind]).read_text()
+            text = Path(result["outputs"][kind]).read_text(encoding="utf-8")
             self.assertIn(result["findings"][0]["id"], text)
             self.assertIn("run/report.md:3", text)
             self.assertIn("## Unconfirmed errors", text)
-        ai = Path(result["outputs"]["ai"]).read_text()
+        ai = Path(result["outputs"]["ai"]).read_text(encoding="utf-8")
         unconfirmed = ai.split("## Unconfirmed errors")[1]
         self.assertNotIn("Proposed test:", unconfirmed)
         self.assertEqual(before, snapshot(self.run))

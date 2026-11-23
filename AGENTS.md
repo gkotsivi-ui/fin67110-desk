@@ -70,9 +70,14 @@ revisions; the original reports remain unchanged. See `skills/desk-error-review/
 ## Required checks for changes
 
 ```
-python -m unittest discover -s tests
-python live_record.py --offline --no-save
+python check_all.py
 ```
+
+It runs the four test folders (`tests`, `hooks/tests` and the two skills' tests), the two seeded checks that test
+discovery does not collect, `python live_record.py --offline --no-save`, and `python check_public.py`, which looks
+for keys, values of `.env`, data files, lists of closes and home-folder paths in what git tracks or would add. Run
+it with `.venv-desk`. It needs no network and no key. Before a push, `python check_public.py` alone is the scan
+that rule 1 asks for.
 
 Write what AI got wrong, and how it was caught, in `docs/decision-log.md`.
 

@@ -81,8 +81,13 @@ class Parts:
         self.registry=None;self.snapshot=None;self.picked=None
 
     def validate_setup(self):
+        # The three required settings first, with check_pipeline.py's own rule: until 2026-11-22 a wrong key or model
+        # was found at the first model call, after the seeker, the pick and the seven data steps.
+        from check_pipeline import read_settings,settings_problems
+        problems=settings_problems(read_settings())
+        if problems:raise ValueError('The settings are not ready. '+' '.join(problems))
         self.worksheet_module.load_worksheet(self.run/'inputs/spinoff-rules.md')
-        if not (self.run/'inputs/persona-why-cheap.md').read_text().strip():
+        if not (self.run/'inputs/persona-why-cheap.md').read_text(encoding='utf-8').strip():
             raise ValueError('Worksheet persona is empty')
         self.seeker.load_factors(str(self.run/'inputs/spinoff_factors.json'))
 
@@ -128,20 +133,20 @@ class Parts:
             report=path.with_suffix('') if path.suffix=='.gz' else path
             if report.with_suffix('.md').is_file():shutil.copy2(report.with_suffix('.md'),self.run/'screen.md')
             self.sources.import_cache(path.parent/'cache')
-            write_json(self.run/'registry.json',json.loads(self.snapshot.read_text())['registry'])
+            write_json(self.run/'registry.json',json.loads(self.snapshot.read_text(encoding='utf-8'))['registry'])
         elif not (self.run/'registry.json').exists():
             raise ValueError('No seeker registry was supplied')
-        self.registry=json.loads((self.run/'registry.json').read_text())
+        self.registry=json.loads((self.run/'registry.json').read_text(encoding='utf-8'))
         write_json(self.run/'seeker_status.json',{'mode':'refreshed' if options.refresh_screen else 'saved snapshot' if options.selector=='screen' else 'not requested',
                   'snapshot':self.snapshot.name if self.snapshot else None})
         if self.snapshot:
             # Only a run that picks from the screen needs a ranked name; a requested ticker does not.
-            data=json.loads(self.snapshot.read_text());validate_screen(self.seeker,data,need_ticker=options.selector=='screen')
+            data=json.loads(self.snapshot.read_text(encoding='utf-8'));validate_screen(self.seeker,data,need_ticker=options.selector=='screen')
         return self.snapshot
 
     def pick(self):
         if self.options.selector=='screen':
-            ticker,self.picked=validate_screen(self.seeker,json.loads(self.snapshot.read_text()))
+            ticker,self.picked=validate_screen(self.seeker,json.loads(self.snapshot.read_text(encoding='utf-8')))
         else:ticker=self.options.selector.upper()
         data={'ticker':ticker,'selection':'top ranked entry in saved screen' if self.picked else 'requested ticker',
               'source':self.snapshot.name if self.snapshot else None,'candidate':self.picked,
@@ -172,7 +177,7 @@ class Parts:
                 for form,row in self.filings.items():
                     url=row.release_url if form=='8-K' else row.document_url
                     path=run/names[form]
-                    if not path.exists():path.write_text(self.html_to_text(self.get(url).content))
+                    if not path.exists():path.write_text(self.html_to_text(self.get(url).content),encoding='utf-8')
                     sources.inventory(url,form,path);sources.save()
         desk=SavedDesk(ticker,self.options.peers,filed=self.options.filed)
         desk.output_dir=run;desk.run_started_at=started;desk.run_timestamp=started.isoformat()
@@ -208,8 +213,8 @@ class Parts:
                 failures.append(('reader '+method,error))
                 raise
         config=w.load_worksheet(run/'inputs/spinoff-rules.md',now=started)
-        persona=(run/'inputs/persona-why-cheap.md').read_text()
-        identity=json.loads((run/'facts.json').read_text())
+        persona=(run/'inputs/persona-why-cheap.md').read_text(encoding='utf-8')
+        identity=json.loads((run/'facts.json').read_text(encoding='utf-8'))
         candidate=w.registry_match(self.registry,identity['ticker'],identity['cik'])
         old_loader=w.load_module
         def shared_loader(name,path):
@@ -230,7 +235,7 @@ class Parts:
                 check_failure()
                 try:
                     # Read the exact saved skill input file, not a rewritten summary.
-                    packet=json.loads((run/(stem+', model input.json')).read_text())
+                    packet=json.loads((run/(stem+', model input.json')).read_text(encoding='utf-8'))
                     output_hook('worksheet model input',[run/(stem+', model input.json')])
                     return w.judge_once(packet['persona'],packet['input'],record_response=lambda value:write_json(run/(stem+', model raw response.json'),value))
                 except Exception as error:

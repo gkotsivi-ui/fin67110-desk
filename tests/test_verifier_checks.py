@@ -8,7 +8,7 @@ from typing import Any
 
 def load_checks():
     source = Path(__file__).resolve().parents[1] / 'equity_research_agent_team.py'
-    tree = ast.parse(source.read_text())
+    tree = ast.parse(source.read_text(encoding='utf-8'))
     method = next(n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == 'code_checks')
     scope = {'ast': ast, 're': re, 'Any': Any}
     exec(compile(ast.fix_missing_locations(ast.Module(body=[method], type_ignores=[])), str(source), 'exec'), scope)

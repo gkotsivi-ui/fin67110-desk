@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import closes
-from live_record import eastern, release_named
+from live_record import REPORTS, eastern, release_named
 from view_record import close_window, validate_view
 
 
@@ -21,7 +21,7 @@ def stamp(value):
 
 
 def load(path):
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         raise ValueError(f"{path.name} must contain a JSON object")
     return data
@@ -36,8 +36,10 @@ def row_for(run, now, offline=False):
     if filed_text:
         filed = stamp(filed_text)
     else:
-        report = next((run / n for n in ("verified_report.md", "report.md") if (run / n).exists()), None)
-        named = release_named(report.read_text().splitlines()[0]) if report else None
+        # The reports live_record.py reads, in its order, and the run's own CIK for a first line that names none.
+        # Until 2026-11-22 this list left out final_report.md, the group desk's report, and passed no CIK.
+        report = next((run / n for n in REPORTS if (run / n).exists()), None)
+        named = release_named(report.read_text(encoding="utf-8").splitlines()[0], str(facts.get("cik") or "")) if report else None
         if not named or not named["accepted"]:
             if view.get('direction') == 'not computed':
                 when = view.get('time') or view.get('view_time')
@@ -73,7 +75,7 @@ def row_for(run, now, offline=False):
             if (run / 'view.json').exists():
                 reaction['view_sha256'] = hashlib.sha256((run / 'view.json').read_bytes()).hexdigest()
             # New evidence only: never overwrite an existing reaction or any original run file.
-            with reaction_path.open("x") as handle:
+            with reaction_path.open("x", encoding="utf-8") as handle:
                 json.dump(reaction, handle, indent=2)
                 handle.write("\n")
     change = None

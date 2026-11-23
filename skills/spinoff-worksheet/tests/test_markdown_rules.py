@@ -9,19 +9,19 @@ class MarkdownRulesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             run=Path(d)
             filed='2026-11-10T17:00:00-05:00'
-            (run/'filing_time.json').write_text(json.dumps({'effective_filed_eastern':filed,'edgar_accepted':filed}))
+            (run/'filing_time.json').write_text(json.dumps({'effective_filed_eastern':filed,'edgar_accepted':filed}),encoding='utf-8')
             first=datetime.fromisoformat('2026-11-11T09:00:00-05:00')
             w.freeze_view(run,'ZZZ','more than the price',clock=lambda:first)
             path=run/'view.json';before=(path.read_bytes(),path.stat().st_mtime_ns)
             w.freeze_view(run,'ZZZ','less than the price',clock=lambda:datetime.fromisoformat('2026-11-11T17:00:00-05:00'))
             self.assertEqual((path.read_bytes(),path.stat().st_mtime_ns),before)
-            data=json.loads(path.read_text());self.assertEqual(data['view_time'],first.isoformat());self.assertEqual(data['filing_time'],filed)
+            data=json.loads(path.read_text(encoding='utf-8'));self.assertEqual(data['view_time'],first.isoformat());self.assertEqual(data['filing_time'],filed)
 
     def test_older_worksheet_is_not_shadowed_by_a_new_canonical_view(self):
         import json
         with tempfile.TemporaryDirectory() as d:
             run=Path(d)
-            (run/'Spinoff worksheet, earlier.json').write_text(json.dumps({'worksheet_time':'2026-11-11T09:00:00-05:00','view':{'direction':'not computed'}}))
+            (run/'Spinoff worksheet, earlier.json').write_text(json.dumps({'worksheet_time':'2026-11-11T09:00:00-05:00','view':{'direction':'not computed'}}), encoding='utf-8')
             w.freeze_view(run,'ZZZ','more than the price',clock=lambda:datetime.fromisoformat('2026-11-11T17:00:00-05:00'))
             self.assertFalse((run/'view.json').exists())
     def test_author_rules_are_read_without_overwriting_choices(self):
@@ -39,7 +39,7 @@ class MarkdownRulesTests(unittest.TestCase):
         module=w.load_module('test_statement_parser',P.with_name('statements.py'))
         with tempfile.TemporaryDirectory() as d:
             run=Path(d)
-            run.joinpath('10-K.txt').write_text('CONSOLIDATED STATEMENTS OF INCOME\nAmounts in USD\nYears ended\nDecember 31, 2026\nDecember 31, 2025\nDecember 31, 2024\nNET INCOME\n100\n80\n60\nCONSOLIDATED STATEMENTS OF CASH FLOWS\nAmounts in USD\nYears ended\nDecember 31, 2026\nDecember 31, 2025\nDecember 31, 2024\nDepreciation and amortization\n20\n15\n10\nAdditions to property and equipment\n(30)\n(25)\n(20)\nNOTES TO CONSOLIDATED STATEMENTS\n')
+            run.joinpath('10-K.txt').write_text('CONSOLIDATED STATEMENTS OF INCOME\nAmounts in USD\nYears ended\nDecember 31, 2026\nDecember 31, 2025\nDecember 31, 2024\nNET INCOME\n100\n80\n60\nCONSOLIDATED STATEMENTS OF CASH FLOWS\nAmounts in USD\nYears ended\nDecember 31, 2026\nDecember 31, 2025\nDecember 31, 2024\nDepreciation and amortization\n20\n15\n10\nAdditions to property and equipment\n(30)\n(25)\n(20)\nNOTES TO CONSOLIDATED STATEMENTS\n', encoding='utf-8')
             facts,average=module.collect(run,3,True)
         self.assertEqual(average['value'],70)
         self.assertEqual([x['value'] for x in average['annual_inputs']],[90,70,50])
@@ -66,15 +66,15 @@ class MarkdownRulesTests(unittest.TestCase):
         config=w.load_worksheet(w.ANALYST/'spinoff-rules.md',now)
         with tempfile.TemporaryDirectory() as d:
             run=Path(d)
-            run.joinpath('facts.json').write_text(json.dumps({'ticker':'ZZZ','cik':'101'}))
-            run.joinpath('10-K.txt').write_text('The number of shares outstanding of the registrant’s common stock as of January 15, 2027, was 10\nCONSOLIDATED STATEMENTS OF INCOME\nAmounts in USD\nYears ended\nDecember 31, 2026\nDecember 31, 2025\nDecember 31, 2024\nNET INCOME\n100\n80\n60\nCONSOLIDATED STATEMENTS OF CASH FLOWS\nAmounts in USD\nYears ended\nDecember 31, 2026\nDecember 31, 2025\nDecember 31, 2024\nDepreciation and amortization\n20\n15\n10\nAdditions to property and equipment\n(30)\n(25)\n(20)\nNOTES TO CONSOLIDATED STATEMENTS\n')
+            run.joinpath('facts.json').write_text(json.dumps({'ticker':'ZZZ','cik':'101'}),encoding='utf-8')
+            run.joinpath('10-K.txt').write_text('The number of shares outstanding of the registrant’s common stock as of January 15, 2027, was 10\nCONSOLIDATED STATEMENTS OF INCOME\nAmounts in USD\nYears ended\nDecember 31, 2026\nDecember 31, 2025\nDecember 31, 2024\nNET INCOME\n100\n80\n60\nCONSOLIDATED STATEMENTS OF CASH FLOWS\nAmounts in USD\nYears ended\nDecember 31, 2026\nDecember 31, 2025\nDecember 31, 2024\nDepreciation and amortization\n20\n15\n10\nAdditions to property and equipment\n(30)\n(25)\n(20)\nNOTES TO CONSOLIDATED STATEMENTS\n', encoding='utf-8')
             rows=[];day=now.date()-timedelta(days=1)
             while len(rows)<60:
                 if day.weekday()<5:rows.append({'date':day.isoformat(),'close':10,'volume':100000,'currency':'USD'})
                 day-=timedelta(days=1)
             reader=Mock();reader.daily_closes_and_volumes.return_value=rows;reader.last_close_before.return_value={'date':'2027-02-01','close':50,'currency':'USD','source':'invented close'}
             model=Mock(return_value={'judgment':'Not the forced seller story here; the earnings are established [fact:after_tax_earnings].','next_filing_trigger':'Check earnings in the next quarterly statement.','insight':'Reported depreciation contributes to owner cash flow [fact:depreciation_and_amortization].'})
-            result=w.build(run,config,(w.ANALYST/'persona-why-cheap.md').read_text(),{'candidates':{}},reader,model,now)
+            result=w.build(run,config,(w.ANALYST/'persona-why-cheap.md').read_text(encoding='utf-8'),{'candidates':{}},reader,model,now)
             self.assertEqual(result['owner_cash_flow']['value'],70)
             self.assertEqual(result['value_range']['low']['value'],70)
             self.assertAlmostEqual(result['price_vs_low']['percent_price_minus_low'],-28.57142857)
@@ -82,7 +82,7 @@ class MarkdownRulesTests(unittest.TestCase):
             self.assertEqual(len(result['criteria_scores']),6)
             self.assertEqual(model.call_count,1)
             self.assertIn('10-K.txt:L',result['judgment']['judgment'])
-            text=result['files']['markdown'].read_text();self.assertIn('Insight:',text);self.assertIn('Can you buy it: yes',text)
+            text=result['files']['markdown'].read_text(encoding='utf-8');self.assertIn('Insight:',text);self.assertIn('Can you buy it: yes',text)
     def test_conviction_high_low_and_no_conviction_follow_rules(self):
         module=w.load_module('test_evidence_scores',P.with_name('evidence_scores.py'))
         facts={'shares_outstanding':{'value':10,'source':'filing section, dated'}}
@@ -97,7 +97,7 @@ class MarkdownRulesTests(unittest.TestCase):
         self.assertEqual(module.conviction(conditions,{'buyable':True},facts,ocf,values,comparison)[0],'no conviction')
     def test_fill_marker_stops_before_any_model_or_reader(self):
         with tempfile.TemporaryDirectory() as d:
-            path=Path(d)/'rules.md';path.write_text((w.ANALYST/'spinoff-rules.md').read_text()+'\nDiscount rate: FILL\n')
+            path=Path(d)/'rules.md';path.write_text((w.ANALYST/'spinoff-rules.md').read_text(encoding='utf-8')+'\nDiscount rate: FILL\n',encoding='utf-8')
             with self.assertRaisesRegex(ValueError,'FILL'):w.load_worksheet(path)
     def test_truncated_model_response_is_recorded_without_a_second_call(self):
         from unittest.mock import Mock,patch

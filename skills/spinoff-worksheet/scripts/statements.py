@@ -46,7 +46,7 @@ def amounts(lines,start):
     return values
 
 def parse(path,run):
-    text=path.read_text();lines=text.splitlines();found=[]
+    text=path.read_text(encoding='utf-8');lines=text.splitlines();found=[]
     headers=[i for i,line in enumerate(lines) if HEADER.fullmatch(line.strip())]
     for h in headers:
         end=next((i for i in range(h+1,len(lines)) if re.match(r'^(?:CONSOLIDATED|COMBINED)\s+(?:STATEMENTS|BALANCE SHEETS)|^NOTES TO (?:CONSOLIDATED|COMBINED)',lines[i],re.I)),len(lines))
@@ -85,7 +85,7 @@ def collect(run,years,include_amortization):
     run=Path(run);observations={};missing=[];pro_forma_income_present=False
     for path in [*run.glob('10-K*.txt'),*run.glob('Form10/*.txt')]:
         try:
-            if path.parent.name=='Form10' and re.search(r'pro forma[^.\n]{0,100}(?:statements?|income|earnings)',path.read_text(),re.I):pro_forma_income_present=True
+            if path.parent.name=='Form10' and re.search(r'pro forma[^.\n]{0,100}(?:statements?|income|earnings)',path.read_text(encoding='utf-8'),re.I):pro_forma_income_present=True
             for key,item in parse(path,run):observations.setdefault((key,item['period_end']),[]).append(item)
         except (ValueError,OSError):continue
     selected={}
@@ -121,7 +121,7 @@ def shares_outstanding(run,asof):
     observations=[]
     pattern=re.compile(r"(?:The )?number of shares outstanding of the registrant[’']s common stock[^\n]{0,60}?as of ("+DATE+r"),?\s*was\s*([\d,]+)",re.I)
     for path in [*Path(run).glob('10-K*.txt'),*Path(run).glob('10-Q*.txt')]:
-        text=path.read_text()
+        text=path.read_text(encoding='utf-8')
         for match in pattern.finditer(text):
             raw=' '.join(match[1].split());raw=re.sub(r'(\d),? (\d{4})$',r'\1, \2',raw)
             day=datetime.strptime(raw,'%B %d, %Y').date().isoformat()
@@ -154,7 +154,7 @@ def shares_outstanding(run,asof):
 def net_cash(run):
     """Only explicit total debt, never an assumed zero or long-term-only proxy."""
     for path in [*Path(run).glob('10-Q*.txt'),*Path(run).glob('10-K*.txt')]:
-        lines=path.read_text().splitlines()
+        lines=path.read_text(encoding='utf-8').splitlines()
         headers=[i for i,line in enumerate(lines) if re.fullmatch(r'(?:CONDENSED )?(?:CONSOLIDATED|COMBINED) BALANCE SHEETS',line.strip(),re.I)]
         for h in headers:
             end=next((i for i in range(h+1,len(lines)) if HEADER.fullmatch(lines[i].strip())),len(lines))

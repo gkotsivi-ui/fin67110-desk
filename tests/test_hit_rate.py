@@ -19,18 +19,18 @@ class HitRateTests(unittest.TestCase):
     def test_changed_prediction_is_not_silently_scored_with_saved_reaction(self):
         run, _, _, _ = self.run_case('2026-11-27T12:00:00-05:00')
         path = run / 'view.json'
-        view = json.loads(path.read_text())
+        view = json.loads(path.read_text(encoding="utf-8"))
         view['direction'] = 'down'
-        path.write_text(json.dumps(view))
+        path.write_text(json.dumps(view), encoding="utf-8")
         with self.assertRaisesRegex(ValueError, 'Saved view changed'):
             row_for(run, stamp('2026-12-01T17:00:00-05:00'))
     def test_group_worksheet_schema_is_scored_without_changing_view(self):
         run, _, _, _ = self.run_case("2026-11-27T12:00:00-05:00", offline=True)
         path = run / 'view.json'
-        view = json.loads(path.read_text())
+        view = json.loads(path.read_text(encoding="utf-8"))
         view['view_time'] = view.pop('time')
         view['direction'] = 'more than the price'
-        path.write_text(json.dumps(view))
+        path.write_text(json.dumps(view), encoding="utf-8")
         before = path.read_bytes()
         rows = [(datetime(2026, 11, 25).date(), 100), (datetime(2026, 11, 27).date(), 110)]
         with patch('hit_rate.closes.read', return_value=(rows, 'synthetic source')):

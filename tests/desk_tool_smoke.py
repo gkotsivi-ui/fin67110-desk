@@ -22,7 +22,7 @@ with tempfile.TemporaryDirectory() as tmp:
     from desk_sources import Sources
     from desk_files import AssignedFiles,file_tool
 
-    source=run/'skill.md';source.write_text('Computed amount: $100\n')
+    source=run/'skill.md';source.write_text('Computed amount: $100\n',encoding='utf-8')
     runtime=Runtime.__new__(Runtime)
     runtime.output_dir=run;runtime.set_output_dir(run)
     runtime.role_call_counts={};runtime.skill_files=[source]
@@ -44,15 +44,15 @@ with tempfile.TemporaryDirectory() as tmp:
     except ValueError as error:assert 'did not read' in str(error)
     else:raise AssertionError('Unread assigned file was accepted')
     assert not (run/'nodes/Seeded_Reader_2/output.json').exists()
-    unread_raw=json.loads((run/'nodes/Seeded_Reader_2/raw_responses.json').read_text())
+    unread_raw=json.loads((run/'nodes/Seeded_Reader_2/raw_responses.json').read_text(encoding='utf-8'))
     assert unread_raw[0]['raw']=='{"draft":"No read."}'
 
     # A manager reads only drafts, then uses one feedback call to read the missing JSON.
     drafts=[];structured=[]
     for author in ('Research Analyst','Financial Analyst','Investment Advisor'):
         folder=run/'nodes'/(author.replace(' ','_')+'_1');folder.mkdir(parents=True,exist_ok=True)
-        (folder/'output.json').write_text('{}')
-        (folder/'draft.md').write_text('Synthetic checked draft.')
+        (folder/'output.json').write_text('{}',encoding='utf-8')
+        (folder/'draft.md').write_text('Synthetic checked draft.',encoding='utf-8')
         drafts.append((folder/'draft.md').relative_to(run).as_posix())
         structured.append((folder/'output.json').relative_to(run).as_posix())
     runtime.llm=StubLLM(emit_events=False,responses=[
@@ -63,9 +63,9 @@ with tempfile.TemporaryDirectory() as tmp:
     result=runtime.role_call('Strategy Manager','legacy.md',packet)
     assert result['draft']=='Read all required files.'
     manager=run/'nodes/Strategy_Manager_1'
-    assert len(json.loads((manager/'raw_responses.json').read_text()))==2
-    assert len(json.loads((manager/'files_read.json').read_text())['reads'])==6
-    assert json.loads((manager/'read_failures.json').read_text())[0]['missing']==sorted(structured)
+    assert len(json.loads((manager/'raw_responses.json').read_text(encoding='utf-8')))==2
+    assert len(json.loads((manager/'files_read.json').read_text(encoding='utf-8'))['reads'])==6
+    assert json.loads((manager/'read_failures.json').read_text(encoding='utf-8'))[0]['missing']==sorted(structured)
     assert runtime.role_call_counts['Strategy Manager']==1
     # Remove synthetic role ledgers before the independent claims tests below.
     import shutil
@@ -82,7 +82,7 @@ with tempfile.TemporaryDirectory() as tmp:
     # Claims role: repair a wrong line and typed amount, preserving every
     # failure and counting this as one role invocation.
     release='earnings_release_Ex99-1.txt'
-    (run/release).write_text('Header\nOther text\nNet sales increased 10% to $100.\n')
+    (run/release).write_text('Header\nOther text\nNet sales increased 10% to $100.\n',encoding='utf-8')
     claim={'id':'c1','file':release,'line':1,'quote':'Net sales increased 10% to $100.','value':'$100'}
     bad={'claims':[claim],'draft':'Sales were {c1}, up 10%.'}
     good={'claims':[{**claim,'line':3}],'draft':'Sales were {c1}.'}
@@ -94,7 +94,7 @@ with tempfile.TemporaryDirectory() as tmp:
     output=runtime.role_call('Research Analyst','research_analyst.md',packet)
     assert output['draft']=='Sales were $100 [earnings_release_Ex99-1.txt:L3].'
     assert runtime.role_call_counts['Research Analyst']==1
-    attempts=json.loads((run/'nodes/Research_Analyst_1/claim_attempts.json').read_text())
+    attempts=json.loads((run/'nodes/Research_Analyst_1/claim_attempts.json').read_text(encoding='utf-8'))
     assert len(attempts)==2
     assert any('appears on line 3' in e for e in attempts[0]['errors'])
     assert any('typed directly' in e for e in attempts[0]['errors'])
@@ -109,7 +109,7 @@ with tempfile.TemporaryDirectory() as tmp:
     try:runtime.role_call('Research Analyst','research_analyst.md',packet)
     except ValueError as error:assert 'after repairs' in str(error)
     else:raise AssertionError('Bad claims passed after exhausted repairs')
-    attempts=json.loads((run/'nodes/Research_Analyst_2/claim_attempts.json').read_text())
+    attempts=json.loads((run/'nodes/Research_Analyst_2/claim_attempts.json').read_text(encoding='utf-8'))
     assert len(attempts)==3 and all(a['errors'] for a in attempts)
     assert not (run/'nodes/Research_Analyst_2/output.json').exists()
     assert runtime.role_call_counts['Research Analyst']==2
@@ -124,8 +124,8 @@ with tempfile.TemporaryDirectory() as tmp:
     except ValueError as error:assert 'after repairs' in str(error)
     else:raise AssertionError('Malformed replies escaped the repair cap')
     f=run/'nodes/Financial_Analyst_1'
-    attempts=json.loads((f/'claim_attempts.json').read_text())
-    raw=json.loads((f/'raw_responses.json').read_text())
+    attempts=json.loads((f/'claim_attempts.json').read_text(encoding='utf-8'))
+    raw=json.loads((f/'raw_responses.json').read_text(encoding='utf-8'))
     assert len(raw)==len(attempts)==3 and all(r['raw']==malformed_reply for r in raw)
     assert all(a['errors'] for a in attempts) and not (f/'output.json').exists()
 

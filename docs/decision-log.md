@@ -606,6 +606,157 @@ against its filings, re-checked the live record on EDGAR, and read the code behi
 - **Tests.** On Windows 11 and Python 3.13 on 2026-11-21, the four test folders ran 663 tests with no
   failure; the four that create a symlink were skipped.
 
+## 2026-11-22: the full audit
+
+The whole desk was audited on branch `full-audit`: every part was driven with made-up filings, made-up
+replies and failing networks, and the findings are in [code-audit-2026-11.md](code-audit-2026-11.md), each
+with its test. No model was called and no real run was made: the model account had no credit. This entry
+records what AI got wrong and how each thing was caught. Every item below was written or copied in by a
+coding agent in the weeks before, and passed that agent's own tests.
+
+- **What AI got wrong: a rule fixed in one desk and not in the other.** The group desk was built beside
+  the base desk, and four rules that this log records as fixed were fixed in the base desk only. The group
+  desk did not check that EDGAR's company facts were those of the 10-K it read (entry 14), so a 10-K filed
+  days ago could be reported with last year's annual claims. It took the first index file named "99.1" as
+  the release, without looking for an income statement (entry 3), and when the newest earnings 8-K had no
+  such file it went back to last quarter's 8-K without a word. It took last year's amounts from last
+  year's 10-K, where the checklist computes growth "from the two years in the same filing". **How it was
+  caught:** a table of every past failure in this log was made, and each fix was looked for in both desks.
+  The three rules are now in `desk_rules.py`, which both desks import, with tests on made-up facts.
+- **What AI got wrong: a reader that returns a wrong cell instead of refusing.** Three of the group desk's
+  four release readers had no test. On made-up tables, a loss in parentheses made last year's EPS this
+  quarter's, a third dated column gave the prior quarter, two change columns gave a growth of 900%,
+  "Revenue from services" was read as total revenue, EPS from continuing operations was read as the
+  quarter's EPS, and "Aug 30, 2026" stopped the run. **How it was caught:** by writing the tables an
+  earnings release can print and reading the output for each, before reading the code. One function now
+  reads a row's amounts for every reader, a row is read only when it holds one amount for each period
+  column, and a table that cannot be read is skipped. The saved Lowe's and Walmart releases give the same
+  figures as before.
+- **What AI got wrong: code that changed a number's scale.** Inside an Item under "(amounts in millions)",
+  the ledger wrote "million" after every dollar value: "$1.16 million" for a dividend, "$20 million" for an
+  hourly wage. A header worded "(in millions, ...)", which both live filers use, was not read at all. A
+  loss in parentheses could be cut out of them and published as a gain. **How it was caught:** by sentence
+  shapes a real filing holds, run through the ledger. The scale now goes only on whole dollars with a
+  thousands separator; a per-share or per-hour amount keeps its own unit; anything else in doubt is refused
+  with the reason.
+- **What AI got wrong: checks on a model's text that a model's text could pass.** A scale, a sign or a
+  multiplier typed next to a checked claim passed ("$9,200 [cited] billion", "twice $4.1 billion"). So did
+  a number in words ("eleven per cent"), in other numerals, a typed citation, a table that reads as the
+  desk's own, and a reference followed by a scale ("Sales of Item 12 million"). A Verifier reason with a
+  line break published free text outside the marks table. A number the Verifier marked wrong was left out
+  of its own part and printed two parts later through another role's reference to it. **How it was
+  caught:** by writing replies meant to pass, not replies meant to be right. Each form is now refused, with
+  a test. What is still open is listed in the audit file: the label beside a correct number is not checked.
+- **What AI got wrong: tests that could not fail, and a required check that did not run them.** The
+  required command ran 448 of 663 tests and neither seeded check, and on Windows it failed as written
+  (44 errors) unless Python was started in UTF-8 mode. Each formula of the group desk was changed on
+  purpose (operating margin to net income over revenue, average equity to year-end equity, and so on) and
+  20 of 21 changes passed every test: the formula tests were the base desk's. **How it was caught:** by
+  running the required command exactly as `AGENTS.md` wrote it, and by changing the code to see which
+  test noticed. `check_all.py` now runs everything, a test fails when a test folder is left out of it,
+  `tests/test_group_formulas.py` fails on each changed formula, and every file is opened as UTF-8 by name.
+- **What AI got wrong: a run that could not survive ordinary trouble.** A rate limit (429) was never
+  tried again, by either copy of the retry rule; Google's "model is overloaded" ended a run because its
+  error carries `code`, not `status_code`; a stalled call to an Anthropic or Google model hung for good;
+  one 429 or 503 from SEC EDGAR ended a run; a failure in the worksheet, the last model call, threw away a
+  finished and paid-for team report; Ctrl+C left the folder "running" for good; and `live_record.py` read
+  the report of a failed run as a live report. **How it was caught:** by a stand-in transport that fails
+  in each way, for each provider. There is one retry rule (`model_calls.py`), a time limit, SEC back-off,
+  `desk.py --resume`, a recorded stop, and a live record that reads the run's state.
+- **What AI got wrong: settings found wrong late.** The setup check printed "ok" for the README's own
+  example lines and for an Anthropic key with an OpenAI model. With no `MODEL` the team ran on a Gemini
+  model whatever the key. The worksheet took `ANTHROPIC_API_KEY` from the shell before the team's
+  `API_KEY`, so one run could use two accounts. The error review sent an OpenAI key to Anthropic. **How it
+  was caught:** by reading where each program takes each setting, then running each with made-up keys and
+  a stand-in for the network. The desk now checks the three settings as its first step.
+- **What AI got wrong: licensed data on its way to a public folder.** With LSEG Workspace open, the
+  worksheet printed the last 60 days of closes and volumes in the worksheet, which the final report
+  includes, and a live run commits its folder. No practice run showed it, because Workspace was closed
+  each time. **How it was caught:** by following what the closes reader returns to every file it reaches.
+  A member decided on 2026-11-22: the report prints the result only, and the rows stay in a folder git
+  ignores. `check_public.py` fails on rows, keys, values of `.env` and home-folder paths before a push.
+- **What AI got wrong: the page.** A report's link could run script on the page; `2*3*4` was displayed as
+  234; a network path in the address reached the filesystem; drafts that never passed the audit were
+  served; the setup banner said "passed" when the check itself crashed; on Windows two pages shared one
+  port. **How it was caught:** by sending the page requests no browser form sends. Thirteen tests. One of
+  these fixes then went too far: the page refused every request that named another website, and a click
+  on the page's address in the README on GitHub is such a request. It was caught by reading the check
+  against the headers a browser sends for a clicked link, before the commit; a fourteenth test holds it.
+- **What AI got wrong: one company's wording as a rule.** Step 6 turned the sentence "non-recurring
+  benefit of $X per diluted share" into a metric. `AGENTS.md` says nothing in the code names a company.
+  Removed, with a test.
+- **What AI got wrong in this audit, and how it was caught.** Four fixes were too strict at first and
+  refused honest text. Two were caught late, and not by a test: the rule against text typed next to a
+  claim refused a claim in parentheses and "percent" after a bare table cell, and both stand in the
+  replies a real model gave on 2026-11-20 ("gross margin was 32.95 percent of sales", from a table's
+  percent-of-sales column). The tests of that rule were sentences the coding agent wrote itself. It was
+  caught by replaying the 17 replies the practice runs saved through the old ledger and the new: the new
+  one gave 18 more errors. The rule now refuses a scale, a sign and a multiplier only, the two honest
+  forms are in the tests, and the replay gives the same errors and the same rendered text as before.
+  The other two: a dash after a claim was read as a minus sign in a range ("$18 billion to $22
+  billion" written with a dash), and every heading that starts with a number was refused with the forged
+  table titles. A rule that left out a reference to a redrafted claim was too strict, and left out
+  references whose value had not changed; it now compares the values. Each was caught by a test of honest text,
+  which is why those tests were run after every change. One planned fix was not made: applying the
+  half-day close to the price would have made the worksheet and its hook disagree, so the limit is
+  written down instead (README, "What can go wrong", item 5).
+- **What was not done.** No real model, SEC or LSEG run of the changed code. The saved pages and replies of
+  two companies were replayed, which is not a new run on a new company. The files no AI writes were not touched,
+  and nothing under `runs/live/` was changed.
+- **Tests.** On Windows 11 and Python 3.13 on 2026-11-22, `python check_all.py` ran 840 tests with no
+  failure, four skipped, without UTF-8 mode. Before the audit the four folders held 663.
+- **What we will not delegate again.** (the team writes this)
+
+## 2026-11-22: an independent review of the audit's own commit
+
+The audit above was committed as `086a312`. Before anything was pushed, six reviewers that had no share in
+writing it read the commit, one part each (the data steps, the ledger, the run's control, the model calls and
+sources, the page, and the tests), and each had to prove a finding on made-up data. They returned 50
+findings, all reproduced again before any change. 26 had come with the audit's own commit, one of them
+critical and six high. The table is in [code-audit-2026-11.md](code-audit-2026-11.md), rows V1 to V27.
+
+- **What AI got wrong: fixes that made a right answer wrong.** The audit's new row reader counted "(5" as
+  an amount when a negative change is printed "(5" then ")%", dropped the row, and published another row's
+  figure: a count of shares, "$204", as GAAP diluted EPS. Its new scale rule printed "$43,440" bare for
+  $43,440 million, because "a year ago" read as "a year", and "$4,828 thousand" for millions, because a
+  row's own unit read as a header. Its time limit was itself retried, so a stalled role was called a second
+  time beside the first. Its `--resume` could be used once: a second was refused for the files the first
+  had moved. Its page check refused the repository's own files on a network drive. **How it was caught:**
+  each reviewer wrote the inputs the author had not thought of, and ran the code before the audit beside
+  the new code, so that "worse than before" could be told from "still not right".
+- **What AI got wrong: rules that refused honest text.** The ledger's new word rules refused "a third
+  party", "double taxation", "twice in the filing" and "Basel III points to", and left "double-digit" no
+  way through at all. Of 147 honest analyst sentences the first commit refused 50 that the old ledger
+  accepted. The setup check told a member named Fillmore to write a name and email, on every run, because
+  the example says "fill in". **How it was caught:** by writing sentences a person would write, not
+  sentences that attack. The rules are narrowed to what changes a number; 11 of the 147 are still refused,
+  each a typed sign, scale, citation or number in words.
+- **What AI got wrong: "fixed" in the audit file, and not fixed.** A UTF-16 `.env` was listed as handled;
+  `desk.py` itself still printed the codec error and left an empty run folder. The registry field was
+  listed as refusing a network path; it did not. An image was listed as shown by its words; it vanished
+  with them, and its test used an image with no words. **How it was caught:** the reviewers read each row
+  of the audit's table against the code, not against the audit's tests.
+- **What AI got wrong: tests that could not fail, again.** One page test failed about one run in eight
+  on Windows and never reached the rule it named. The test of a 53-week year used a 52-week year. Several
+  rules of the first commit could be deleted with no test failing. **How it was caught:** by deleting each
+  rule in a copy and running its tests. Each now has a test, and each bound of the one-year rule was broken
+  on purpose to see a test fail.
+- **What was older than the audit and the audit had missed.** A non-GAAP statement read as GAAP when its
+  title was a row of its own table; two change columns giving a growth of 8,909%; a run made on Windows
+  that does not recheck from a clone, because git stored other line endings than the run had sealed; two
+  reply shapes that crashed the run where a repair was due.
+- **What AI got wrong in these fixes, and how it was caught.** The first fix of the table's unit lost the
+  unit of a real release, which prints it beside its years: the replay of the saved Walmart pages showed
+  "USD as shown" where the commit had read "USD millions". The widened scan for lists of closes called the
+  one price a run saves a list, which would have failed the first live run that had a price: the test of a
+  whole run caught it. A key-shaped string in a new test tripped the repository's own scan. All three were
+  caught by checks the audit had added.
+- **What was not done.** Still no real model, SEC or LSEG run. The fixes were checked in a worktree, not in
+  a second fresh clone. Six things the review raised are left open, with the reason (rows W1 to W6).
+- **Tests.** On Windows 11 and Python 3.13 on 2026-11-22, `python check_all.py` ran 928 tests with no
+  failure, four skipped.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.

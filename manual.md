@@ -13,7 +13,8 @@ serve one client's decision, and prove it live?
 
 The client is an investor seeking absolute return. The desk's last step, the worksheet, values the company from
 three years of owner cash flow in its filings and compares that value with the price: worth more or less than
-the price, with the evidence. It needs a price from LSEG Workspace; without one, its view is "not computed".
+the price, with the evidence. It needs a price, from LSEG Workspace or from a file of closes exported from
+it; without one, its view is "not computed".
 
 ## Run the desk
 

@@ -13,7 +13,7 @@ class ViewRecordTests(unittest.TestCase):
         self.run = Path(self.temp.name)
         (self.run / 'filing_time.json').write_text(json.dumps({
             'edgar_accepted': '2026-11-25 17:00:00',
-            'effective_filed_eastern': '2026-11-25T17:00:00-05:00'}))
+            'effective_filed_eastern': '2026-11-25T17:00:00-05:00'}),encoding='utf-8')
 
     def test_explicit_prediction_and_actual_save_time(self):
         from view_record import freeze_view
@@ -49,13 +49,13 @@ class ViewRecordTests(unittest.TestCase):
         (self.run / 'filing_time.json').write_text(json.dumps({
             'edgar_accepted': '2026-11-25 17:00:00',
             'effective_filed_eastern': '2026-11-26T12:00:00-05:00',
-            'filed_override': '2026-11-26T12:00:00'}))
+            'filed_override': '2026-11-26T12:00:00'}),encoding='utf-8')
         saved = freeze_view(self.run, 'EXM', 'flat')
         self.assertEqual(saved['filing_time'], '2026-11-25T17:00:00-05:00')
 
     def test_no_backfill_for_historical_worksheet(self):
         from view_record import freeze_view
-        (self.run / 'Spinoff worksheet, previous.json').write_text(json.dumps({'view': {'direction': 'not computed'}}))
+        (self.run / 'Spinoff worksheet, previous.json').write_text(json.dumps({'view': {'direction': 'not computed'}}), encoding='utf-8')
         self.assertIsNone(freeze_view(self.run, 'EXM', 'up'))
         self.assertFalse((self.run / 'view.json').exists())
 

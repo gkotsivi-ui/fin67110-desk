@@ -26,7 +26,7 @@ class IndependenceTests(unittest.TestCase):
         desk.validate_local_options(desk.parser().parse_args(['ZZZZ']))
 
     def test_standalone_copy_loads_local_components_and_runs_seeded_pipeline(self):
-        manifest = json.loads((ROOT / 'docs/pipeline-import.json').read_text())
+        manifest = json.loads((ROOT / 'docs/pipeline-import.json').read_text(encoding='utf-8'))
         with tempfile.TemporaryDirectory() as temp:
             clone = Path(temp) / 'group-only'
             clone.mkdir()
@@ -71,7 +71,7 @@ print('STANDALONE PASS')
 
     def test_authored_inputs_and_personas_are_unchanged_copies(self):
         import hashlib
-        manifest = json.loads((ROOT / 'docs/pipeline-import.json').read_text())
+        manifest = json.loads((ROOT / 'docs/pipeline-import.json').read_text(encoding='utf-8'))
         for entry in manifest['files']:
             path = Path(entry['destination'])
             if path.name in {'spinoff_factors.json', 'spinoff-rules.md', 'persona-why-cheap.md'} or path.parts[0] == 'pipeline_roles':

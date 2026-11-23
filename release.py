@@ -21,7 +21,9 @@ from datetime import date
 from typing import Any, Iterator
 
 # The heading of an income statement, in a release or in a filing.
-STATEMENT = re.compile(r"statements? of (consolidated\s+|condensed\s+)*(income|operations|earnings)|income statements?", re.I)
+# "Statement of Results of Operations" is one too: until 2026-11-22 a release with that title did not count as
+# holding an income statement, and a slide deck in the next exhibit with a slide "Income Statement" was read instead.
+STATEMENT = re.compile(r"statements? of (consolidated\s+|condensed\s+)*(income|(?:results\s+of\s+)?operations|earnings)|income statements?", re.I)
 # A line with those words that is not the GAAP statement's heading: an adjusted statement, or a note that points to one.
 NOT_THE_STATEMENT = re.compile(r"non-?gaap|adjusted|reconcil|pro forma|supplement|segment|refer to", re.I)
 # The heading of the table after the income statement.

@@ -58,7 +58,7 @@ Prices are optional: without one, the report has no P/E and the worksheet's view
    MODEL=anthropic/claude-opus-5-5
    ```
 
-   Then check the setup. Every line must say `ok` (on a Mac, type `.venv-desk/bin/python`):
+   Then check the setup. No line may say `FIX`; a `note` line is information (on a Mac, type `.venv-desk/bin/python`):
 
    ```
    .venv-desk\Scripts\python check_pipeline.py
@@ -81,7 +81,21 @@ Prices are optional: without one, the report has no P/E and the worksheet's view
 the run folder. A claim the Verifier does not mark correct does not stop it: that line is left out of the
 published report, the marks table still lists it, and a line under the table names it. A claim that still
 fails the code's check after two repairs is left out the same way, and the run prints which. A model call
-whose connection drops is made once more after thirty seconds.
+whose connection drops, or that the provider answers with a server error, is made once more after thirty
+seconds, and one the provider limits (429) once more after sixty. SEC EDGAR is asked for a page up to three
+times. A role that has not answered in twenty minutes stops the run and is not called again. A setting that
+is empty or still the example, or a key and a model of two providers, stops the run at its first step,
+before anything is fetched; whether the key is valid and has credit is found only by the first model call.
+
+A run that stops in its worksheet or its final report, after the team's report is finished and checked, can
+be finished without running the team again:
+
+```
+.venv-desk\Scripts\python desk.py --resume runs\practice\<the run folder>
+```
+
+The command prints this line when it applies. A run that stops earlier is run again from the start.
+Ctrl+C stops a run and records the part it was in.
 
 **The spinoff screen (optional, slow).** `desk.py screen --refresh-screen YYYY-MM-DD` runs the seeker
 first and takes the top name of its screen. By default it reads EDGAR's quarterly indexes from 1994 on,
@@ -96,7 +110,9 @@ for an intentional custom interpreter. An export file outside this folder can us
 Missing prices or valuation inputs produce a `not computed` view.
 
 **A live run** for the live record adds `--live`; it is saved under `runs/live/`. Read
-[runs/live/README.md](runs/live/README.md) first. More: [docs/group-pipeline.md](docs/group-pipeline.md).
+[runs/live/README.md](runs/live/README.md) first. Before the push, `python check_public.py` reads what git
+tracks or would add and fails on a key, a value of `.env`, a data file, a list of closes or a home-folder
+path. More: [docs/group-pipeline.md](docs/group-pipeline.md).
 
 ## Intelligent error review
 
@@ -116,7 +132,8 @@ Use `--offline` instead of `--model` for code checks without network access. Thi
 of conclusions and repeated patterns incomplete. For a coding-agent review without a separate API call,
 use `--proposals FILE --model-name ACTUAL_MODEL_NAME`; the proposal contract is in
 `skills/desk-error-review/references/proposals.md`. The review key and model settings are the desk's
-existing settings in `.env`; `--model` can incur provider charges. Unknown artifacts, raw exports, and
+existing settings in `.env`; `--model` can incur provider charges, and it runs on an Anthropic or a Google
+model only (with an OpenAI key or model it stops and says so). Unknown artifacts, raw exports, and
 secrets are excluded. Long model inputs are clipped with explicit review limits. No SEC requests are made.
 
 Use `--record-number N` for a new record without an existing error report. Existing records keep their
@@ -166,7 +183,9 @@ and produce exit status 1; other runs are still read.
 
 The reaction is the percentage change from the last official close at or before the filing's acceptance
 time to the first official close strictly after it. The XNYS calendar supplies US equity holidays and
-early closes. Prices come from the existing closes reader: LSEG Workspace or `CLOSES_FILE` in `.env`.
+early closes. Prices come from the legacy closes reader (`closes.py`): LSEG Workspace, or a file named by `CLOSES_FILE`
+in `.env` or, when that is absent, by `LSEG_CLOSES_FILE`, the group desk's name for the same file. A RIC
+for this table is given as `LSEG_RICS`, not as the desk's `LSEG_RIC_MAP`.
 Keep exports outside the repo and do not use WRDS exports with this command. Both exact session prices
 must be available; another day's price is never substituted. A reaction is unavailable until the
 post-filing session has closed and its prices are available from the source.
@@ -211,11 +230,11 @@ Checked on 2026-11-19 to 2026-11-21, on Windows 11.
 | The 11 core claims | printed by code under the Overview from the saved facts; the quarter's three from the release's table. Tested; not yet seen in a whole run's report |
 | The worksheet's values | reads three years of owner cash flow and the cover page's share count from the filings; Lowe's and Walmart's low and mid values pass the hook (2026-11-21) |
 | The page: run the desk and read the report without a terminal | starts a run. On 2026-11-21 two runs from the page on Lowe's passed the inputs, the pick, the seven data steps and every hook check, then stopped at the first model call: the provider refused it because the model account was out of credit. A whole run from the page is still to be checked |
-| The closes reader, for one price | reads LSEG only. With LSEG Workspace closed there is no price: the report has no P/E and the worksheet's view is "not computed" |
+| The closes reader, for one price | reads LSEG Workspace, or a file of closes named by `LSEG_CLOSES_FILE`. With neither there is no price: the report has no P/E and the worksheet's view is "not computed". The worksheet's daily closes and volumes stay in `sources/licensed/` of the run folder, which is never committed; the report prints the liquidity result only |
 | The live record | two reports inside their 24-hour windows, Week 4 (Cisco) and Week 5 (NVIDIA), both written by the legacy desk below |
 | The hit-rate table | runs; both live reports predate the worksheet and have no view, so it scores none yet |
 | The intelligent error review | built; a review of each live report is saved beside it |
-| Tests | 663 in four folders, no failure; four symlink tests skipped. The macOS run is to be redone |
+| Tests | `check_all.py`: 928 tests in four folders, no failure, four symlink tests skipped (Windows 11, 2026-11-22). The macOS run is to be redone |
 
 Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them before you trust a number.
 
@@ -393,12 +412,17 @@ checks SEC EDGAR and the model key.
 | `Could not install packages due to an OSError`, with a hint about Windows Long Path support | The folder's path is too long for Windows. Move the folder to a short path, for example `C:\fin67110-desk`, and do step 2 of the setup again. |
 | `ModuleNotFoundError` | The command did not use the virtual environment. Start the command with `.venv\Scripts\python` (Windows) or `.venv/bin/python` (Mac). |
 | `python` is not found, or the Microsoft Store opens | On Windows, type `py`. On a Mac, type `python3`. |
-| `SEC request failed: 403` | `SEC_USER_AGENT` needs your own name and email. |
+| `SEC request failed: 403`, or `SEC EDGAR refused the request (403)` | `SEC_USER_AGENT` needs your own name and email. |
+| `MODEL in .env is empty`, or `API_KEY and MODEL in .env are of two providers` | The group desk stops at its first step, before it fetches anything. Write `MODEL` with its provider (`anthropic/`, `gemini/` or `openai/`) and a key of the same provider. |
+| `.env is not saved as UTF-8` | Windows PowerShell wrote the file as UTF-16. Open it in a text editor and save it as UTF-8. |
+| `the model did not answer in 20 minutes` | One role's call ran past its time limit. Run again. If the run had reached its worksheet, use the `--resume` line the command printed. |
+| `The earnings 8-K ... has no Exhibit 99 that the desk can read` | The newest earnings 8-K has no release the desk can read. The desk does not go back to an older one. Choose another company. |
+| `To finish this run without running the team again:` followed by a command | The run stopped in its worksheet or final report. Fix what the error names (credit, the key, the connection) and run the printed command from the repository folder. |
 | `credit balance is too low` | Add credit to the Anthropic account, or use a Google AI Studio key. |
 | `The Gemini API is limiting this key` | Wait a minute and run again. |
 | `Could not locate an Exhibit 99 with the earnings release` | The 8-K has no Exhibit 99 that the desk can read. Choose another company. |
 
-Known limits, as of 2026-11-11. The details are in [docs/decision-log.md](docs/decision-log.md).
+Known limits, as of 2026-11-22. The details are in [docs/decision-log.md](docs/decision-log.md).
 
 1. The quarter's revenue, growth and diluted EPS (claims 9 to 11) are read from the release's income
    statement by rules. When the rules cannot read a claim, the report says "not found" or "not computed",
@@ -408,36 +432,38 @@ Known limits, as of 2026-11-11. The details are in [docs/decision-log.md](docs/d
 3. When SEC EDGAR's company facts are not yet the facts of the 10-K the desk read, the report states no
    annual figure and says why. The quarter's claims and the rest of the report are still written.
 4. The desk needs all three filings. A company with no 10-K yet, or one that files 20-F and 6-K, stops the run.
+5. The group desk's price is the last close before the release, and it takes every session to close at
+   16:00 Eastern. On a day the market closes at 13:00, a release accepted between 13:00 and 16:00 gets the
+   close of the day before, not that day's. The next such days are 2026-11-27 and 2026-12-24. The hit-rate
+   table uses the exchange's calendar and is not affected.
+6. The checks on what a role may type were tightened on 2026-11-22. The replies saved from the real runs of
+   2026-11-19 and 2026-11-20 pass them as before, but no new run has been made since: the model account had
+   no credit. A real run on another company or model may leave out more lines than the runs before it.
 
 ## Tests
 
-The tests need no network and no key. They run in the group's `.venv-desk`, in four folders.
-
-Windows (`-X utf8` makes Python read the tests' UTF-8 files as the desk itself does; see `utf8_mode.py`):
+One command runs every check. It needs no network and no key (on a Mac, type `.venv-desk/bin/python`):
 
 ```
-.venv-desk\Scripts\python -X utf8 -m unittest discover -s tests
-.venv-desk\Scripts\python -X utf8 -m unittest discover -s hooks/tests
-.venv-desk\Scripts\python -X utf8 -m unittest discover -s skills/spinoff-worksheet/tests
-.venv-desk\Scripts\python -X utf8 -m unittest discover -s skills/us-spinoff-seeker/tests
+.venv-desk\Scripts\python check_all.py
 ```
 
-Mac:
+It runs the four test folders (`tests`, `hooks/tests`, `skills/spinoff-worksheet/tests` and
+`skills/us-spinoff-seeker/tests`), the two seeded checks that drive the real CrewAI roles on a stand-in model,
+the offline live record, and `check_public.py`. Each prints one line; the last line gives the count. To run one
+folder alone: `.venv-desk\Scripts\python -m unittest discover -s hooks/tests`.
 
-```
-.venv-desk/bin/python -m unittest discover -s tests
-.venv-desk/bin/python -m unittest discover -s hooks/tests
-.venv-desk/bin/python -m unittest discover -s skills/spinoff-worksheet/tests
-.venv-desk/bin/python -m unittest discover -s skills/us-spinoff-seeker/tests
-```
+On Windows 11 on 2026-11-22 it ran 928 tests with no failure. Four tests that create a symlink were
+skipped: Windows lets an account create one only with administrator rights or Developer Mode. Python needs no
+`-X utf8` for them any more: every file is read and written as UTF-8 by name.
 
-On Windows 11 on 2026-11-21 the four folders ran 663 tests with no failure. Four tests that create a
-symlink were skipped: Windows lets an account create one only with administrator rights or Developer Mode.
-
-They cover the XBRL tag choice, the full-year filter, the release's table text, the quote and number
-checks, the calculator, the fixed order of the parts, the single send-back, and the Verifier's marks on
-a seeded EPS, an invented growth rate, a price and an unsourced number. They also cover the setup, the
-page, the closes reader on made-up files, and the live record on a made-up repository.
+They cover the XBRL tag choice, the full-year filter, each formula of the eleven core claims, the release's
+tables (a loss, change columns, three dated columns, a non-GAAP table), the facts of the chosen 10-K, the
+quote and number checks, the calculator, the fixed order of the parts, the single send-back, and the
+Verifier's marks on a seeded EPS, an invented growth rate, a price and an unsourced number. They also cover
+the setup, the page, the closes reader on made-up files, a model call that fails on the way, a run that stops
+and is resumed, the live record on a made-up repository, and one whole run from a ticker to its final report
+on made-up SEC pages (`tests/test_whole_desk.py`).
 
 ## The live record
 

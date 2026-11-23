@@ -44,8 +44,8 @@ def fact_values(facts,tag,period,accession):
 def report_errors(run,path,text=None):
     """Each financial token must be linked to a local citation or arithmetic."""
     run=Path(run);path=Path(path)
-    lines=(path.read_text() if text is None else text).splitlines()
-    facts=json.loads((run/'facts.json').read_text()) if (run/'facts.json').exists() else {}
+    lines=(path.read_text(encoding='utf-8') if text is None else text).splitlines()
+    facts=json.loads((run/'facts.json').read_text(encoding='utf-8')) if (run/'facts.json').exists() else {}
     errors=[]
     for i,line in enumerate(lines,1):
         if i<=2 and (line.startswith('Filings read:') or line.startswith('Run time:')):continue
@@ -73,7 +73,7 @@ def report_errors(run,path,text=None):
             name=re.split(r'[\[;|]',m[1])[-1].strip()
             mask(m.end(1)-len(name),m.end())
             try:
-                source=inside(run,name).read_text().splitlines();number=int(m[2])-1
+                source=inside(run,name).read_text(encoding='utf-8').splitlines();number=int(m[2])-1
                 if not 0<=number<len(source):raise ValueError('Cited filing line does not exist')
                 values.update(amount(n[0]) for n in NUM.finditer(source[number]))
                 evidence.extend(source_quantities(source,number,NUM,financial_word_numbers(source[number])))
@@ -116,11 +116,11 @@ def report_errors(run,path,text=None):
 def check_facts(run,sources):
     path=run/'facts.json'
     if not path.exists():return
-    saved=json.loads(path.read_text())
+    saved=json.loads(path.read_text(encoding='utf-8'))
     company=[]
     for url,item in sources.data['responses'].items():
         if '/api/xbrl/companyfacts/' in url:
-            company.append(json.loads(inside(run,item['path']).read_text()))
+            company.append(json.loads(inside(run,item['path']).read_text(encoding='utf-8')))
     for group in [saved.get('facts',{})]+[p.get('facts',{}) for p in saved.get('peers',{}).values()]:
         for name,fact in group.items():
             for prefix in ('','prior_'):
@@ -139,7 +139,7 @@ def check_screen(run,path,markdown=None):
     from datetime import date,datetime
     from desk_sources import skill
     from desk_parts import validate_screen
-    module=skill('us-spinoff-seeker');data=json.loads(path.read_text())
+    module=skill('us-spinoff-seeker');data=json.loads(path.read_text(encoding='utf-8'))
     validate_screen(module,data)
     configured=module.load_factors(str(run/'inputs/spinoff_factors.json'))
     saved=data.get('factors') or data['registry'].get('factors')
@@ -152,12 +152,12 @@ def check_screen(run,path,markdown=None):
         ranked,unranked=module.rank(deepcopy([c for c in candidates if not c.get('drop') and c.get('eligibility')=='included']),saved)
         expected=module.report(candidates,ranked,unranked,asof,registry.get('index_date'),data.get('limitations',[]),
                                run_day=datetime.fromisoformat(data['run_time']).date(),factors=saved)
-        if NUM.findall(markdown.read_text())!=NUM.findall(expected):
+        if NUM.findall(markdown.read_text(encoding='utf-8'))!=NUM.findall(expected):
             raise ValueError('Seeker report numbers differ from saved facts and recomputed factor ranks')
 
 
 def check_calculations(run,path):
-    data=json.loads(path.read_text())
+    data=json.loads(path.read_text(encoding='utf-8'))
     for name,metric in data.get('metrics',{}).items():
         if metric.get('value') is None:continue
         expression=metric.get('formula')
@@ -195,23 +195,23 @@ class Hook:
             relative=path.relative_to(self.run).as_posix()
             try:
                 if path.suffix=='.json':
-                    data=json.loads(path.read_text())
+                    data=json.loads(path.read_text(encoding='utf-8'))
                     if path.name=='pick.json':
-                        state=json.loads((self.run/'desk_run.json').read_text())
+                        state=json.loads((self.run/'desk_run.json').read_text(encoding='utf-8'))
                         if state['selector']=='screen':
                             from desk_parts import validate_screen
                             from desk_sources import skill
-                            expected,candidate=validate_screen(skill('us-spinoff-seeker'),json.loads((self.run/'screen.json').read_text()))
+                            expected,candidate=validate_screen(skill('us-spinoff-seeker'),json.loads((self.run/'screen.json').read_text(encoding='utf-8')))
                             if data.get('ticker')!=expected or data.get('candidate')!=candidate:raise ValueError('Pick differs from the saved screen top entry')
                         elif data.get('ticker')!=state['selector'].upper():raise ValueError('Pick differs from the requested ticker')
                     if path.name=='spinoff_status.json':
-                        registry=json.loads((self.run/'registry.json').read_text())
+                        registry=json.loads((self.run/'registry.json').read_text(encoding='utf-8'))
                         matches=[c for c in registry.get('candidates',{}).values() if str((c.get('facts',{}).get('ticker') or {}).get('value','')).upper()==data['ticker']]
                         if data.get('spinoff')!=('applicable' if matches else 'not applicable'):raise ValueError('Spinoff applicability differs from registry evidence')
                     if path.name.startswith('Spinoff worksheet') and ', model ' not in path.name:
                         from desk_sources import skill
                         rendered=skill('spinoff-worksheet').render(data)
-                        if not path.with_suffix('.md').is_file() or rendered!=path.with_suffix('.md').read_text():
+                        if not path.with_suffix('.md').is_file() or rendered!=path.with_suffix('.md').read_text(encoding='utf-8'):
                             raise ValueError('Worksheet JSON does not match the actual saved worksheet')
                     if path.name=='calculated_facts.json':check_calculations(self.run,path)
                     if isinstance(data,dict) and isinstance(data.get('registry'),dict) and data.get('run_time'):
@@ -234,7 +234,7 @@ class Hook:
                         if not isinstance(data,dict) or not data.get('view_time') or not data.get('direction'):raise ValueError('View has no direction/time')
                         worksheets=[p for p in self.run.glob('Spinoff worksheet*.json') if ', model ' not in p.name]
                         if len(worksheets)!=1:raise ValueError('View has no unique saved worksheet')
-                        evidence=json.loads(worksheets[0].read_text())
+                        evidence=json.loads(worksheets[0].read_text(encoding='utf-8'))
                         if data['direction']!=evidence.get('view',{}).get('direction'):raise ValueError('View direction differs from the saved worksheet')
                         when=evidence.get('view_time') or evidence.get('view',{}).get('time')
                         if when and when!=data['view_time']:raise ValueError('View time differs from the saved worksheet')
@@ -243,7 +243,7 @@ class Hook:
                             role=data.get('role')
                             if role not in PREFIX or not re.fullmatch(re.escape(PREFIX[role])+r'_[12]',path.parent.name):raise ValueError('Role contract does not match its saved node')
                             errors.extend((relative,1,e,'') for e in verify_output(self.run,data))
-                            if data['contract']=='claims' and path.with_name('draft.md').read_text()!=data['draft']:raise ValueError('Saved role Markdown differs from its checked draft')
+                            if data['contract']=='claims' and path.with_name('draft.md').read_text(encoding='utf-8')!=data['draft']:raise ValueError('Saved role Markdown differs from its checked draft')
                         elif isinstance(data,dict) and 'claims' in data:
                             # Claims-ledger output: every number was rendered by code from
                             # a checked quote, so recheck the claims, not the prose.
@@ -254,15 +254,15 @@ class Hook:
                             for section,body in data['sections'].items():errors.extend((relative,*e) for e in report_errors(self.run,path,str(body)))
                 elif path.suffix=='.md':
                     if path.name=='draft.md' and path.parent.parent.name=='nodes':
-                        data=json.loads(path.with_name('output.json').read_text())
-                        if verify_output(self.run,data) or path.read_text()!=data.get('draft'):raise ValueError('Role Markdown differs from checked source claims')
+                        data=json.loads(path.with_name('output.json').read_text(encoding='utf-8'))
+                        if verify_output(self.run,data) or path.read_text(encoding='utf-8')!=data.get('draft'):raise ValueError('Role Markdown differs from checked source claims')
                     elif path.name=='screen.md' or path.name.startswith('Spinoffs,'):
                         snapshot=path.with_suffix('.json') if path.with_suffix('.json').exists() else self.run/'screen.json'
                         check_screen(self.run,snapshot,path)
                     elif path.name.startswith('Spinoff worksheet'):
                         for error in Auditor(self.run,self.run/'inputs').check(path):errors.append((relative,error.line,error.reason,error.text))
                     elif path.name in {'report.md','verified_report.md','final_report.md'}:
-                        text=path.read_text()
+                        text=path.read_text(encoding='utf-8')
                         if path.name=='final_report.md':
                             if not worksheet or not verified:raise ValueError('Final report has no source report and worksheet')
                             expected=self.compose(Path(verified),Path(worksheet))
@@ -284,9 +284,19 @@ class Hook:
         return record
 
     def compose(self,verified,worksheet):
-        report=verified.read_text().splitlines()
+        report=verified.read_text(encoding='utf-8').splitlines()
         # The final report keeps the verified report's first line (the filings, the release's exhibit, the Accepted
         # times and the CIK, as the team saved them), so one run has one first line; live_record.py reads it.
-        if report and report[0].startswith('Filings read:'):first,body=report[0],'\n'.join(report[1:])
-        else:first,body=self.sources.filing_line(),'\n'.join(report)
-        return first+'\n'+body.rstrip()+'\n\n## Worksheet view and evidence\n\n'+worksheet.read_text().rstrip()+'\n'
+        # Until 2026-11-22 a verified report with no such line got a second form of it, written here from the saved
+        # sources: every filing in accession order, with no CIK, no exhibit and no Accepted time, which live_record.py
+        # cannot read. One writer makes the first line (equity_research_desk.filings_line); without it there is no
+        # final report.
+        if not report or not report[0].startswith('Filings read:'):
+            raise ValueError('The verified report has no "Filings read:" first line, so the final report cannot name its filings')
+        first,body=report[0],'\n'.join(report[1:])
+        text=first+'\n'+body.rstrip()+'\n\n## Worksheet view and evidence\n\n'+worksheet.read_text(encoding='utf-8').rstrip()+'\n'
+        # The course's three lines end the final report. The run saved them at its start (desk_run.json), so a replay
+        # on another computer writes the same text; a run saved before 2026-11-22 has none, and replays as it was.
+        try:footer=json.loads((self.run/'desk_run.json').read_text(encoding='utf-8')).get('footer') or ''
+        except (OSError,ValueError):footer=''
+        return text+('\n'+footer if footer else '')

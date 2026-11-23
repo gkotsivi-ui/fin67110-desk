@@ -43,7 +43,10 @@ def model_for(provider: str, model: str) -> str:
     if provider == "google":
         name = model.removeprefix("gemini/").removeprefix("models/")
         return name if name.startswith("gemini") else GEMINI_MODEL
-    return model if model.startswith("claude") else DEFAULT_MODEL
+    # The group desk writes MODEL as anthropic/MODEL_ID, in the same .env. Until 2026-11-22 that prefix made this
+    # line take the default model without a word, so a report or an error review ran on a model nobody had chosen.
+    name = model.removeprefix("anthropic/")
+    return name if name.startswith("claude") else DEFAULT_MODEL
 PARTS = [
     "Overview",
     "Market Positioning and Growth Outlook",

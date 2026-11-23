@@ -28,7 +28,7 @@ class BoundaryTests(unittest.TestCase):
         self.run=Path(self.tmp.name).resolve()
 
     def store(self):
-        source=self.run/'skill.md';source.write_text('Computed amount: $100\n')
+        source=self.run/'skill.md';source.write_text('Computed amount: $100\n',encoding='utf-8')
         return AssignedFiles(self.run,[source],self.run/'reads.json')
 
     def test_file_manifest_has_paths_and_permissions_without_contents(self):
@@ -47,7 +47,7 @@ class BoundaryTests(unittest.TestCase):
         with ThreadPoolExecutor(max_workers=8) as pool:
             results=list(pool.map(store.read,['skill.md']*32))
         self.assertEqual(len(results),32)
-        self.assertEqual(len(json.loads((self.run/'reads.json').read_text())['reads']),32)
+        self.assertEqual(len(json.loads((self.run/'reads.json').read_text(encoding='utf-8'))['reads']),32)
         store.verify()
 
     def test_unassigned_file_and_path_escape_are_rejected(self):
@@ -59,14 +59,14 @@ class BoundaryTests(unittest.TestCase):
 
     def test_changed_assigned_file_is_rejected_before_and_after_read(self):
         store=self.store();store.read('skill.md')
-        (self.run/'skill.md').write_text('Computed amount: $101\n')
+        (self.run/'skill.md').write_text('Computed amount: $101\n',encoding='utf-8')
         with self.assertRaisesRegex(ValueError,'changed'):store.verify()
         with self.assertRaisesRegex(ValueError,'changed'):store.read('skill.md')
 
     def test_missing_output_is_failed_and_recorded(self):
         with self.assertRaisesRegex(HookFailure,'missing'):
             Hook(self.run,Sources(self.run,'')).check('seeded missing file',[self.run/'never-written.md'])
-        record=json.loads(next((self.run/'hook').glob('*.json')).read_text())
+        record=json.loads(next((self.run/'hook').glob('*.json')).read_text(encoding='utf-8'))
         self.assertEqual(record['status'],'FAIL')
         self.assertEqual(record['requested_outputs'],['never-written.md'])
 
@@ -75,14 +75,14 @@ class BoundaryTests(unittest.TestCase):
             Hook(self.run,Sources(self.run,'')).check('seeded empty outputs',[])
 
     def test_hook_reads_actual_report_even_when_decoy_claims_are_correct(self):
-        (self.run/'filing.txt').write_text('Income $100.')
-        (self.run/'hook-only.json').write_text('{"income":100}')
-        report=self.run/'report.md';report.write_text('Income $101 [filing.txt:L1].')
+        (self.run/'filing.txt').write_text('Income $100.',encoding='utf-8')
+        (self.run/'hook-only.json').write_text('{"income":100}',encoding='utf-8')
+        report=self.run/'report.md';report.write_text('Income $101 [filing.txt:L1].',encoding='utf-8')
         with self.assertRaisesRegex(HookFailure,r'Income \$101'):
             Hook(self.run,Sources(self.run,'')).check('seeded actual output',[report])
 
     def test_line_and_note_identifiers_skipped_but_wrong_amount_rejected(self):
-        (self.run/'filing.txt').write_text('Income $100.')
+        (self.run/'filing.txt').write_text('Income $100.',encoding='utf-8')
         text='Income $100 [filing.txt:L1]. See L1010-L1012 and Note 11.'
         self.assertEqual(report_errors(self.run,self.run/'report.md',text),[])
         self.assertTrue(report_errors(self.run,self.run/'report.md',text.replace('$100','$101')))
@@ -102,12 +102,12 @@ class BoundaryTests(unittest.TestCase):
         ]
         for source,correct,incorrect in cases:
             with self.subTest(source=source,correct=correct):
-                (self.run/'filing.txt').write_text(source)
+                (self.run/'filing.txt').write_text(source,encoding='utf-8')
                 self.assertEqual(report_errors(self.run,self.run/'report.md',correct+' [filing.txt:L1].'),[])
                 self.assertTrue(report_errors(self.run,self.run/'report.md',incorrect+' [filing.txt:L1].'))
 
     def test_written_amount_requires_the_exact_cited_line(self):
-        (self.run/'filing.txt').write_text('Margin fell three basis points.\nUnrelated text.')
+        (self.run/'filing.txt').write_text('Margin fell three basis points.\nUnrelated text.',encoding='utf-8')
         text='Margin fell three basis points. [filing.txt:L2].'
         self.assertTrue(report_errors(self.run,self.run/'report.md',text))
 
@@ -116,29 +116,29 @@ class BoundaryTests(unittest.TestCase):
         self.assertTrue(report_errors(self.run,self.run/'report.md','Up twenty-five bps.'))
 
     def test_formula_result_ignores_citation_identifiers_and_requires_correct_arithmetic(self):
-        (self.run/'filing.txt').write_text('Cash $100; debt $20.')
+        (self.run/'filing.txt').write_text('Cash $100; debt $20.',encoding='utf-8')
         correct='Net cash $80 [filing.txt:L1] [computed using formula 100 - 20 based on filing].'
         self.assertEqual(report_errors(self.run,self.run/'report.md',correct),[])
         self.assertTrue(report_errors(self.run,self.run/'report.md',correct.replace('$80','$81')))
 
     def test_section_units_scale_money_but_not_per_share_or_percent(self):
-        (self.run/'filing.txt').write_text('Item 7—Management discussion\n(amounts in millions, except per share data)\nNet income was $100, or $2 per diluted share; growth was 5%.\n')
+        (self.run/'filing.txt').write_text('Item 7—Management discussion\n(amounts in millions, except per share data)\nNet income was $100, or $2 per diluted share; growth was 5%.\n', encoding='utf-8')
         valid='Income was $100 million and EPS was $2 per diluted share; growth was 5%. [filing.txt:L3].'
         self.assertEqual(report_errors(self.run,self.run/'report.md',valid),[])
         for wrong in [valid.replace('$100 million','$101 million'),valid.replace('$100 million','$100 billion'),valid.replace('$2 per diluted share','$2 million per diluted share')]:
             self.assertTrue(report_errors(self.run,self.run/'report.md',wrong))
 
     def test_section_units_do_not_leak_into_next_section(self):
-        (self.run/'filing.txt').write_text('Item 7—Discussion\n(amounts in millions)\nRevenue $100.\nItem 8—Other section\nRevenue $100.\n')
+        (self.run/'filing.txt').write_text('Item 7—Discussion\n(amounts in millions)\nRevenue $100.\nItem 8—Other section\nRevenue $100.\n',encoding='utf-8')
         self.assertTrue(report_errors(self.run,self.run/'report.md','Revenue $100 million [filing.txt:L5].'))
         self.assertEqual(report_errors(self.run,self.run/'report.md','Revenue $100 [filing.txt:L5].'),[])
 
     def test_table_specific_sentence_does_not_set_section_units(self):
-        (self.run/'filing.txt').write_text('The following table shows repurchases (dollars in millions).\nIncome $100.\n')
+        (self.run/'filing.txt').write_text('The following table shows repurchases (dollars in millions).\nIncome $100.\n',encoding='utf-8')
         self.assertTrue(report_errors(self.run,self.run/'report.md','Income $100 million [filing.txt:L2].'))
 
     def test_literal_quote_can_retain_filing_units_without_allowing_wrong_unquoted_scale(self):
-        (self.run/'filing.txt').write_text('Item 7—Discussion\n(amounts in millions)\nNet income was $100.\n')
+        (self.run/'filing.txt').write_text('Item 7—Discussion\n(amounts in millions)\nNet income was $100.\n',encoding='utf-8')
         valid='Income was $100 million. [filing.txt:L3] "Net income was $100."'
         self.assertEqual(report_errors(self.run,self.run/'report.md',valid),[])
         self.assertTrue(report_errors(self.run,self.run/'report.md',valid.replace('Income was $100 million.','Income was $100 billion.')))
@@ -163,7 +163,7 @@ class BoundaryTests(unittest.TestCase):
         with redirect_stdout(output),self.assertRaisesRegex(ValueError,'seeded'):
             Role().call('Seeded role')
         self.assertRegex(output.getvalue().splitlines()[-1],r'^Part role Seeded role: \d+\.\d{3} seconds$')
-        self.assertGreaterEqual(json.loads(next((self.run/'timings').glob('*.json')).read_text())['seconds'],0)
+        self.assertGreaterEqual(json.loads(next((self.run/'timings').glob('*.json')).read_text(encoding='utf-8'))['seconds'],0)
 
 
 if __name__=='__main__':unittest.main()

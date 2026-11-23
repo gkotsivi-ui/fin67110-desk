@@ -419,7 +419,12 @@
   ],
   "group_only_files": [
     "view_record.py",
-    "check_lseg.py"
+    "check_lseg.py",
+    "desk_rules.py",
+    "release.py",
+    "model_calls.py",
+    "check_pipeline.py",
+    "check_public.py"
   ],
   "group_only_hashes": {
     "view_record.py": "87263c293c9d46e0260cc6f5bb54bc2c7d3fb7d0feb22184bade0bed5edf20e5",

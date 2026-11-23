@@ -5,6 +5,8 @@ from datetime import datetime,timedelta
 import io
 import json
 from pathlib import Path
+import re
+import shutil
 import socket
 from portable import local_sockets_only
 import sys
@@ -39,14 +41,14 @@ class FakeParts:
             candidate['stage']='in its window'
             module.rank([candidate],factors)
             registry.update(candidates={'12345':candidate},complete=True,pending_ciks=[],factors=factors,as_of='2026-11-17',index_date='2026-11-16')
-            started=json.loads((self.run/'desk_run.json').read_text())['started_at']
+            started=json.loads((self.run/'desk_run.json').read_text(encoding='utf-8'))['started_at']
             data={'registry':registry,'factors':factors,'run_time':started,'limitations':[]}
             write_json(self.run/'screen.json',data)
         write_json(self.run/'registry.json',registry)
     def pick(self):
         self.calls.append('pick');data={'ticker':'ZZZZ'}
         if self.options.selector=='screen':
-            ticker,candidate=validate_screen(skill('us-spinoff-seeker'),json.loads((self.run/'screen.json').read_text()))
+            ticker,candidate=validate_screen(skill('us-spinoff-seeker'),json.loads((self.run/'screen.json').read_text(encoding='utf-8')))
             data.update(ticker=ticker,candidate=candidate,source='screen.json')
         write_json(self.run/'pick.json',data);return data['ticker']
     def spinoff_status(self,ticker):
@@ -62,12 +64,12 @@ class FakeParts:
         self.sources.transport=get
         self.sources.text('https://data.sec.gov/api/xbrl/companyfacts/CIK0000012345.json')
         text=self.sources.text(FILE_URL)
-        (self.run/'10-K.txt').write_text(text);self.sources.inventory(FILE_URL,'10-K',self.run/'10-K.txt');self.sources.save()
+        (self.run/'10-K.txt').write_text(text,encoding='utf-8');self.sources.inventory(FILE_URL,'10-K',self.run/'10-K.txt');self.sources.save()
         write_json(self.run/'facts.json',{'ticker':ticker,'cik':'0000012345','facts':{'net_income':{'tag':'NetIncomeLoss','period_end':'2026-08-30','filing':ACC,'value':100}}})
         value=101 if self.failure=='number' else 100
         body=f'Filings read: 10-K {ACC}\nRun time: {started.isoformat()}\n\nIncome is ${value} [XBRL tag NetIncomeLoss, period end 2026-08-30, filing {ACC}].\n'
-        (self.run/'report.md').write_text(body)
-        (self.run/'verified_report.md').write_text(body)
+        (self.run/'report.md').write_text(body,encoding='utf-8')
+        (self.run/'verified_report.md').write_text(body,encoding='utf-8')
         return self.run/'verified_report.md'
     def worksheet(self,started,output_hook):
         self.calls.append('worksheet')
@@ -80,7 +82,7 @@ class FakeParts:
                  'price_vs_low':{'comparison':'not computed'},'judgment':{'judgment':'not known','next_filing_trigger':'not known'},
                  'liquidity':{'reason':'not known'},'view':{'direction':'not computed','deciding_number':None,'source':'not known'},
                  'conviction':'not known','not_known':[]}
-        path.write_text(skill('spinoff-worksheet').render(payload))
+        path.write_text(skill('spinoff-worksheet').render(payload),encoding='utf-8')
         write_json(path.with_suffix('.json'),payload)
         write_json(self.run/'view.json',{'ticker':'ZZZZ','view_time':started.isoformat(),'direction':'not computed'})
         return path
@@ -107,21 +109,21 @@ class JoinedDeskTests(unittest.TestCase):
         self.assertEqual(FakeParts.calls,['seeker','pick','team','worksheet'])
         self.assertEqual(runner.run.name,'ZZZZ_2026-11-17_09-12-13.123456')
         self.assertEqual(result.parent,runner.run)
-        state=json.loads((runner.run/'desk_run.json').read_text())
+        state=json.loads((runner.run/'desk_run.json').read_text(encoding='utf-8'))
         self.assertEqual([p['name'] for p in state['parts']],['inputs','seeker','pick','team','worksheet','final report'])
         self.assertEqual(state['started_at'],self.started.isoformat())
         self.assertTrue(all(p['seconds']>=0 for p in state['parts']))
 
     def test_final_contains_verified_team_and_worksheet_and_filing_inventory(self):
-        runner,result=self.execute();text=result.read_text()
+        runner,result=self.execute();text=result.read_text(encoding='utf-8')
         self.assertEqual(text.splitlines()[0],f'Filings read: 10-K {ACC}')
         self.assertIn('Income is $100',text);self.assertIn('## Worksheet view and evidence',text)
         self.assertIn('View on the release: not computed',text)
-        self.assertTrue(all(json.loads(p.read_text())['status']=='PASS' for p in (runner.run/'hook').glob('*.json')))
+        self.assertTrue(all(json.loads(p.read_text(encoding='utf-8'))['status']=='PASS' for p in (runner.run/'hook').glob('*.json')))
 
     def test_not_applicable_does_not_skip_team_or_worksheet(self):
         runner,_=self.execute()
-        self.assertEqual(json.loads((runner.run/'spinoff_status.json').read_text())['spinoff'],'not applicable')
+        self.assertEqual(json.loads((runner.run/'spinoff_status.json').read_text(encoding='utf-8'))['spinoff'],'not applicable')
         self.assertIn('worksheet',FakeParts.calls)
 
     def test_each_failure_stops_later_parts_and_keeps_folder(self):
@@ -131,7 +133,7 @@ class JoinedDeskTests(unittest.TestCase):
                 runner=self.runner()
                 with redirect_stdout(io.StringIO()),self.assertRaisesRegex(ValueError,'invented'):
                     runner.execute()
-                state=json.loads((runner.run/'desk_run.json').read_text())
+                state=json.loads((runner.run/'desk_run.json').read_text(encoding='utf-8'))
                 self.assertEqual(state['status'],'failed');self.assertEqual(state['failed_part'],phase)
                 self.assertFalse((runner.run/'final_report.md').exists())
                 if phase in ('seeker','team'):self.assertNotIn('worksheet',FakeParts.calls)
@@ -143,7 +145,7 @@ class JoinedDeskTests(unittest.TestCase):
         with redirect_stdout(output),self.assertRaises(HookFailure):runner.execute()
         self.assertNotIn('worksheet',FakeParts.calls)
         self.assertIn('$101',output.getvalue())
-        self.assertEqual(json.loads((runner.run/'desk_run.json').read_text())['failed_part'],'team')
+        self.assertEqual(json.loads((runner.run/'desk_run.json').read_text(encoding='utf-8'))['failed_part'],'team')
 
     def test_offline_replay_preserves_view_and_makes_no_fetches(self):
         runner,result=self.execute();view=runner.run/'view.json'
@@ -154,9 +156,9 @@ class JoinedDeskTests(unittest.TestCase):
         self.assertEqual(FakeParts.calls,['seeker','pick','team','worksheet'])
 
     def test_replay_rejects_changed_source_and_changed_final(self):
-        runner,result=self.execute();original=result.read_text();result.write_text(original.replace('$100','$101'))
+        runner,result=self.execute();original=result.read_text(encoding='utf-8');result.write_text(original.replace('$100','$101'),encoding='utf-8')
         with self.assertRaisesRegex(ValueError,'changed'):desk.replay(runner.run)
-        result.write_text(original);(runner.run/'10-K.txt').write_text('Income is $101')
+        result.write_text(original,encoding='utf-8');(runner.run/'10-K.txt').write_text('Income is $101',encoding='utf-8')
         with self.assertRaisesRegex(ValueError,'changed'):desk.replay(runner.run)
 
     def test_replay_does_not_overwrite_original_audit_logs(self):
@@ -180,11 +182,11 @@ class JoinedDeskTests(unittest.TestCase):
     def test_failed_run_replay_rejects_changed_saved_output(self):
         FakeParts.failure='number';runner=self.runner()
         with redirect_stdout(io.StringIO()),self.assertRaises(HookFailure):runner.execute()
-        (runner.run/'report.md').write_text('Changed report')
+        (runner.run/'report.md').write_text('Changed report',encoding='utf-8')
         with redirect_stdout(io.StringIO()),self.assertRaisesRegex(ValueError,'changed'):desk.replay(runner.run)
 
     def test_final_report_itself_is_checked_not_just_source_fragments(self):
-        runner,result=self.execute();result.write_text(result.read_text().replace('$100','$101'))
+        runner,result=self.execute();result.write_text(result.read_text(encoding='utf-8').replace('$100','$101'),encoding='utf-8')
         with self.assertRaises(HookFailure):
             runner.hook.check('final',[result],verified=runner.run/'verified_report.md',worksheet=runner.run/'Spinoff worksheet, ZZZZ.md')
 
@@ -198,10 +200,49 @@ class JoinedDeskTests(unittest.TestCase):
         runner=self.real_worksheet_runner()
         with redirect_stdout(io.StringIO()),local_sockets_only():
             result=runner.execute()
-        self.assertEqual(json.loads((runner.run/'desk_run.json').read_text())['status'],'complete')
-        self.assertIn('Low value: 90.00;',result.read_text())  # a per-share value prints to the cent
-        self.assertEqual(sum(line.startswith('Liquidity day |') for line in result.read_text().splitlines()),60)
+        self.assertEqual(json.loads((runner.run/'desk_run.json').read_text(encoding='utf-8'))['status'],'complete')
+        self.assertIn('Low value: 90.00;',result.read_text(encoding='utf-8'))  # a per-share value prints to the cent
+        # 2026-11-22: the final report printed the sixty daily closes and volumes of the liquidity test, and the run
+        # folder held them twice more. They are licensed rows: the report now states the result, and the rows sit in
+        # sources/licensed, which git ignores and the run's list of files leaves out.
+        final=result.read_text(encoding='utf-8')
+        self.assertFalse(any(line.startswith('Liquidity day |') for line in final.splitlines()))
+        self.assertIn('Can you buy it: ',final)
+        rows=list((runner.run/'sources/licensed').glob('*liquidity rows.json'))
+        self.assertEqual(len(json.loads(rows[0].read_text(encoding='utf-8'))),60)
+        listed=json.loads((runner.run/'artifacts.json').read_text(encoding='utf-8'))['files']
+        self.assertFalse([name for name in listed if name.startswith(('sources/licensed/','framework/'))])
         with redirect_stdout(io.StringIO()):self.assertEqual(desk.replay(runner.run),result)
+        # What a live run commits holds no list of closes and no home path (check_public.py).
+        import check_public
+        public=[p.relative_to(runner.run).as_posix() for p in runner.run.rglob('*') if p.is_file() and not desk.kept_out_of_the_record(p.relative_to(runner.run))]
+        self.assertEqual(check_public.problems(runner.run,public,{}),[])
+        # A copy from the repository has no licensed rows. It still replays: the saved hook record shows this very
+        # worksheet passing when the rows were there. A worksheet changed since then does not.
+        shutil.rmtree(runner.run/'sources/licensed')
+        with redirect_stdout(io.StringIO()):self.assertEqual(desk.replay(runner.run),result)
+        worksheet=next(runner.run.glob('Spinoff worksheet*.md'))
+        text=worksheet.read_text(encoding='utf-8')
+        changed=re.sub(r'(Can you buy it: )(yes|no)',lambda m:m[1]+('no' if m[2]=='yes' else 'yes'),text)
+        self.assertNotEqual(changed,text)
+        worksheet.write_text(changed,encoding='utf-8')
+        from worksheet_numbers import Auditor  # the hook's worksheet check (hooks/, on the path through desk_hook)
+        self.assertTrue(any('not in the run folder' in error.reason for error in Auditor(runner.run,runner.run/'inputs').check(worksheet)))
+
+    def test_the_hook_redoes_the_median_from_the_local_rows(self):
+        runner=self.real_worksheet_runner()
+        with redirect_stdout(io.StringIO()),local_sockets_only():runner.execute()
+        from worksheet_numbers import Auditor
+        worksheet=next(runner.run.glob('Spinoff worksheet*.md'))
+        def reasons():return [error.reason for error in Auditor(runner.run,runner.run/'inputs').check(worksheet)]
+        self.assertEqual(reasons(),[])
+        rows=next((runner.run/'sources/licensed').glob('*liquidity rows.json'));saved=rows.read_bytes()
+        rows.write_bytes(saved.replace(b'100000.0',b'100001.0',1))  # one day's volume changed after the worksheet was made
+        self.assertTrue(any('not the ones this worksheet used' in reason for reason in reasons()))
+        rows.write_bytes(saved)
+        text=worksheet.read_text(encoding='utf-8')
+        worksheet.write_text(re.sub(r'(median\(daily close \* daily volume\) = )[\d,.]+',lambda m:m[1]+'1',text),encoding='utf-8')
+        self.assertTrue(any('Liquidity median' in reason for reason in reasons()))
 
     def test_real_worksheet_price_failure_stops_before_model(self):
         runner=self.real_worksheet_runner('price')
@@ -209,7 +250,7 @@ class JoinedDeskTests(unittest.TestCase):
             runner.execute()
         self.assertEqual(self.seeded_calls,{'model':0,'liquidity':0})
         self.assertFalse((runner.run/'final_report.md').exists())
-        self.assertEqual(json.loads((runner.run/'desk_run.json').read_text())['failed_part'],'worksheet')
+        self.assertEqual(json.loads((runner.run/'desk_run.json').read_text(encoding='utf-8'))['failed_part'],'worksheet')
 
     def test_real_worksheet_liquidity_failure_stops_final_report(self):
         runner=self.real_worksheet_runner('liquidity')
@@ -239,11 +280,11 @@ class JoinedDeskTests(unittest.TestCase):
                     response._content=(json.dumps(company) if 'companyfacts' in url else filing).encode();return response
                 self.sources.transport=get
                 self.sources.text('https://data.sec.gov/api/xbrl/companyfacts/CIK0000012345.json')
-                (self.run/'10-K.txt').write_text(self.sources.text(FILE_URL));self.sources.inventory(FILE_URL,'10-K',self.run/'10-K.txt');self.sources.save()
+                (self.run/'10-K.txt').write_text(self.sources.text(FILE_URL),encoding='utf-8');self.sources.inventory(FILE_URL,'10-K',self.run/'10-K.txt');self.sources.save()
                 write_json(self.run/'facts.json',{'ticker':ticker,'cik':'12345','facts':{'net_income':{'tag':'NetIncomeLoss','period_end':'2026-08-30','filing':ACC,'value':100000000}}})
                 write_json(self.run/'filing_time.json',{'effective_filed_eastern':'2026-11-16T17:00:00-05:00'})
                 report=f'Filings read: 10-K {ACC}\nRun time: {started.isoformat()}\nIncome is $100000000 [XBRL tag NetIncomeLoss, period end 2026-08-30, filing {ACC}].\n'
-                (self.run/'report.md').write_text(report);(self.run/'verified_report.md').write_text(report)
+                (self.run/'report.md').write_text(report,encoding='utf-8');(self.run/'verified_report.md').write_text(report,encoding='utf-8')
                 return self.run/'verified_report.md'
             def worksheet(inner,started,output_hook):
                 inner.calls.append('worksheet');adapter=Parts(inner.run,inner.sources,inner.options);adapter.registry={'candidates':{}}
@@ -279,17 +320,17 @@ class SourceReuseTests(unittest.TestCase):
     def test_reuse_imported_seeker_cache_without_fetch(self):
         import hashlib
         path=self.run/'sources/imported'/(hashlib.sha256(FILE_URL.encode()).hexdigest()+'.txt')
-        path.parent.mkdir(parents=True);path.write_text('already saved')
+        path.parent.mkdir(parents=True);path.write_text('already saved',encoding='utf-8')
         self.assertEqual(self.sources.text(FILE_URL),'already saved');self.transport.assert_not_called()
 
     def test_corrupted_cached_source_is_rejected(self):
         self.sources.text(FILE_URL)
-        record=self.sources.data['responses'][FILE_URL];(self.run/record['path']).write_text('changed')
+        record=self.sources.data['responses'][FILE_URL];(self.run/record['path']).write_text('changed',encoding='utf-8')
         with self.assertRaisesRegex(ValueError,'changed'):self.sources.text(FILE_URL)
 
     def test_changed_plain_text_filing_is_rejected(self):
-        path=self.run/'10-K.txt';path.write_text('Original statement')
-        self.sources.inventory(FILE_URL,'10-K',path);path.write_text('Changed statement')
+        path=self.run/'10-K.txt';path.write_text('Original statement',encoding='utf-8')
+        self.sources.inventory(FILE_URL,'10-K',path);path.write_text('Changed statement',encoding='utf-8')
         with self.assertRaisesRegex(ValueError,'filing text changed'):self.sources.verify()
 
     def test_only_sec_hosts_and_safe_paths(self):
@@ -334,7 +375,7 @@ class ScreenAndReportTests(unittest.TestCase):
 
     def test_report_numeric_citation_is_exact_and_stray_amount_fails(self):
         with tempfile.TemporaryDirectory() as tmp:
-            run=Path(tmp);(run/'release.txt').write_text('Net income was $100.')
+            run=Path(tmp);(run/'release.txt').write_text('Net income was $100.',encoding='utf-8')
             p=run/'report.md'
             self.assertEqual(report_errors(run,p,'Income was $100 [release.txt:L1].'),[])
             self.assertTrue(report_errors(run,p,'Income was $101 [release.txt:L1].'))
