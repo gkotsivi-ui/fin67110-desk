@@ -30,6 +30,30 @@ def latest(run,role):
     raise ValueError('No saved checked output for '+role)
 
 
+def given_drafts(run,node):
+    """The author drafts one Strategy Manager call was given, as its saved input records them (role_files), or None
+    when the node saved no such input. A saved manager output is checked against these drafts, not against whatever
+    draft is newest when the check runs: on 2026-11-23 a manager sent the Research Analyst's part back, the rewrite was
+    saved as Research_Analyst_2, and the final check then refused the first manager's output, which had rightly
+    selected Research_Analyst_1, and stopped a run whose agent team had finished."""
+    path=Path(run)/'nodes'/str(node)/'input.json'
+    try:envelope=json.loads(path.read_text(encoding='utf-8'))
+    except (OSError,ValueError):return None
+    def find(value):
+        if isinstance(value,dict):
+            if isinstance(value.get('role_files'),dict):return value['role_files']
+            for item in value.values():
+                found=find(item)
+                if found is not None:return found
+        return None
+    files=find(envelope)
+    if not files:return None
+    for owner,name in files.items():
+        if owner not in AUTHORS or not isinstance(name,str) or not re.fullmatch('nodes/'+re.escape(PREFIX[owner])+r'_[12]/draft\.md',name):
+            raise ValueError('Saved manager input names a draft the desk does not write for '+str(owner)+': '+str(name))
+    return dict(files)
+
+
 def origins_for(run,role):
     permitted=AUTHORS[:2] if role=='Investment Advisor' else AUTHORS if role in ('Strategy Manager','Verifier') else ()
     origins={}
@@ -68,7 +92,7 @@ def substitute(text,values):
     return PLACEHOLDER.sub(lambda m:values[m[1]],text)
 
 
-def validate(run,role,raw):
+def validate(run,role,raw,given=None):
     """One validator for model attempts and saved outputs. No model calls."""
     result=Result()
     if not isinstance(raw,dict):
@@ -105,7 +129,12 @@ def validate(run,role,raw):
                 if ref is None and any(f.get('part')==part for f in failures if isinstance(f,dict)):
                     sections[part]='';continue
                 if not isinstance(ref,dict):raise ValueError('Select a saved text range for '+part)
-                source,data=latest(run,owner)
+                if given and owner in given:
+                    # The drafts this manager call was given (given_drafts), when its saved output is checked later.
+                    source=Path(run)/given[owner].removesuffix('draft.md')/'output.json'
+                    if not source.is_file():raise ValueError('Saved manager input names a missing author output: '+given[owner])
+                    data=json.loads(source.read_text(encoding='utf-8'))
+                else:source,data=latest(run,owner)
                 md=source.with_name('draft.md')
                 expected=md.relative_to(Path(run)).as_posix()
                 if ref.get('file')!=expected:raise ValueError(part+' must select the latest saved draft of '+owner)
@@ -167,13 +196,17 @@ def validate(run,role,raw):
     return result
 
 
-def verify_output(run,data):
+def verify_output(run,data,node=None):
+    """Recheck a saved role output. node, the output's folder under nodes/, lets a manager's output be checked against
+    the drafts its own call was given (given_drafts) rather than the newest drafts in the run."""
     role=data.get('role');contract=data.get('contract')
     if contract=='claims':raw={'claims':data.get('claims'),'draft':data.get('template')}
     elif contract=='selection':raw={'claims':data.get('claims',[]),'sections':data.get('section_refs'),'failures':data.get('template_failures')}
     elif contract=='verification':raw={'claims':data.get('claims',[]),'checks':data.get('template_checks')}
     else:return ['Unknown saved role contract']
-    result=validate(run,role,raw)
+    try:given=given_drafts(run,node) if node and role=='Strategy Manager' else None
+    except ValueError as error:return [str(error)]
+    result=validate(run,role,raw,given)
     if result.ok:
         expected={k:v for k,v in data.items() if k!='claim_attempts'}
         if expected!=result.output:return ['Saved role output differs from its checked rendering']

@@ -242,7 +242,7 @@ class Hook:
                         if isinstance(data,dict) and 'contract' in data:
                             role=data.get('role')
                             if role not in PREFIX or not re.fullmatch(re.escape(PREFIX[role])+r'_[12]',path.parent.name):raise ValueError('Role contract does not match its saved node')
-                            errors.extend((relative,1,e,'') for e in verify_output(self.run,data))
+                            errors.extend((relative,1,e,'') for e in verify_output(self.run,data,path.parent.name))
                             if data['contract']=='claims' and path.with_name('draft.md').read_text(encoding='utf-8')!=data['draft']:raise ValueError('Saved role Markdown differs from its checked draft')
                         elif isinstance(data,dict) and 'claims' in data:
                             # Claims-ledger output: every number was rendered by code from
@@ -255,7 +255,7 @@ class Hook:
                 elif path.suffix=='.md':
                     if path.name=='draft.md' and path.parent.parent.name=='nodes':
                         data=json.loads(path.with_name('output.json').read_text(encoding='utf-8'))
-                        if verify_output(self.run,data) or path.read_text(encoding='utf-8')!=data.get('draft'):raise ValueError('Role Markdown differs from checked source claims')
+                        if verify_output(self.run,data,path.parent.name) or path.read_text(encoding='utf-8')!=data.get('draft'):raise ValueError('Role Markdown differs from checked source claims')
                     elif path.name=='screen.md' or path.name.startswith('Spinoffs,'):
                         snapshot=path.with_suffix('.json') if path.with_suffix('.json').exists() else self.run/'screen.json'
                         check_screen(self.run,snapshot,path)
