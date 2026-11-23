@@ -234,7 +234,7 @@ Checked on 2026-11-19 to 2026-11-21, on Windows 11.
 | The live record | two reports inside their 24-hour windows, Week 4 (Cisco) and Week 5 (NVIDIA), both written by the legacy desk below |
 | The hit-rate table | runs; both live reports predate the worksheet and have no view, so it scores none yet |
 | The intelligent error review | built; a review of each live report is saved beside it |
-| Tests | `check_all.py`: 928 tests in four folders, no failure, four symlink tests skipped (Windows 11, 2026-11-22). The macOS run is to be redone |
+| Tests | `check_all.py`: 938 tests in four folders, no failure, four symlink tests skipped (Windows 11, 2026-11-22). The macOS run is to be redone |
 
 Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them before you trust a number.
 
@@ -453,7 +453,7 @@ It runs the four test folders (`tests`, `hooks/tests`, `skills/spinoff-worksheet
 the offline live record, and `check_public.py`. Each prints one line; the last line gives the count. To run one
 folder alone: `.venv-desk\Scripts\python -m unittest discover -s hooks/tests`.
 
-On Windows 11 on 2026-11-22 it ran 928 tests with no failure. Four tests that create a symlink were
+On Windows 11 on 2026-11-22 it ran 938 tests with no failure. Four tests that create a symlink were
 skipped: Windows lets an account create one only with administrator rights or Developer Mode. Python needs no
 `-X utf8` for them any more: every file is read and written as UTF-8 by name.
 

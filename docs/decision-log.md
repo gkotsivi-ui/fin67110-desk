@@ -757,6 +757,31 @@ critical and six high. The table is in [code-audit-2026-11.md](code-audit-2026-1
   failure, four skipped.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-22: Dell's current debt line, read when the company's own total checks it
+
+- **What the dry run showed.** Before the Week 6 live run, the seven data steps ran on Dell's current filings
+  with no model. Ten of the eleven core claims were stated. Claim 7 was not: Dell's 10-K for fiscal 2026
+  (0001571996-26-000008) files its balance sheet's current debt line as `DebtCurrent`, not
+  `LongTermDebtCurrent`, so entry 9's rule found no pair. An auditor would mark the claim missing.
+- **What the filing says.** EDGAR describes `DebtCurrent` as "short-term debt and current maturity of
+  long-term debt", so the tag alone can hold short-term borrowings, which claim 7 leaves out. In Dell's 10-K,
+  `LongTermDebt` (31,503 million) equals `LongTermDebtNoncurrent` (23,513 million) plus `DebtCurrent` (7,990
+  million). The debt note lists senior notes, legacy notes and DFS debt, and says no commercial paper was
+  outstanding at January 30, 2026.
+- **The rule now.** When no pair from entry 9 is filed, `DebtCurrent` is read as the current portion only
+  when `LongTermDebt`, in the same filing at the same date, equals `LongTermDebtNoncurrent` plus
+  `DebtCurrent`. Then nothing in that line lies outside the company's own long-term debt. The amount is still
+  the two balance-sheet lines; the total tag is only the check, as entry 9 requires. Both desks read it the same
+  way (`equity_research_desk.py`, `lab02_desk.py`).
+- **The result on entry 9's 17 companies, with Lowe's and Walmart.** Rerun from the same saved EDGAR
+  responses: one changed. Dell went from not stated to -12.754; its stockholders' equity is negative, as Lowe's
+  is (-4.026). The other 18 are unchanged, and Mercury Systems, Sonos, Oracle and Super Micro stay not stated.
+- **How we caught it.** A dry run of the data steps on the week's chosen company, the day before its release.
+- **Tests.** Five new cases in each desk's tests: Dell's numbers, a line that does not add up, no total tag, a
+  line from another filing, and the current-maturities line chosen first. `python check_all.py` ran 938 tests
+  with no failure, four skipped (Windows 11, 2026-11-22).
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.

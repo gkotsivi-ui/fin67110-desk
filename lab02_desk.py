@@ -229,7 +229,11 @@ DEBT_PAIRS = (
 # The tag for the whole amount. Filers also use it for other measures (docs/decision-log.md, entry 9), so the desk
 # never takes it as the amount; it only shows that there is no current portion.
 DEBT_TOTAL = "LongTermDebt"
-DEBT_TAGS = [tag for pair in DEBT_PAIRS for tag in pair] + [DEBT_TOTAL]
+# A current debt line tagged DebtCurrent can hold short-term borrowings (EDGAR: "short-term debt and current maturity
+# of long-term debt"). It is the current part only when it adds up with the noncurrent line to DEBT_TOTAL at the same
+# date (docs/decision-log.md, 2026-11-22). The group desk reads it the same way (equity_research_desk.py).
+DEBT_CURRENT_LINE = "DebtCurrent"
+DEBT_TAGS = [tag for pair in DEBT_PAIRS for tag in pair] + [DEBT_TOTAL, DEBT_CURRENT_LINE]
 
 
 def debt_at(values: dict[str, float]) -> dict[str, Any]:
@@ -248,6 +252,12 @@ def debt_at(values: dict[str, float]) -> dict[str, Any]:
     if noncurrent in values and current not in values and values.get(DEBT_TOTAL) == values[noncurrent]:
         note = f"(no current portion: the tag {DEBT_TOTAL}, which includes it, holds the same amount)"
         return {"value": values[noncurrent], "terms": millions(values[noncurrent]), "note": note, "tags": (noncurrent,), "why": ""}
+    if (noncurrent in values and DEBT_CURRENT_LINE in values and DEBT_TOTAL in values
+            and values[noncurrent] + values[DEBT_CURRENT_LINE] == values[DEBT_TOTAL]):
+        note = f"(the current part is tagged {DEBT_CURRENT_LINE}; with {noncurrent} it adds up to {DEBT_TOTAL})"
+        return {"value": values[noncurrent] + values[DEBT_CURRENT_LINE],
+                "terms": f"({millions(values[noncurrent])} + {millions(values[DEBT_CURRENT_LINE])})",
+                "note": note, "tags": (noncurrent, DEBT_CURRENT_LINE), "why": ""}
     # The reason names tags and no amounts: every amount in a report must have a source a reader can check.
     found = [tag for tag in DEBT_TAGS if tag in values]
     why = (f"the 10-K gives {' and '.join(found)}, which does not establish long-term debt with its current portion"
