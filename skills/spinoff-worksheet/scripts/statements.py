@@ -5,27 +5,48 @@ from pathlib import Path
 
 HEADER=re.compile(r'^(?:(?:PRO FORMA|UNAUDITED|CONDENSED)\s+)*(?:CONSOLIDATED|COMBINED)(?:\s+AND\s+(?:CONSOLIDATED|COMBINED))?\s+STATEMENTS?\s+OF\s+(INCOME|OPERATIONS|EARNINGS|CASH FLOWS)\s*$',re.I)
 DATE=r'(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}'
-LABELS={'after_tax_earnings':r'(?:CONSOLIDATED\s+)?(?:NET INCOME|NET EARNINGS)(?: ATTRIBUTABLE TO (?!NONCONTROLLING)[^\n]+)?',
+# 2026-11-23, from real 10-Ks: Workday labels its earnings "Net income" but Dollar Tree "Net income (loss)"; Cisco's
+# spending row is "Acquisition of property and equipment", Dell's "Capital expenditures and capitalized software
+# development costs", NVIDIA's "Purchases related to property and equipment and intangible assets" (each company's own
+# capital-spending line, the line its XBRL tags as payments for property or productive assets, checked year by year).
+# HPE's "Investment in property, plant and equipment and software assets" also matches its XBRL, but the hook reads HPE's
+# cash flow statement on to the next statement heading, through notes that print a pound sign, and refuses it as a
+# foreign-currency statement; that row waits until the hook ends a statement where this parser does. Rows that add other items to depreciation
+# ("Depreciation, amortization, and other", Cisco) are not read as depreciation and amortization.
+LABELS={'after_tax_earnings':r'(?:CONSOLIDATED\s+)?(?:NET INCOME|NET EARNINGS)(?: \(LOSS\))?(?: ATTRIBUTABLE TO (?!NONCONTROLLING)[^\n]+)?',
  'depreciation_and_amortization':r'Depreciation and amortization',
  'depreciation':r'Depreciation(?: expense)?',
- 'capital_spending':r'(?:(?:Additions to|Purchases of|Payments (?:for|to acquire)) property(?:,| and)? (?:plant(?:,| and)? )?(?:and )?equipment|Capital expenditures)'}
+ 'capital_spending':r'(?:(?:Additions to|Purchases of|Payments (?:for|to acquire)|Acquisitions? of) property(?:,| and)? (?:plant(?:,| and)? )?(?:and )?equipment'
+                    r'|Capital expenditures(?: and capitalized software development costs)?|Purchases related to property and equipment and intangible assets)'}
 MONTHS=['january','february','march','april','may','june','july','august','september','october','november','december']
+# A column date's month as statements print it: in full, or abbreviated ("Jan 25, 2026", NVIDIA, 2026-11-23).
+MONTH=r'(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?'
+# Amounts in millions or thousands: "(In millions)", "(Amounts in millions)", and Analog Devices' bare "(thousands)".
+MILLIONS=r'\bin millions\b|\(\s*millions\b'
+THOUSANDS=r'\bin thousands\b|\(\s*thousands\b'
 # 2026-11-20: Lowe's names its statement "of Earnings", pairs each amount with a "% Sales" figure and labels its
 # spending "Capital expenditures"; Walmart prints "Fiscal Years Ended January 31," above columns of years and labels its
 # earnings "Consolidated net income attributable to Walmart". hooks/worksheet_format.py reads statements the same way.
 
+def month_day(month,day,year):
+    return datetime(int(year),MONTHS.index(next(m for m in MONTHS if m.startswith(month.lower().rstrip('.')[:3])))+1,int(day)).date().isoformat()
+
 def period_dates(intro):
-    """The statement's column dates: full dates, or one month and day printed above columns of years."""
+    """The statement's column dates: one month and day followed by its columns of years ("Year Ended January 31, 2026
+    2025 2024": Workday and Autodesk, 2026-11-23; or "December 31, 2025, 2024 and 2023"), full dates (months in full or
+    abbreviated), or one month and day printed above columns of years (Walmart). hooks/worksheet_format.column_dates
+    reads them the same way."""
+    run=re.search(r'\b('+MONTH+r')\s+(\d{1,2}),?\s+(20\d{2}(?:(?:\s*,\s*(?:and\s+)?|\s+and\s+|\s+)20\d{2})+)(?![\d,.])',intro,re.I)
+    if run:return list(dict.fromkeys(month_day(run[1],run[2],year) for year in re.findall(r'20\d{2}',run[3])))
     dates=[]
-    for match in re.finditer(DATE,intro,re.I):
-        raw=re.sub(r'\s+',' ',match[0]);raw=re.sub(r'(\d),? (\d{4})$',r'\1, \2',raw)
-        day=datetime.strptime(raw,'%B %d, %Y').date().isoformat()
+    for match in re.finditer(r'\b('+MONTH+r')\s+(\d{1,2}),?\s+(\d{4})\b',intro,re.I):
+        day=month_day(match[1],match[2],match[3])
         if day not in dates:dates.append(day)
     if dates:return dates
-    part=re.search(r'\b('+'|'.join(MONTHS)+r')\s+(\d{1,2}),?(?!\s*\d{4})',intro,re.I)
+    part=re.search(r'\b('+MONTH+r')\s+(\d{1,2}),?(?!\s*\d{4})',intro,re.I)
     if not part:return []
     for year in re.findall(r'(?<![\d,.$])(20\d{2})(?![\d,.])',intro[part.end():]):
-        day=datetime(int(year),MONTHS.index(part[1].lower())+1,int(part[2])).date().isoformat()
+        day=month_day(part[1],part[2],year)
         if day not in dates:dates.append(day)
     return dates
 
@@ -57,7 +78,7 @@ def parse(path,run):
         if not re.search(r'(?:years?|(?:52|53)\s*weeks?)\s+ended',intro,re.I):continue
         dates=period_dates(intro)
         if not dates:continue
-        scale=1000000 if re.search(r'in millions',intro,re.I) else 1000 if re.search(r'in thousands',intro,re.I) else 1
+        scale=1000000 if re.search(MILLIONS,intro,re.I) else 1000 if re.search(THOUSANDS,intro,re.I) else 1
         # Dollar-bearing US team statements are USD; explicit foreign units
         # cannot enter a dollar valuation without a sourced conversion.
         foreign=re.search(r'\b(?:CAD|AUD|HKD|EUR|GBP)\b|C\$|A\$|HK\$|€|£',' '.join(block[:200]))
@@ -117,6 +138,32 @@ def collect(run,years,include_amortization):
     return latest,ocf
 
 
+COUNT=r'\d{1,3}(?:,\d{3})+'
+
+def cover_count(lines,n,label,several):
+    """Two more cover-page layouts (2026-11-23), each read from real filings. (a) The count alone on the line after a
+    dated line that names it: "The number of shares of HP Inc. common stock outstanding as of December 1, 2025 was"
+    (HP Inc., HPE, NVIDIA), "Number of shares of the registrant's common stock outstanding as of August 27, 2026:"
+    (Cisco), "Number of Ordinary Shares outstanding on June 12, 2026:" (Medtronic), or "As of August 25, 2026, there
+    were" / "the registrant had" with "shares of ... common stock ... outstanding" on the line after the count (Dollar
+    Tree, Agilent, Autodesk). (b) The registrant's total on the dated line itself: "As of March 9, 2026, there were
+    645,748,451 shares of the registrant's common stock outstanding, consisting of" (Dell, which then lists its classes).
+    A cover page that names a second class of common stock gives a count only through (b): one class's count is not the
+    company's shares, and Zoom and Workday state no total. Returns (day, count) or (None, None).
+    hooks/worksheet_format.py checks both layouts against the saved text."""
+    dates=re.findall(DATE,label,re.I)
+    if len(dates)!=1 or ';' in label or re.search(r'aggregate market value|approximately|non-?affiliates',label,re.I):return None,None
+    raw=re.sub(r'(\d),? (\d{4})$',r'\1, \2',' '.join(dates[0].split()));day=datetime.strptime(raw,'%B %d, %Y').date().isoformat()
+    total=re.match(r"As of "+DATE+r",? there were ("+COUNT+r") shares of the registrant[’']s common stock outstanding\b",label,re.I)
+    if total:return day,total[1]
+    if several or not re.search(r"(?:\boutstanding\b.*(?:\bwas|:)|\bthere were|\bregistrant had(?: outstanding)?)$",label,re.I):return None,None
+    after=next((k for k in range(n+1,min(n+3,len(lines))) if lines[k].strip()),None)
+    if after is None or not re.fullmatch(COUNT,lines[after].strip()):return None,None
+    if not re.search(r'\boutstanding\b',label,re.I):
+        named=' '.join(lines[after+1].split()) if after+1<len(lines) else ''
+        if not all(re.search(p,named,re.I) for p in (r'\bshares\b',r'common stock|ordinary shares',r'\boutstanding\b')):return None,None
+    return day,lines[after].strip()
+
 def shares_outstanding(run,asof):
     observations=[]
     pattern=re.compile(r"(?:The )?number of shares outstanding of the registrant[’']s common stock[^\n]{0,60}?as of ("+DATE+r"),?\s*was\s*([\d,]+)",re.I)
@@ -133,6 +180,7 @@ def shares_outstanding(run,asof):
         # as of March 11, 2026." and Lowe's "OUTSTANDING AT 3/19/2026 / Common Stock, $0.50 par value / N". The source
         # quotes the dated line and names the count; hooks/worksheet_format.py checks both against the saved text.
         lines=text.splitlines()
+        several=re.search(r'Class [BC] (?:common|ordinary)','\n'.join(lines[:400]),re.I)
         for n,line in enumerate(lines):
             label=' '.join(line.split());day=None;count=None
             dated=re.match(r"shares of (?:the registrant[’']s )?(?:Class A )?common stock[^\n]{0,60}?outstanding (?:as of|at) ("+DATE+r")\.?$",label,re.I)
@@ -143,6 +191,7 @@ def shares_outstanding(run,asof):
             if heading:
                 found=next((lines[k].strip() for k in range(n+1,min(n+4,len(lines))) if re.fullmatch(r'\d{1,3}(?:,\d{3})+',lines[k].strip())),None)
                 if found:day=datetime(int(heading[3]),int(heading[1]),int(heading[2])).date().isoformat();count=found
+            if not day and n<400:day,count=cover_count(lines,n,label,several)
             if day and count and day<=asof:
                 observations.append({'value':float(count.replace(',','')),'unit':'shares','kind':'historical','as_of':day,'period':'As of '+day,
                   'source':f"[{path.relative_to(run)}:L{n+1}] section Cover page; as of {day}; quote: {label}; shares: {count}",'reason':None})

@@ -32,19 +32,34 @@ SHARES_LINE = re.compile(r'\[(?P<file>[^\]\n]+\.txt):L(?P<line>\d+)\] section Co
 EQUATION = re.compile(r'computed:\s*(?P<expr>[\d,.eE+*/()\s−-]+?)\s*=\s*(?P<result>'+NUMBER+r')')
 
 
+# A column date's month in full or abbreviated ("Jan 25, 2026", NVIDIA), and the unit words, as statements.py reads them.
+MONTH = r'(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?'
+MILLIONS = r'\bin millions\b|\(\s*millions\b'
+THOUSANDS = r'\bin thousands\b|\(\s*thousands\b'
+# The cover page's count on the dated line itself: Dell's total across its classes (2026-11-23).
+TOTAL_ON_LINE = re.compile(r"As of (?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4},? there were (\d{1,3}(?:,\d{3})+) shares of the registrant[’']s common stock outstanding\b", re.I)
+
+
+def month_day(month, day, year):
+    return datetime(int(year), MONTHS.index(next(m for m in MONTHS if m.startswith(month.lower().rstrip('.')[:3])))+1, int(day)).date().isoformat()
+
+
 def column_dates(intro):
-    """A statement's column dates: full dates, or one month and day printed above columns of years (Walmart,
-    2026-11-20). The worksheet's statements.period_dates reads them the same way."""
+    """A statement's column dates: one month and day followed by its columns of years ("Year Ended January 31, 2026
+    2025 2024", Workday and Autodesk, 2026-11-23; or "December 31, 2025, 2024 and 2023"), full dates (months in full or
+    abbreviated), or one month and day printed above columns of years (Walmart, 2026-11-20). The worksheet's
+    statements.period_dates reads them the same way."""
+    run=re.search(r'\b('+MONTH+r')\s+(\d{1,2}),?\s+(20\d{2}(?:(?:\s*,\s*(?:and\s+)?|\s+and\s+|\s+)20\d{2})+)(?![\d,.])',intro,re.I)
+    if run:return list(dict.fromkeys(month_day(run[1],run[2],year) for year in re.findall(r'20\d{2}',run[3])))
     dates=[]
-    for x in MONTH_DATE.finditer(intro):
-        raw=re.sub(r'\s+',' ',x[0]);raw=re.sub(r'(\d),? (\d{4})$',r'\1, \2',raw)
-        day=datetime.strptime(raw,'%B %d, %Y').date().isoformat()
+    for x in re.finditer(r'\b('+MONTH+r')\s+(\d{1,2}),?\s+(\d{4})\b',intro,re.I):
+        day=month_day(x[1],x[2],x[3])
         if day not in dates:dates.append(day)
     if dates:return dates
-    part=re.search(r'\b('+'|'.join(MONTHS)+r')\s+(\d{1,2}),?(?!\s*\d{4})',intro,re.I)
+    part=re.search(r'\b('+MONTH+r')\s+(\d{1,2}),?(?!\s*\d{4})',intro,re.I)
     if not part:return []
     for year in re.findall(r'(?<![\d,.$])(20\d{2})(?![\d,.])',intro[part.end():]):
-        day=datetime(int(year),MONTHS.index(part[1].lower())+1,int(part[2])).date().isoformat()
+        day=month_day(part[1],part[2],year)
         if day not in dates:dates.append(day)
     return dates
 METRICS = {'after_tax_earnings':'after_tax_earnings','depreciation_and_amortization':'depreciation_and_amortization','depreciation':'depreciation','capital_spending':'capital_spending',
@@ -168,7 +183,7 @@ class WorksheetFormat:
         dates=column_dates(intro)
         if m['period'] not in dates:raise ValueError('Claimed period is absent from filing columns')
         # "(In millions)" as well as "(Amounts in millions)", as the worksheet's parser reads it (Lowe's, 2026-11-20).
-        scale=Decimal(1000000) if re.search(r'\bin millions',intro,re.I) else Decimal(1000) if re.search(r'\bin thousands',intro,re.I) else Decimal(1)
+        scale=Decimal(1000000) if re.search(MILLIONS,intro,re.I) else Decimal(1000) if re.search(THOUSANDS,intro,re.I) else Decimal(1)
         if amount(m['scale'])!=scale:raise ValueError('Claimed unit scale differs from filing header')
         values=number_row(lines,idx+1)
         if len(values)==2*len(dates) and re.search(r'%\s*(?:of\s+)?(?:net\s+)?sales',intro,re.I):values=values[::2]  # amount, % sales
@@ -217,9 +232,15 @@ class WorksheetFormat:
                 else:day=datetime(int(numeric[0][2]),int(numeric[0][0]),int(numeric[0][1])).date().isoformat()
                 # Walmart: the count stands alone on the line before "shares of common stock outstanding as of ...".
                 # Lowe's: the count is the first number within three lines after "OUTSTANDING AT m/d/yyyy".
+                # Dell: the registrant's total on the dated line itself. HP Inc., Cisco, Dollar Tree and others: the
+                # count alone on the next line that is not blank (statements.cover_count, 2026-11-23).
+                total=TOTAL_ON_LINE.match(label)
                 if re.match(r'shares of ',label,re.I):found=lines[idx-1].strip() if idx>0 and COUNT_LINE.fullmatch(lines[idx-1].strip()) else None
                 elif re.match(r'OUTSTANDING AT ',label,re.I):found=next((lines[k].strip() for k in range(idx+1,min(idx+4,len(lines))) if COUNT_LINE.fullmatch(lines[k].strip())),None)
-                else:found=None
+                elif total:found=total[1]
+                else:
+                    after=next((k for k in range(idx+1,min(idx+3,len(lines))) if lines[k].strip()),None)
+                    found=lines[after].strip() if after is not None and COUNT_LINE.fullmatch(lines[after].strip()) else None
                 if day!=m['period'] or found is None or amount(found)!=amount(m['value']):raise ValueError('Share count or date differs from the cited cover-page text')
                 self.sources[(i,m.start())]={'value':amount(found),'period':day,'kind':'shares'}
                 self.approved.add(amount(found))

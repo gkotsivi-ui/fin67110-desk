@@ -205,6 +205,92 @@ class AdditionalContracts(unittest.TestCase):
         (run/'10-Q.txt').write_text('The registrant had\n7,933,746,241\nshares of common stock outstanding as of August 26, 2026.',encoding='utf-8')
         self.assertEqual(s.shares_outstanding(run,'2026-11-20')['value'],7933746241.0)
         self.assertEqual(s.period_dates('Fiscal Years Ended January 31, (Amounts in millions) 2026 2025 2024'),['2026-01-31','2025-01-31','2024-01-31'])
+    def statements_module(self):
+        spec=importlib.util.spec_from_file_location('statements_more_layouts',P.with_name('statements.py'))
+        s=importlib.util.module_from_spec(spec);spec.loader.exec_module(s)
+        return s
+    def test_column_dates_as_more_10ks_print_them(self):
+        # 2026-11-23: Workday's and Autodesk's "Year Ended January 31, 2026 2025 2024" read as one date; NVIDIA's "Jan 25,
+        # 2026" as none. The view was "not computed" for want of the three years.
+        s=self.statements_module()
+        three=['2026-01-31','2025-01-31','2024-01-31']
+        self.assertEqual(s.period_dates('(in millions) Year Ended January 31, 2026 2025 2024 Cash flows from operating activities:'),three)
+        self.assertEqual(s.period_dates('(In millions) Year Ended Jan 25, 2026 Jan 26, 2025 Jan 28, 2024'),['2026-01-25','2025-01-26','2024-01-28'])
+        self.assertEqual(s.period_dates('Years Ended December 31, 2025, 2024 and 2023'),['2025-12-31','2024-12-31','2023-12-31'])
+        self.assertEqual(s.period_dates('Years ended November 1, 2025, November 2, 2024 and October 28, 2023 (thousands)'),['2025-11-01','2024-11-02','2023-10-28'])
+    def test_workdays_statements_give_three_years_of_owner_cash_flow(self):
+        # Workday's 10-K for fiscal 2026; the amounts are its own and match its XBRL facts (read 2026-11-23).
+        s=self.statements_module();run=Path(tempfile.mkdtemp())
+        head=['Year Ended January 31,','2026','2025','2024']
+        lines=['CONSOLIDATED STATEMENTS OF OPERATIONS','(in millions, except number of shares which are reflected in thousands and per share data)',*head,
+               'Net income','$','693','$','526','$','1,381','Net income per share, basic','$','2.61','$','1.98','$','5.21',
+               'CONSOLIDATED STATEMENTS OF CASH FLOWS','(in millions)',*head,'Cash flows from operating activities:','Net income','$','693','$','526','$','1,381',
+               'Depreciation and amortization','347','326','282','Capital expenditures','(162)','(269)','(232)']
+        (run/'10-K.txt').write_text('\n'.join(lines),encoding='utf-8')
+        _,ocf=s.collect(run,3,True)
+        self.assertEqual([r['value'] for r in ocf['annual_inputs']],[878e6,583e6,1431e6])
+        self.assertAlmostEqual(ocf['value'],2892e6/3)
+    def test_dell_nvidia_and_dollar_tree_rows_and_dells_total_share_count(self):
+        # Dell's spending row and its cover's total across three classes; NVIDIA's abbreviated dates and spending row;
+        # Dollar Tree's "Net income (loss)". The rows the reader uses carry the 10-Ks' own amounts, which match their XBRL
+        # facts (read 2026-11-23); Dell's consolidated row before fiscal 2026 and its split by class are made up.
+        s=self.statements_module();run=Path(tempfile.mkdtemp())
+        dell=['January 30, 2026','January 31, 2025','February 2, 2024']
+        lines=['CONSOLIDATED STATEMENTS OF INCOME','(in millions, except per share amounts',')','Fiscal Year Ended',*dell,
+               'Net income','5,936','4,576','3,211','Net income attributable to Dell Technologies Inc.','$','5,936','$','4,592','$','3,388',
+               'CONSOLIDATED STATEMENTS OF CASH FLOWS','(in millions',')','Fiscal Year Ended',*dell,'Net income','$','5,936','$','4,576','$','3,211',
+               'Depreciation and amortization','3,029','3,123','3,303','Capital expenditures and capitalized software development costs','(2,633)','(2,652)','(2,756)']
+        (run/'10-K.txt').write_text('\n'.join(lines),encoding='utf-8')
+        _,ocf=s.collect(run,3,True)
+        self.assertEqual([r['value'] for r in ocf['annual_inputs']],[6332e6,5063e6,3935e6])
+        (run/'10-Q.txt').write_text('As of September 1, 2026, there were 635,812,750 shares of the registrant’s common stock outstanding, consisting of\n'
+                                   '354,000,000\noutstanding shares of Class C Common Stock,\n200,000,000\noutstanding shares of Class A Common Stock, and\n'
+                                   '81,812,750\noutstanding shares of Class B Common Stock.',encoding='utf-8')
+        shares=s.shares_outstanding(run,'2026-11-23')
+        self.assertEqual((shares['value'],shares['as_of']),(635812750.0,'2026-09-01'))
+        nvidia=Path(tempfile.mkdtemp())
+        (nvidia/'10-K.txt').write_text('\n'.join(['Consolidated Statements of Cash Flows','(In millions)','Year Ended','Jan 25, 2026','Jan 26, 2025','Jan 28, 2024',
+            'Net income','$','120,067','$','72,880','$','29,760','Depreciation and amortization','2,843','1,864','1,508',
+            'Purchases related to property and equipment and intangible assets','(6,042)','(3,236)','(1,069)',
+            'Consolidated Statements of Income','(In millions, except per share data)','Year Ended','Jan 25, 2026','Jan 26, 2025','Jan 28, 2024',
+            'Net income','$','120,067','$','72,880','$','29,760']),encoding='utf-8')
+        _,ocf=s.collect(nvidia,3,True)
+        self.assertEqual([r['value'] for r in ocf['annual_inputs']],[116868e6,71508e6,30199e6])
+        tree=['CONSOLIDATED STATEMENTS OF OPERATIONS','(in millions)','Year Ended','January 31, 2026','February 1, 2025','February 3, 2024',
+              'Net income (loss)','$','1,282.5','$','(3,030.0',')','$','(998.4',')']
+        self.assertEqual([(k,v['value']) for k,v in self.parsed(s,tree)],[('after_tax_earnings',1282.5e6),('after_tax_earnings',-3030e6),('after_tax_earnings',-998.4e6)])
+    def parsed(self,s,lines):
+        run=Path(tempfile.mkdtemp());(run/'10-K.txt').write_text('\n'.join(lines),encoding='utf-8')
+        return s.parse(run/'10-K.txt',run)
+    def test_rows_that_are_not_the_measure_and_amounts_in_bare_thousands(self):
+        s=self.statements_module()
+        head=['CONSOLIDATED STATEMENTS OF CASH FLOWS','(in millions)','Years Ended','July 25, 2026','July 26, 2025','July 27, 2024']
+        # Cisco: its spending row is read; its "Depreciation, amortization, and other" adds other items, so it is not.
+        rows=self.parsed(s,[*head,'Depreciation, amortization, and other','2,000','1,900','1,800','Acquisition of property and equipment','(905)','(670)','(849)'])
+        self.assertEqual([k for k,_ in rows],['capital_spending']*3)
+        # A noncontrolling interest's earnings are never the company's.
+        income=['CONSOLIDATED STATEMENTS OF OPERATIONS','(in millions)','Years Ended','July 25, 2026','July 26, 2025','July 27, 2024']
+        self.assertEqual(self.parsed(s,[*income,'Net income (loss) attributable to noncontrolling interests','1','2','3']),[])
+        # Analog Devices prints "(thousands)", without "in": the amounts are thousands, not dollars.
+        adi=['CONSOLIDATED STATEMENTS OF CASH FLOWS','Years ended November 1, 2025, November 2, 2024 and October 28, 2023','(thousands)','2025','2024','2023',
+             'Depreciation and amortization','$','800,000','$','700,000','$','600,000']
+        self.assertEqual([v['value'] for _,v in self.parsed(s,adi)],[800e6,700e6,600e6])
+    def test_more_cover_page_share_counts_and_the_ones_not_taken(self):
+        s=self.statements_module()
+        def count(text):
+            run=Path(tempfile.mkdtemp());(run/'10-Q.txt').write_text(text,encoding='utf-8')
+            return s.shares_outstanding(run,'2026-11-23')
+        # Dollar Tree, HP Inc. and Cisco: the count alone on the line after the dated line (their 10-Qs, 2026).
+        self.assertEqual(count('As of August 25, 2026, there were\n187,630,299\nshares of the registrant’s common stock outstanding.')['value'],187630299.0)
+        self.assertEqual(count('The number of shares of HP Inc. common stock outstanding as of August 19, 2026 was\n901,790,969')['value'],901790969.0)
+        self.assertEqual(count('Number of shares of the registrant’s common stock outstanding as of November 12, 2026:\n3,942,448,184')['as_of'],'2026-11-12')
+        # NVIDIA's rounded "24.1 billion", Workday's "approximately 196 million" by class, and Zoom's two classes with no
+        # total are not an actual count of the company's shares.
+        for text in ('The number of shares of common stock, $0.001 par value, outstanding as of August 21, 2026, was\n24.1\nbillion.',
+                     'As of August 25, 2026, there were approximately\n196\nmillion shares of the registrant’s Class A common stock and\n45\nmillion shares of the registrant’s Class B common stock outstanding.',
+                     'As of August 14, 2026, the number of shares of the registrant’s Class A common stock outstanding was\n263,233,141\n'
+                     'and the number of shares of the registrant’s Class B common stock outstanding was\n28,550,570\n.'):
+            self.assertIsNone(count(text)['value'],text[:60])
     def test_with_no_price_the_price_criterion_says_so_in_words(self):
         spec=importlib.util.spec_from_file_location('scores_tested',P.with_name('evidence_scores.py'))
         e=importlib.util.module_from_spec(spec);spec.loader.exec_module(e)
