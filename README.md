@@ -226,15 +226,15 @@ Checked on 2026-11-19 to 2026-11-21, on Windows 11.
 
 | Part | State |
 |---|---|
-| The one command, `desk.py`: the pick, the agent team with its Verifier, the worksheet, the final report, and the hook after each part | a practice run on Lowe's (LOW) reached its final report on 2026-11-20, before the audit's fixes; each stop the earlier runs found is fixed and has a test, as the decision log records. With the fixes, the data steps have run on Lowe's (2026-11-21); the roles, the Verifier and the worksheet have not run since |
-| The 11 core claims | printed by code under the Overview from the saved facts; the quarter's three from the release's table. Tested; not yet seen in a whole run's report |
-| The worksheet's values | reads three years of owner cash flow and the cover page's share count from the filings; Lowe's and Walmart's low and mid values pass the hook (2026-11-21) |
+| The one command, `desk.py`: the pick, the agent team with its Verifier, the worksheet, the final report, and the hook after each part | whole practice runs passed all six parts on Lowe's (LOW, 2026-11-22, about 9 minutes) and on Dell (DELL, 2026-11-23 on `main` at `bb7fc74`, about 14 minutes); each stop the earlier runs found is fixed and has a test, as the decision log records |
+| The 11 core claims | printed by code under the Overview from the saved facts; the quarter's three from the release's table. All eleven stated in the Dell run's report (2026-11-23) |
+| The worksheet's values | reads three years of owner cash flow and the cover page's share count from the filings. On 2026-11-23 the reader established both for 6 of 16 companies tried (Lowe's, Walmart, Best Buy, Dell, Dollar Tree, Agilent), each input matching the company's XBRL facts; the others' views say "not computed", with the reason (known limit 7) |
 | The page: run the desk and read the report without a terminal | starts a run. On 2026-11-21 two runs from the page on Lowe's passed the inputs, the pick, the seven data steps and every hook check, then stopped at the first model call: the provider refused it because the model account was out of credit. A whole run from the page is still to be checked |
 | The closes reader, for one price | reads LSEG Workspace, or a file of closes named by `LSEG_CLOSES_FILE`. With neither there is no price: the report has no P/E and the worksheet's view is "not computed". The worksheet's daily closes and volumes stay in `sources/licensed/` of the run folder, which is never committed; the report prints the liquidity result only |
 | The live record | two reports inside their 24-hour windows, Week 4 (Cisco) and Week 5 (NVIDIA), both written by the legacy desk below |
 | The hit-rate table | runs; both live reports predate the worksheet and have no view, so it scores none yet |
 | The intelligent error review | built; a review of each live report is saved beside it |
-| Tests | `check_all.py`: 938 tests in four folders, no failure, four symlink tests skipped (Windows 11, 2026-11-22). The macOS run is to be redone |
+| Tests | `check_all.py`: 949 tests in four folders, no failure, four symlink tests skipped (Windows 11, 2026-11-23). The macOS run is to be redone |
 
 Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them before you trust a number.
 
@@ -436,9 +436,16 @@ Known limits, as of 2026-11-22. The details are in [docs/decision-log.md](docs/d
    16:00 Eastern. On a day the market closes at 13:00, a release accepted between 13:00 and 16:00 gets the
    close of the day before, not that day's. The next such days are 2026-11-27 and 2026-12-24. The hit-rate
    table uses the exchange's calendar and is not affected.
-6. The checks on what a role may type were tightened on 2026-11-22. The replies saved from the real runs of
-   2026-11-19 and 2026-11-20 pass them as before, but no new run has been made since: the model account had
-   no credit. A real run on another company or model may leave out more lines than the runs before it.
+6. The checks on what a role may type were tightened on 2026-11-22. Whole runs on Lowe's (2026-11-22) and Dell
+   (2026-11-23) passed them; Dell's Verifier left out one line, which cited a release line the saved filing
+   does not hold. A run on another company or model may leave out more lines.
+7. The worksheet's view needs three years of earnings, depreciation and amortization, and capital spending
+   from the 10-K's statements, and an exact share count from a cover page. Without them the view says "not
+   computed", with the reason, and the rest of the report is unaffected. On 2026-11-23: Workday and Zoom state
+   shares only by class (Workday's rounded to millions), NVIDIA rounds its count to "24.1 billion", Cisco's and
+   Autodesk's depreciation rows add other items ("and other", "and accretion"), and Medtronic's and Nutanix's
+   statements are not yet read. A company whose cover page names a second class of common stock needs its total
+   on that page (as Dell prints it).
 
 ## Tests
 
@@ -453,7 +460,7 @@ It runs the four test folders (`tests`, `hooks/tests`, `skills/spinoff-worksheet
 the offline live record, and `check_public.py`. Each prints one line; the last line gives the count. To run one
 folder alone: `.venv-desk\Scripts\python -m unittest discover -s hooks/tests`.
 
-On Windows 11 on 2026-11-22 it ran 938 tests with no failure. Four tests that create a symlink were
+On Windows 11 on 2026-11-23 it ran 949 tests with no failure. Four tests that create a symlink were
 skipped: Windows lets an account create one only with administrator rights or Developer Mode. Python needs no
 `-X utf8` for them any more: every file is read and written as UTF-8 by name.
 

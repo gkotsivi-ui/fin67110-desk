@@ -782,6 +782,41 @@ critical and six high. The table is in [code-audit-2026-11.md](code-audit-2026-1
   with no failure, four skipped (Windows 11, 2026-11-22).
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-23: the worksheet's view was "not computed" for most companies
+
+- **What the practice run showed.** A whole run on Dell on `main` (`bb7fc74`) passed all six parts, but the
+  worksheet's view said "not computed": the worksheet established no capital-spending row and no share count.
+  Lowe's had a view the night before.
+- **How big it was.** The worksheet's statement reader (`skills/spinoff-worksheet/scripts/statements.py`) was
+  run on the saved 10-K and 10-Q of 16 companies (Workday, Dell, Lowe's, Walmart, Best Buy, Cisco, NVIDIA,
+  Autodesk, HP Inc., Nutanix, Analog Devices, Medtronic, Dollar Tree, Zoom, Agilent, HPE). It established three
+  years of owner cash flow and a share count for 3 of them, the retailers it was written for on 2026-11-20.
+- **Causes, each read in a real filing.** "Year Ended January 31, 2026 2025 2024" (Workday, Autodesk) was read
+  as one date, so three columns of amounts met one date and were dropped; "Jan 25, 2026" (NVIDIA) was read as
+  none. "Net income (loss)" (Dollar Tree) was not an earnings row. Cisco's, Dell's and NVIDIA's capital-spending
+  rows had other names. Cover pages give the count in more layouts than the three the reader knew. Analog
+  Devices prints "(thousands)" without "in": the reader would have taken its amounts as dollars, a thousand
+  times too small, once its other rows were read.
+- **What changed.** The reader reads those dates, units, rows and cover layouts; the hook
+  (`hooks/worksheet_format.py`) reads the same dates, units and cover layouts, so it checks each new citation
+  against the saved text. The method, the rates and the rules file are unchanged. Not read, on purpose: a
+  depreciation row that adds other items ("Depreciation, amortization, and other"), a rounded count ("24.1
+  billion"), a count "approximately" stated, and one class's count when the cover names a second class and no
+  total.
+- **The result on the same 16.** Both inputs for 6 (Lowe's, Walmart, Best Buy, Dell, Dollar Tree, Agilent).
+  Owner cash flow, without an eligible count, for Workday, NVIDIA and Zoom. Every input read for Dell, NVIDIA,
+  Lowe's, Dollar Tree, Agilent, Zoom and Workday was compared with the company's XBRL facts for the same year:
+  63 of 63 match (Workday's depreciation under its own tag, `OtherDepreciationAndAmortization`). The hook passed
+  every citation the reader made. The amounts for Lowe's, Walmart and Best Buy are unchanged.
+- **A whole run.** On the fixed reader Dell's run passed all six parts; the worksheet read owner cash flow of
+  5.11 billion and 635,812,750 shares, a low value of 80.37 per share, and a view of "down".
+- **Not done.** HPE's spending row matches its XBRL, but the hook reads HPE's cash flow statement on to the
+  next statement heading, through notes that print a pound sign, and refuses it; the row is left out until the
+  hook ends a statement where the reader does. Medtronic's and Nutanix's statements are still not read.
+- **Tests.** Eleven new cases, five for the reader and six for the hook, including one that the reader and the
+  hook read every date layout the same way. `python check_all.py`: 949 tests, no failure, four skipped.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.
