@@ -869,6 +869,29 @@ critical and six high. The table is in [code-audit-2026-11.md](code-audit-2026-1
   alarms. `python check_all.py`: 959 tests, no failure, four skipped.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-25: the worksheet's "zero" was refused as it should be, and its Insight label was printed twice
+
+- **What happened.** In the Workday live run the worksheet's model wrote that the price-against-value criterion
+  "would move off zero"; the hook refused the word and the run stopped after the agent team had finished. Its
+  final report also printed "Insight: Insight:". The first version of Workday's error review (revision 1, by
+  Claude Code) called the refusal a suspected false refusal, and Claude Code then proposed to stop the hook
+  counting "price" inside a hyphenated name such as "price-against-value".
+- **What the code shows.** The refusal was the intended behavior. The worksheet tells its model to explain the
+  supplied scores without generating numbers (`skills/spinoff-worksheet/scripts/worksheet.py`), and the hook's
+  list of financial words includes "score" (`hooks/worksheet_numbers.py`). "price" was only the word that the rule
+  met first. The proposed change would have let a score written in words through, so it was not made, and the
+  hook is unchanged. The instruction named digits ("all with no digits") but not number words.
+- **What changed.** The worksheet's instruction now says to write no number words either, such as zero, one or
+  two, and to describe a criterion as absent, met or not established. The worksheet prints the label "Insight:"
+  itself, so a label that the model writes at the start of its insight is removed; the saved model output keeps
+  what the model wrote. Revision 2 of Workday's error review restates the finding as the model's wording against
+  its instructions; revision 1 is unchanged.
+- **How we checked.** Two new tests; each fails on the code before the change. The instruction can lower the
+  chance that a model writes a number word, not remove it: a word that gets through still stops the run at the
+  hook, and a run that stops after its team can be finished with `desk.py --resume`. `python check_all.py`: 961
+  tests, no failure, four skipped.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.

@@ -42,6 +42,18 @@ class WorksheetTests(unittest.TestCase):
     def execute(self,registry=None,model=None):
         self.model=model or Mock(return_value={'judgment':'The supplied earnings support the low case.','next_filing_trigger':'A decline in reported earnings would weaken the view.'})
         return w.build(self.run,self.cfg,(self.run/'persona.md').read_text(encoding='utf-8'),registry or {'candidates':{}},self.reader,self.model,now=datetime.fromisoformat('2027-02-02T12:00:00+00:00'))
+    def test_an_insight_the_model_labels_itself_is_printed_with_one_label(self):
+        # In the Workday live run (2026-11-25) the model began its insight with "Insight:", and the final report printed
+        # "Insight: Insight:". The saved model output keeps the model's own words.
+        model=Mock(return_value={'judgment':'The supplied earnings support the low case.',
+                                 'next_filing_trigger':'A decline in reported earnings would weaken the view.',
+                                 'insight':'Insight: reported earnings [fact:after_tax_earnings] carry the owner cash flow.'})
+        result=self.execute(model=model)
+        lines=[line for line in result['files']['markdown'].read_text(encoding='utf-8').splitlines() if line.startswith('Insight:')]
+        self.assertEqual(len(lines),1)
+        self.assertTrue(lines[0].startswith('Insight: reported earnings'),lines[0])
+        saved=next(self.run.glob('Spinoff worksheet*, model output.json'))
+        self.assertTrue(json.loads(saved.read_text(encoding='utf-8'))['insight'].startswith('Insight: reported'))
     def test_complete_non_spinoff_one_call_liquidity_not_in_model(self):
         result=self.execute();self.assertEqual(self.model.call_count,1)
         payload=self.model.call_args.args[1]
@@ -308,6 +320,13 @@ class AdditionalContracts(unittest.TestCase):
             with patch.dict('os.environ',env),patch('requests.post') as post,patch('crewai.LLM') as llm:
                 with self.assertRaisesRegex(ValueError,'Configure MODEL'):w.judge_once('persona',{})
             post.assert_not_called();llm.assert_not_called()
+    def test_the_model_is_told_to_write_no_number_words(self):
+        # The Workday live run's worksheet wrote that a criterion "would move off zero", and the hook refused the word as
+        # it should (2026-11-25): the instruction now names number words as well as digits.
+        response=Mock();response.json.return_value={'content':[{'type':'text','text':json.dumps({'judgment':'Supported.','next_filing_trigger':'Watch earnings.'})}]}
+        with patch.dict('os.environ',{'MODEL':'claude-test','API_KEY':'invented-test-key'}),patch('requests.post',return_value=response) as post:
+            w.judge_once('Test persona',{})
+        self.assertIn('Write no number words either, such as zero, one or two',post.call_args.kwargs['json']['system'])
     def test_one_http_call_and_numeric_free_response(self):
         from unittest.mock import patch
         response=Mock();response.json.return_value={'content':[{'type':'text','text':json.dumps({'judgment':'Supported.','next_filing_trigger':'Watch earnings.'})}]}
