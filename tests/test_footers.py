@@ -20,8 +20,8 @@ class CourseFooter(unittest.TestCase):
     def test_the_error_review_ends_with_the_course_footer(self):
         import desk_error_review
         text = desk_error_review.FOOTER.format(model="a model")
-        self.assertTrue(text.endswith(f"{LINE_1}\n\nAI assistance: OpenAI Codex (review software) and a model "
-                                      f"(review analysis). {VERIFIED}\n\n{LINE_3}\n"))
+        self.assertTrue(text.endswith(f"{LINE_1}\n\nAI assistance: OpenAI Codex and Claude Code (review software) and "
+                                      f"a model (review analysis). {VERIFIED}\n\n{LINE_3}\n"))
 
     def test_the_hit_rate_table_ends_with_the_course_footer(self):
         import hit_rate
