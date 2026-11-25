@@ -268,6 +268,26 @@ class ReviewTests(unittest.TestCase):
         verifier = next(c for c in r.checks if c["stage"] == "Verifier and numerical evidence")
         self.assertIn("2 saved Verifier checks read (correct 1, wrong 1)", verifier["detail"])
 
+    # Until 2026-11-25 both reports printed "Run Time: Run time: ..." and put the footer's first line directly under
+    # the last sentence or bullet, so Markdown joined the footer to it.
+    def test_the_saved_findings_name_no_full_path(self):
+        # The findings file is public: until 2026-11-25 it held the full paths of its history folder and outputs.
+        result = review_run(self.run, self.history, 1, True, self.root)
+        loaded = json.loads(Path(result["outputs"]["findings"]).read_text(encoding="utf-8"))
+        for value in [loaded["history_folder"], *loaded["outputs"].values()]:
+            self.assertFalse(Path(value).is_absolute(), value)
+            self.assertNotIn(str(Path.home()), value)
+        self.assertTrue(Path(result["outputs"]["human"]).is_file())
+
+    def test_the_run_time_is_printed_once(self):
+        self.assertEqual(Review(self.run, self.history).metadata(1)["run_time"], "synthetic")
+
+    def test_the_footer_starts_its_own_paragraph_in_both_reports(self):
+        result = review_run(self.run, self.history, 1, True, self.root)
+        for kind in ("human", "ai"):
+            text = Path(result["outputs"][kind]).read_text(encoding="utf-8")
+            self.assertIn("\n\nThis is a learning exercise, not financial advice.\n\n", text)
+
     def test_history_is_a_lead_not_current_proof(self):
         put(self.history, "previous.md", "### Error 1\nType of error: wrong guidance table\n")
         r = Review(self.run, self.history)

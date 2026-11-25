@@ -25,7 +25,8 @@ def shown(path) -> str:
     path = Path(path).resolve()
     root = ROOT.resolve()
     return path.relative_to(root).as_posix() if path == root or root in path.parents else path.name
-FOOTER = ("\nThis is a learning exercise, not financial advice.\n\n"
+# The blank line before the footer keeps its first line out of the paragraph or the list item above it.
+FOOTER = ("\n\nThis is a learning exercise, not financial advice.\n\n"
           "AI assistance: OpenAI Codex and Claude Code (review software) and {model} (review analysis). "
           "I verified the sources myself; the judgments are mine.\n\nAny remaining errors are my own.\n")
 JSON_FILES = {"facts.json", "peer_facts.json", "ratios.json", "verification.json", "roles.json",
@@ -199,7 +200,8 @@ class Review:
         if record_number is None or record_number < 1:
             raise ValueError("supply --record-number for a run without an established error report")
         report = self.texts.get("run/report.md", [])
-        run_time = next((line for line in report if line.startswith("Run time:")), "Unknown")
+        # The value only: the report's own label is printed by the review's "Run Time" heading.
+        run_time = next((line.partition(":")[2].strip() for line in report if line.startswith("Run time:")), "Unknown")
         outcome = "completed" if "run/verified_report.md" in self.texts else "incomplete"
         status = self.data.get("run_status.json", {})
         if isinstance(status, dict) and status.get("status") in {"stopped", "incomplete", "completed"}:
@@ -723,9 +725,12 @@ def write_reports(review, metadata, output_root=ROOT):
                   findings=review.findings, checks=review.checks, limits=list(dict.fromkeys(review.limits)),
                   original_hashes=review.before, evidence_manifest={k: len(v) for k, v in review.texts.items()},
                   history_folder=str(review.history), outputs={k: str(v) for k, v in paths.items()})
+    # The saved file is public, so its paths are shown as a review prints them: relative to this repository, never
+    # a member's own folder (on 2026-11-25 a review wrote four such paths here). The caller keeps the full paths.
+    public = {**shared, "history_folder": shown(review.history), "outputs": {k: shown(v) for k, v in paths.items()}}
     # A collision fails closed rather than overwriting another review's output.
     with paths["findings"].open("x", encoding="utf-8") as handle:
-        json.dump(shared, handle, indent=2, ensure_ascii=False)
+        json.dump(public, handle, indent=2, ensure_ascii=False)
         handle.write("\n")
     for key, render in [("human", human_text), ("ai", ai_text)]:
         with paths[key].open("x", encoding="utf-8") as handle:
