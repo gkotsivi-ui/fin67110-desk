@@ -1,0 +1,44 @@
+[
+  {
+    "output": {
+      "unparsed_response": "All five report parts are present and consistent, and I found no failures. Here is what I checked:\n\n- **Insight lines:** Each analyst role has exactly one, three in total. They are at the end of their assigned sections: Research Analyst at draft line 23, Financial Analyst at line 13 and Investment Advisor at line 40. Overview and Market Positioning and Growth Outlook have none.\n- **Earnings release first paragraph:** This is release line 11, which states only the company, quarter and announcement dates. None of the three Insight lines just repeats it. Each one draws a separate, cited conclusion from backlog, cash flow, P/E or margin data.\n- **Consistency:** The three drafts use the same figures and source citations for the same items.\n- **Ranges:** The headings at the top of the Financial Analyst and Investment Advisor drafts repeat the section names, so both ranges start at line 3. The Advisor range therefore keeps the Hold rating line.\n\n```json\n{\n  \"claims\": [],\n  \"failures\": [],\n  \"sections\": {\n    \"Overview\": {\"file\": \"nodes/Research_Analyst_1/draft.md\", \"start\": 3, \"end\": 5},\n    \"Market Positioning and Growth Outlook\": {\"file\": \"nodes/Research_Analyst_1/draft.md\", \"start\": 9, \"end\": 13},\n    \"Valuation Insights\": {\"file\": \"nodes/Financial_Analyst_1/draft.md\", \"start\": 3, \"end\": 13},\n    \"Future Developments and Strategic Recommendations\": {\"file\": \"nodes/Research_Analyst_1/draft.md\", \"start\": 17, \"end\": 23},\n    \"Investment Recommendation\": {\"file\": \"nodes/Investment_Advisor_1/draft.md\", \"start\": 3, \"end\": 40}\n  }\n}\n```"
+    },
+    "errors": [
+      "Strategy Manager reply has an unmatched JSON fence. Return exactly one JSON object."
+    ]
+  },
+  {
+    "output": {
+      "claims": [],
+      "failures": [],
+      "sections": {
+        "Overview": {
+          "file": "nodes/Research_Analyst_1/draft.md",
+          "start": 3,
+          "end": 5
+        },
+        "Market Positioning and Growth Outlook": {
+          "file": "nodes/Research_Analyst_1/draft.md",
+          "start": 9,
+          "end": 13
+        },
+        "Valuation Insights": {
+          "file": "nodes/Financial_Analyst_1/draft.md",
+          "start": 3,
+          "end": 13
+        },
+        "Future Developments and Strategic Recommendations": {
+          "file": "nodes/Research_Analyst_1/draft.md",
+          "start": 17,
+          "end": 23
+        },
+        "Investment Recommendation": {
+          "file": "nodes/Investment_Advisor_1/draft.md",
+          "start": 3,
+          "end": 40
+        }
+      }
+    },
+    "errors": []
+  }
+]

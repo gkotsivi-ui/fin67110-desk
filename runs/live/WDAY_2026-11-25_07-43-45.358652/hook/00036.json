@@ -1,0 +1,14 @@
+{
+  "part": "Investment Advisor 1",
+  "requested_outputs": [
+    "nodes/Investment_Advisor_1/claim_attempts.json"
+  ],
+  "outputs": [
+    {
+      "path": "nodes/Investment_Advisor_1/claim_attempts.json",
+      "sha256": "55f2cc7c6d65d9be9409b98f68129b5a18b0ae589275786c487c49b555a7e2b4"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

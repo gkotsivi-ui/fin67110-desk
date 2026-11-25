@@ -1,0 +1,2397 @@
+[
+  {
+    "output": {
+      "claims": [
+        {
+          "id": "c1",
+          "from": "Financial Analyst",
+          "claim": "c22"
+        },
+        {
+          "id": "c2",
+          "from": "Research Analyst",
+          "claim": "c32"
+        },
+        {
+          "id": "c3",
+          "from": "Financial Analyst",
+          "claim": "c25"
+        }
+      ],
+      "checks": [
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c1"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L247 says Workday serves more than this many organizations. The report uses the same 'more than' wording and the same customer-count meaning from the FY2026 10-K Business section.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c2"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L248 says 'more than' this many users under contract. The meaning and the FY2026 10-K source match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c33"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L248-L249 gives this share of the Fortune 500 as customers, using 'more than'. The report's description as the Fortune list of the largest U.S. companies matches.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c7"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1048 gives this as the approximate subscription share of total revenues for the fiscal year ended January 31, 2026 (FY2026). The period and definition match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c34"
+          },
+          "status": "correct",
+          "reason": "facts.json gives revenue as RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014. It is FY2026 total revenues, as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c35"
+          },
+          "status": "correct",
+          "reason": "facts.json revenue prior_value has period end 2025-01-31 and filing 0001327811-26-000014. It is FY2025 total revenues, as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c8"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1096 gives subscription services revenues for fiscal 2026. The period and definition match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c9"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1096 gives this as the growth in subscription services revenue in fiscal 2026 over fiscal 2025.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c4"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1096 attributes approximately this share of the FY2026 increase in subscription revenue to expansion within existing customers. The report keeps that meaning.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c5"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1096 attributes the remaining share of the FY2026 increase in subscription revenue to customers added after the start of the comparable prior-year period.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c3"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1098 gives the approximate gross revenue retention rate as of January 31, 2026. It is defined at L1098-L1099 on ARR and excludes expansions. The period and definition match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c6"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1101 gives total subscription revenue backlog as of January 31, 2026 (fiscal year-end), as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c36"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1101 gives the portion of backlog expected to be recognized over the next year as of January 31, 2026. The report's 'following year' wording matches.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c20"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L14 gives this as year-over-year growth in subscription revenue for the quarter ended October 31, 2026 (Q3 FY2027).",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c21"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L24 gives this as year-over-year growth in the next-year (12-month) subscription revenue backlog as of Q3 FY2027. The report describes it as backlog due within the next year, which matches.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c10"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1221 gives this as non-GAAP operating income as a share of revenues in fiscal 2026. The report labels it non-GAAP.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c11"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1221 gives this as the non-GAAP operating margin for fiscal 2025. The period and label match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c27"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L18 gives this as the non-GAAP operating margin for Q3 FY2027. The report labels it non-GAAP.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c28"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L18 gives this as the non-GAAP operating margin for the same quarter last year (Q3 FY2026), as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c12"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1220 gives this as GAAP operating income as a share of revenues for fiscal 2026. It is the company's rounded presentation of the same ratio as the saved operating_margin metric.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c14"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1039 gives approximate fiscal 2026 costs for the restructuring activities. The period and meaning match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c24"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L47 says 'more than' this many core customers have purchased at least one AI product, as of the Q3 FY2027 release.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c25"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L47 says this count was 'up nearly' this much from the prior quarter. The sequential meaning is kept.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c26"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L36 is a CEO quote saying AI products drove 'nearly' this much new ACV in Q3. The report correctly treats it as a management statement.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c17"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1147 gives this as the fiscal 2026 increase in costs of subscription services. L1147 also names third-party hosted infrastructure as the largest driver.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c15"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1153 gives this as the fiscal 2026 growth in product development expenses.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c16"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1156 gives this as the fiscal 2026 growth in sales and marketing expenses.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c13"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1033 gives this as the purchase consideration for Paradox, acquired in September 2025 (FY2026). The 'paid' wording reflects purchase consideration.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c18"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1397 gives this as the approximate expected capital expenditure for fiscal 2027. It is presented as an expectation.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c19"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1036 gives this as the cost of share repurchases during fiscal 2026.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c32"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L71 reports this aggregate principal amount of senior notes issued, among the Q3 FY2027 business highlights.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c29"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L103 gives this as full-year FY2027 subscription revenue guidance. L40 confirms the guidance was raised.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c30"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L103 gives this as the growth implied by the full-year FY2027 subscription revenue guidance.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c31"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L97 gives this as the growth implied by Q4 FY2027 subscription revenue guidance, for the quarter ending January 31, 2027.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c1"
+          },
+          "status": "correct",
+          "reason": "facts.json gives cash_from_operations as NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014 (FY2026).",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c2"
+          },
+          "status": "correct",
+          "reason": "facts.json cash_from_operations prior_value has period end 2025-01-31 and filing 0001327811-26-000014 (FY2025), as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c3"
+          },
+          "status": "correct",
+          "reason": "facts.json gives additions_to_property_and_equipment as PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014. 10-K.txt:L1392 confirms FY2026 capital expenditures.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c4"
+          },
+          "status": "correct",
+          "reason": "facts.json additions_to_property_and_equipment prior_value has period end 2025-01-31. 10-K.txt:L1393 confirms FY2025 capital expenditures.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c5"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/metrics/free_cash_flow defines this as FY2026 NetCashProvidedByUsedInOperatingActivities minus PaymentsToAcquirePropertyPlantAndEquipment. This matches the company's own free cash flow definition at 10-K.txt:L1402.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c6"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/quarter_results/latest_10q_capital_spending is the fiscal year-to-date PaymentsToAcquirePropertyPlantAndEquipment from filing 0001327811-26-000058 minus the preceding year-to-date amount from filing 0001327811-26-000044. That gives the period 2026-08-01 to 2026-10-31 (Q3 FY2027), as described.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c7"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L26 gives operating cash flows for Q3 FY2027. The quote and period match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c8"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L26 gives operating cash flows for the same period last year (Q3 FY2026).",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c9"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L26 gives non-GAAP free cash flows for Q3 FY2027. The report identifies it as a non-GAAP release measure.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c10"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/metrics/operating_margin is FY2026 OperatingIncomeLoss divided by RevenueFromContractWithCustomerExcludingAssessedTax, as defined in the report. It is the GAAP basis and is consistent with the company's rounded GAAP margin at 10-K.txt:L1220.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c11"
+          },
+          "status": "correct",
+          "reason": "facts.json gives operating_income as OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014. 10-K.txt:L1220 confirms fiscal 2026 GAAP operating income.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c12"
+          },
+          "status": "correct",
+          "reason": "facts.json operating_income prior_value has period end 2025-01-31. 10-K.txt:L1220 confirms fiscal 2025 GAAP operating income.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c13"
+          },
+          "status": "correct",
+          "reason": "facts.json revenue value has period end 2026-01-31 and filing 0001327811-26-000014. 10-K.txt:L1089-L1091 shows the same FY2026 total revenues row.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c14"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/metrics/revenue_growth uses the FY2026 and FY2025 RevenueFromContractWithCustomerExcludingAssessedTax facts, as stated. It is consistent with the rounded growth the company gives at 10-K.txt:L1096.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c15"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/metrics/return_on_average_equity uses the method 'reported net income fact divided by the simple average of current and prior year-end stockholders' equity'. The report states this average-equity definition rather than ending equity, so the ratio definition is explicit and matches.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c16"
+          },
+          "status": "correct",
+          "reason": "facts.json gives net_income and net_income_attributable_to_parent as NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014. The noncontrolling interest value is null, so the attributable label holds.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c17"
+          },
+          "status": "correct",
+          "reason": "facts.json gives stockholders_equity as StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014, as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c18"
+          },
+          "status": "correct",
+          "reason": "facts.json stockholders_equity prior_value has period end 2025-01-31 and filing 0001327811-26-000014, as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c19"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L16 gives GAAP operating income for Q3 FY2027.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c20"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L18 gives the restructuring expenses that affected current-quarter (Q3 FY2027) operating income.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c21"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/metrics/quarter_revenue_growth uses the total revenues row at earnings_release_Ex99-1.txt:L265-L267 for the quarters ended October 31 of 2026 and 2025. It is consistent with the rounded headline growth at earnings_release_Ex99-1.txt:L8.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c22"
+          },
+          "status": "wrong",
+          "reason": "{c1} is LongTermDebtNoncurrent as of 2026-01-31 (FY2026 10-K, filing 0001327811-26-000014), labeled excluding current maturities. The Funding risk paragraph dates it correctly. The Insight, however, sets it against liquidity of {c3} as of October 31, 2026 as if both described the current funding position. The debt figure predates the {c2} of senior notes issued in Q3 FY2027 (earnings_release_Ex99-1.txt:L71), so this comparison mixes periods.",
+          "correction": "In the Insight, date {c1} as noncurrent long-term debt at January 31, 2026, before the {c2} of senior notes issued in Q3 FY2027. Do not present it as current debt against the October 31, 2026 liquidity of {c3}. Debt at October 31, 2026 is not established by the supplied evidence."
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c23"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1355 gives this as the unsecured financing provided by the 2022 Credit Agreement. The report correctly treats it as one facility's borrowing capacity, not as drawn debt.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c24"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1354 gives cash, cash equivalents, and marketable securities as of January 31, 2026, as quoted.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c25"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L31 gives cash, cash equivalents, and marketable securities as of October 31, 2026, as quoted.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c26"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/metrics/pe divides the facts.json market_price selected_close (source LSEG TR.PriceClose (WDAY.O), close_time 2026-11-24T16:00:00-05:00) by FY2026 EarningsPerShareDiluted. That close time is strictly before effective_filed_eastern 2026-11-24T16:01:55-05:00 for 8-K 0001327811-26-000057. The report states that the multiple uses annual FY2026 EPS, not trailing-twelve-month EPS, so the definition is explicit.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c27"
+          },
+          "status": "correct",
+          "reason": "facts.json gives diluted_eps as EarningsPerShareDiluted, period end 2026-01-31, fy 2026, filing 0001327811-26-000014. It is annual GAAP diluted EPS for the fiscal year ended January 31, 2026, as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c28"
+          },
+          "status": "correct",
+          "reason": "facts.json diluted_eps prior_value has period end 2025-01-31 and filing 0001327811-26-000014 (FY2025 annual GAAP diluted EPS), as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c29"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L21 and the per-share row at L346-L348 give GAAP diluted net income per share for Q3 FY2027. The report says it was not annualized.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c23"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L24 gives total subscription revenue backlog as of October 31, 2026 (Q3 FY2027). The report contrasts it correctly with the fiscal year-end figure.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c22"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L24 gives this as year-over-year growth in total subscription revenue backlog as of Q3 FY2027. The Insight's comparison with next-year backlog growth uses both release figures for the same period.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c62"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c26, calculated_facts.json#/metrics/pe. The LSEG TR.PriceClose (WDAY.O) close at 2026-11-24T16:00:00-05:00 is strictly before the 2026-11-24T16:01:55-05:00 effective filing, and the divisor is FY2026 GAAP diluted EPS. The Advisor states the 'November pre-filing price' and the limit that the multiple is not trailing-twelve-month based.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c1"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c1 (10-K.txt:L247) with the same 'more than' customer-count meaning.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c2"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c2 (10-K.txt:L248), users under contract.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c33"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c33 (10-K.txt:L248), the share of the Fortune 500, with the same 'more than' wording.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c7"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c7 (10-K.txt:L1048), the FY2026 subscription share of total revenues.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c8"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c8 (10-K.txt:L1096), FY2026 subscription services revenues.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c9"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c9 (10-K.txt:L1096), FY2026 subscription services revenue growth.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c49"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c13: the RevenueFromContractWithCustomerExcludingAssessedTax fact for period end 2026-01-31 in filing 0001327811-26-000014, presented as the Financial Analyst's XBRL figure.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c34"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c34, the same FY2026 XBRL revenue fact. The Advisor correctly notes that it matches the Financial Analyst figure.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c35"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c35, FY2025 XBRL revenue with period end 2025-01-31.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c50"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c14, calculated_facts.json#/metrics/revenue_growth, computed from the FY2026 and FY2025 revenue facts.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c4"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c4 (10-K.txt:L1096), the existing-customer share of the FY2026 increase in subscription revenue.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c5"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c5 (10-K.txt:L1096), the new-customer share of the FY2026 increase in subscription revenue.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c3"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c3 (10-K.txt:L1098), gross revenue retention as of January 31, 2026, described as 'current'.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c37"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c1, FY2026 NetCashProvidedByUsedInOperatingActivities.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c38"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c2, FY2025 NetCashProvidedByUsedInOperatingActivities.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c39"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c3, FY2026 PaymentsToAcquirePropertyPlantAndEquipment.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c40"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c4, FY2025 PaymentsToAcquirePropertyPlantAndEquipment.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c41"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c5, calculated_facts.json#/metrics/free_cash_flow: FY2026 operating cash flow minus capital expenditures.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c43"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c7 (earnings_release_Ex99-1.txt:L26), Q3 FY2027 operating cash flows.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c44"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c8 (earnings_release_Ex99-1.txt:L26), operating cash flows for the prior-year quarter.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c45"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c9 (earnings_release_Ex99-1.txt:L26), non-GAAP free cash flows for Q3 FY2027.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c10"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c10 (10-K.txt:L1221), the FY2026 non-GAAP operating margin, attributed to Research as non-GAAP.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c11"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c11 (10-K.txt:L1221), the FY2025 non-GAAP operating margin.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c27"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c27 (earnings_release_Ex99-1.txt:L18), the Q3 FY2027 non-GAAP operating margin.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c28"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c28 (earnings_release_Ex99-1.txt:L18), the non-GAAP operating margin for the prior-year quarter.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c46"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c10, calculated_facts.json#/metrics/operating_margin, the FY2026 GAAP OperatingIncomeLoss over revenue. Saying it matches the company's rounded GAAP margin at 10-K.txt:L1220 is consistent.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c12"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c12 (10-K.txt:L1220), the FY2026 GAAP operating margin as the company presents it.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c47"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c11, FY2026 OperatingIncomeLoss.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c48"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c12, FY2025 OperatingIncomeLoss. The 'up from' comparison has the correct direction across periods.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c52"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c16, FY2026 NetIncomeLoss.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c51"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c15, calculated_facts.json#/metrics/return_on_average_equity, using the stated simple average of year-end equity.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c20"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c20 (earnings_release_Ex99-1.txt:L14), described as latest-quarter subscription revenue growth.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c57"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c21, calculated_facts.json#/metrics/quarter_revenue_growth, described as quarterly growth in total revenue.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c29"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c29 (earnings_release_Ex99-1.txt:L103), full-year FY2027 subscription guidance.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c30"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c30 (earnings_release_Ex99-1.txt:L103), the growth implied by the full-year FY2027 guidance.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c31"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c31 (earnings_release_Ex99-1.txt:L97), the growth implied by the Q4 FY2027 subscription guidance.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c21"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c21 (earnings_release_Ex99-1.txt:L24), growth in next-year subscription backlog as of Q3 FY2027.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c22"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c22 (earnings_release_Ex99-1.txt:L24), growth in total subscription backlog as of Q3 FY2027.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c23"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c23 (earnings_release_Ex99-1.txt:L24), total backlog at the latest quarter-end of October 31, 2026.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c6"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c6 (10-K.txt:L1101), total backlog at fiscal year-end January 31, 2026.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c36"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c36 (10-K.txt:L1101), the next-year portion of backlog at January 31, 2026. The text dates it 'at year-end'.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c17"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c17 (10-K.txt:L1147), FY2026 growth in costs of subscription services.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c15"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c15 (10-K.txt:L1153), FY2026 growth in product development expenses.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c16"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c16 (10-K.txt:L1156), FY2026 growth in sales and marketing expenses.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c14"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c14 (10-K.txt:L1039), approximate FY2026 restructuring costs.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c56"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c20 (earnings_release_Ex99-1.txt:L18), Q3 FY2027 restructuring expenses.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c55"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c19 (earnings_release_Ex99-1.txt:L16), Q3 FY2027 GAAP operating income.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c13"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c13 (10-K.txt:L1033), the purchase consideration for Paradox.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c19"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c19 (10-K.txt:L1036), FY2026 share repurchases.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c18"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c18 (10-K.txt:L1397), expected FY2027 capital expenditures.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c32"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c32 (earnings_release_Ex99-1.txt:L71), the aggregate principal of senior notes issued in the latest quarter.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c58"
+          },
+          "status": "wrong",
+          "reason": "{c1} is LongTermDebtNoncurrent as of 2026-01-31 (filing 0001327811-26-000014). The Advisor gives it without a date, right after saying {c2} of senior notes was issued in the latest quarter. That placement implies it is current debt that reflects the issuance, but the figure predates the Q3 FY2027 notes.",
+          "correction": "Noncurrent long-term debt was {c1} at January 31, 2026 (FY2026 10-K), before the {c2} of senior notes issued in Q3 FY2027. Debt at October 31, 2026 is not established by the supplied evidence."
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c53"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c17, StockholdersEquity at 2026-01-31. The 'fell to ... from' wording makes clear this is the year-end comparison.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c54"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c18, StockholdersEquity at 2025-01-31.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c60"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c24 (10-K.txt:L1354), liquidity at fiscal year-end, dated correctly.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c61"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c25 (earnings_release_Ex99-1.txt:L31), liquidity at the latest quarter-end of October 31, 2026, dated correctly.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c59"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c23 (10-K.txt:L1355), the 2022 Credit Agreement's unsecured financing capacity, correctly described as one facility's capacity.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c24"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c24 (earnings_release_Ex99-1.txt:L47), core customers that have bought an AI product.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c25"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c25 (earnings_release_Ex99-1.txt:L47), the sequential increase from the prior quarter.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c26"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c26 (earnings_release_Ex99-1.txt:L36), AI new ACV, correctly treated as a management statement.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c63"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c27: EarningsPerShareDiluted, period end 2026-01-31, fy 2026, filing 0001327811-26-000014, labeled FY2026 GAAP diluted EPS.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c64"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c28: EarningsPerShareDiluted, period end 2025-01-31, as the prior-year comparison.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c65"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c29 (earnings_release_Ex99-1.txt:L21), latest-quarter GAAP diluted EPS, stated as not annualized.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c42"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c6, calculated_facts.json#/quarter_results/latest_10q_capital_spending for 2026-08-01 to 2026-10-31, described as latest-quarter capital spending.",
+          "correction": ""
+        }
+      ]
+    },
+    "errors": [
+      "draft line 5: number '500' is typed directly; use a {cN} claim.",
+      "draft line 29: number '12' is typed directly; use a {cN} claim.",
+      "draft line 55: number '2025' is typed directly; use a {cN} claim.",
+      "draft line 109: number '2026' is typed directly; use a {cN} claim.",
+      "draft line 109: number '2025.' is typed directly; use a {cN} claim.",
+      "draft line 137: number '500,' is typed directly; use a {cN} claim."
+    ]
+  },
+  {
+    "output": {
+      "claims": [
+        {
+          "id": "c1",
+          "from": "Financial Analyst",
+          "claim": "c22"
+        },
+        {
+          "id": "c2",
+          "from": "Research Analyst",
+          "claim": "c32"
+        },
+        {
+          "id": "c3",
+          "from": "Financial Analyst",
+          "claim": "c25"
+        }
+      ],
+      "checks": [
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c1"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L247 says Workday serves more than this many organizations. The report uses the same 'more than' wording and the same customer-count meaning from the FY2026 10-K Business section.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c2"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L248 says 'more than' this many users under contract. The meaning and the FY2026 10-K source match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c33"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L248-L249 gives this share of the Fortune list of the largest U.S. companies as customers, using 'more than'. The report's description of that list matches.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c7"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1048 gives this as the approximate subscription share of total revenues for the fiscal year ended January 31, 2026 (FY2026). The period and definition match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c34"
+          },
+          "status": "correct",
+          "reason": "facts.json gives revenue as RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014. It is FY2026 total revenues, as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c35"
+          },
+          "status": "correct",
+          "reason": "facts.json revenue prior_value has period end 2025-01-31 and filing 0001327811-26-000014. It is FY2025 total revenues, as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c8"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1096 gives subscription services revenues for FY2026. The period and definition match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c9"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1096 gives this as the growth in subscription services revenue in FY2026 over FY2025.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c4"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1096 attributes approximately this share of the FY2026 increase in subscription revenue to expansion within existing customers. The report keeps that meaning.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c5"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1096 attributes the remaining share of the FY2026 increase in subscription revenue to customers added after the start of the comparable prior-year period.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c3"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1098 gives the approximate gross revenue retention rate as of January 31, 2026. It is defined at L1098-L1099 on ARR and excludes expansions. The period and definition match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c6"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1101 gives total subscription revenue backlog as of January 31, 2026 (FY2026 year-end), as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c36"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1101 gives the portion of backlog expected to be recognized over the next year as of January 31, 2026. The report's 'following year' wording matches.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c20"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L14 gives this as year-over-year growth in subscription revenue for the quarter ended October 31, 2026 (Q3 FY2027).",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c21"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L24 gives this as year-over-year growth in the next-year subscription revenue backlog as of Q3 FY2027. The report describes it as backlog due within the next year, which matches.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c10"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1221 gives this as non-GAAP operating income as a share of revenues in FY2026. The report labels it non-GAAP.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c11"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1221 gives this as the non-GAAP operating margin for FY2025. The period and label match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c27"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L18 gives this as the non-GAAP operating margin for Q3 FY2027. The report labels it non-GAAP.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c28"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L18 gives this as the non-GAAP operating margin for the same quarter last year (Q3 FY2026), as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c12"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1220 gives this as GAAP operating income as a share of revenues for FY2026. It is the company's rounded presentation of the same ratio as the saved operating_margin metric.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c14"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1039 gives approximate FY2026 costs for the restructuring activities. The period and meaning match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c24"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L47 says 'more than' this many core customers have purchased at least one AI product, as of the Q3 FY2027 release.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c25"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L47 says this count was 'up nearly' this much from the prior quarter. The sequential meaning is kept.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c26"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L36 is a CEO quote saying AI products drove 'nearly' this much new ACV in Q3. The report correctly treats it as a management statement.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c17"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1147 gives this as the FY2026 increase in costs of subscription services. L1147 also names third-party hosted infrastructure as the largest driver.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c15"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1153 gives this as the FY2026 growth in product development expenses.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c16"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1156 gives this as the FY2026 growth in sales and marketing expenses.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c13"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1033 gives this as the purchase consideration for Paradox, acquired during FY2026. The 'paid' wording reflects purchase consideration.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c18"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1397 gives this as the approximate expected capital expenditure for FY2027. It is presented as an expectation.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c19"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1036 gives this as the cost of share repurchases during FY2026.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c32"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L71 reports this aggregate principal amount of senior notes issued, among the Q3 FY2027 business highlights.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c29"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L103 gives this as full-year FY2027 subscription revenue guidance. L40 confirms the guidance was raised.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c30"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L103 gives this as the growth implied by the full-year FY2027 subscription revenue guidance.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c31"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L97 gives this as the growth implied by Q4 FY2027 subscription revenue guidance, for the quarter ending January 31, 2027.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c1"
+          },
+          "status": "correct",
+          "reason": "facts.json gives cash_from_operations as NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014 (FY2026).",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c2"
+          },
+          "status": "correct",
+          "reason": "facts.json cash_from_operations prior_value has period end 2025-01-31 and filing 0001327811-26-000014 (FY2025), as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c3"
+          },
+          "status": "correct",
+          "reason": "facts.json gives additions_to_property_and_equipment as PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014. 10-K.txt:L1392 confirms FY2026 capital expenditures.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c4"
+          },
+          "status": "correct",
+          "reason": "facts.json additions_to_property_and_equipment prior_value has period end 2025-01-31. 10-K.txt:L1393 confirms FY2025 capital expenditures.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c5"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/metrics/free_cash_flow defines this as FY2026 NetCashProvidedByUsedInOperatingActivities minus PaymentsToAcquirePropertyPlantAndEquipment. This matches the company's own free cash flow definition at 10-K.txt:L1402.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c6"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/quarter_results/latest_10q_capital_spending is the fiscal year-to-date PaymentsToAcquirePropertyPlantAndEquipment from filing 0001327811-26-000058 minus the preceding year-to-date amount from filing 0001327811-26-000044. That gives the period 2026-08-01 to 2026-10-31 (Q3 FY2027), as described.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c7"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L26 gives operating cash flows for Q3 FY2027. The quote and period match.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c8"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L26 gives operating cash flows for the same period last year (Q3 FY2026).",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c9"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L26 gives non-GAAP free cash flows for Q3 FY2027. The report identifies it as a non-GAAP release measure.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c10"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/metrics/operating_margin is FY2026 OperatingIncomeLoss divided by RevenueFromContractWithCustomerExcludingAssessedTax, as defined in the report. It is the GAAP basis and is consistent with the company's rounded GAAP margin at 10-K.txt:L1220.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c11"
+          },
+          "status": "correct",
+          "reason": "facts.json gives operating_income as OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014. 10-K.txt:L1220 confirms FY2026 GAAP operating income.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c12"
+          },
+          "status": "correct",
+          "reason": "facts.json operating_income prior_value has period end 2025-01-31. 10-K.txt:L1220 confirms FY2025 GAAP operating income.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c13"
+          },
+          "status": "correct",
+          "reason": "facts.json revenue value has period end 2026-01-31 and filing 0001327811-26-000014. 10-K.txt:L1089-L1091 shows the same FY2026 total revenues row.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c14"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/metrics/revenue_growth uses the FY2026 and FY2025 RevenueFromContractWithCustomerExcludingAssessedTax facts, as stated. It is consistent with the rounded growth the company gives at 10-K.txt:L1096.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c15"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/metrics/return_on_average_equity uses the method 'reported net income fact divided by the simple average of current and prior year-end stockholders' equity'. The report states this average-equity definition rather than ending equity, so the ratio definition is explicit and matches.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c16"
+          },
+          "status": "correct",
+          "reason": "facts.json gives net_income and net_income_attributable_to_parent as NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014. The noncontrolling interest value is null, so the attributable label holds.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c17"
+          },
+          "status": "correct",
+          "reason": "facts.json gives stockholders_equity as StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014, as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c18"
+          },
+          "status": "correct",
+          "reason": "facts.json stockholders_equity prior_value has period end 2025-01-31 and filing 0001327811-26-000014, as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c19"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L16 gives GAAP operating income for Q3 FY2027.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c20"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L18 gives the restructuring expenses that affected current-quarter (Q3 FY2027) operating income.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c21"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/metrics/quarter_revenue_growth uses the total revenues row at earnings_release_Ex99-1.txt:L265-L267 for the quarters ended October 31 in Q3 FY2027 and Q3 FY2026. It is consistent with the rounded headline growth at earnings_release_Ex99-1.txt:L8.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c22"
+          },
+          "status": "wrong",
+          "reason": "{c1} is LongTermDebtNoncurrent as of 2026-01-31 (FY2026 10-K, filing 0001327811-26-000014), labeled excluding current maturities. The Funding risk paragraph dates it correctly. The Insight, however, sets it against liquidity of {c3} as of October 31, 2026 as if both described the current funding position. The debt figure predates the {c2} of senior notes issued in Q3 FY2027 (earnings_release_Ex99-1.txt:L71), so this comparison mixes periods.",
+          "correction": "In the Insight, date {c1} as noncurrent long-term debt at January 31, 2026, before the {c2} of senior notes issued in Q3 FY2027. Do not present it as current debt against the October 31, 2026 liquidity of {c3}. Debt at October 31, 2026 is not established by the supplied evidence."
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c23"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1355 gives this as the unsecured financing provided by the 2022 Credit Agreement. The report correctly treats it as one facility's borrowing capacity, not as drawn debt.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c24"
+          },
+          "status": "correct",
+          "reason": "10-K.txt:L1354 gives cash, cash equivalents, and marketable securities as of January 31, 2026, as quoted.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c25"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L31 gives cash, cash equivalents, and marketable securities as of October 31, 2026, as quoted.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c26"
+          },
+          "status": "correct",
+          "reason": "calculated_facts.json#/metrics/pe divides the facts.json market_price selected_close (source LSEG TR.PriceClose (WDAY.O), close_time 2026-11-24T16:00:00-05:00) by FY2026 EarningsPerShareDiluted. That close time is strictly before effective_filed_eastern 2026-11-24T16:01:55-05:00 for 8-K 0001327811-26-000057. The report states that the multiple uses annual FY2026 EPS, not trailing-twelve-month EPS, so the definition is explicit.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c27"
+          },
+          "status": "correct",
+          "reason": "facts.json gives diluted_eps as EarningsPerShareDiluted, period end 2026-01-31, fy 2026, filing 0001327811-26-000014. It is annual GAAP diluted EPS for the fiscal year ended January 31, 2026, as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c28"
+          },
+          "status": "correct",
+          "reason": "facts.json diluted_eps prior_value has period end 2025-01-31 and filing 0001327811-26-000014 (FY2025 annual GAAP diluted EPS), as stated.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Financial Analyst",
+            "claim": "c29"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L21 and the per-share row at L346-L348 give GAAP diluted net income per share for Q3 FY2027. The report says it was not annualized.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c23"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L24 gives total subscription revenue backlog as of October 31, 2026 (Q3 FY2027). The report contrasts it correctly with the FY2026 year-end figure.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Research Analyst",
+            "claim": "c22"
+          },
+          "status": "correct",
+          "reason": "earnings_release_Ex99-1.txt:L24 gives this as year-over-year growth in total subscription revenue backlog as of Q3 FY2027. The Insight's comparison with next-year backlog growth uses both release figures for the same period.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c62"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c26, calculated_facts.json#/metrics/pe. The LSEG TR.PriceClose (WDAY.O) close at 2026-11-24T16:00:00-05:00 is strictly before the 2026-11-24T16:01:55-05:00 effective filing, and the divisor is FY2026 GAAP diluted EPS. The Advisor states the 'November pre-filing price' and the limit that the multiple is not trailing-twelve-month based.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c1"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c1 (10-K.txt:L247) with the same 'more than' customer-count meaning.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c2"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c2 (10-K.txt:L248), users under contract.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c33"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c33 (10-K.txt:L248), the share of the Fortune list of the largest U.S. companies, with the same 'more than' wording.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c7"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c7 (10-K.txt:L1048), the FY2026 subscription share of total revenues.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c8"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c8 (10-K.txt:L1096), FY2026 subscription services revenues.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c9"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c9 (10-K.txt:L1096), FY2026 subscription services revenue growth.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c49"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c13: the RevenueFromContractWithCustomerExcludingAssessedTax fact for period end 2026-01-31 in filing 0001327811-26-000014, presented as the Financial Analyst's XBRL figure.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c34"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c34, the same FY2026 XBRL revenue fact. The Advisor correctly notes that it matches the Financial Analyst figure.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c35"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c35, FY2025 XBRL revenue with period end 2025-01-31.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c50"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c14, calculated_facts.json#/metrics/revenue_growth, computed from the FY2026 and FY2025 revenue facts.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c4"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c4 (10-K.txt:L1096), the existing-customer share of the FY2026 increase in subscription revenue.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c5"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c5 (10-K.txt:L1096), the new-customer share of the FY2026 increase in subscription revenue.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c3"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c3 (10-K.txt:L1098), gross revenue retention as of January 31, 2026, described as 'current'.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c37"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c1, FY2026 NetCashProvidedByUsedInOperatingActivities.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c38"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c2, FY2025 NetCashProvidedByUsedInOperatingActivities.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c39"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c3, FY2026 PaymentsToAcquirePropertyPlantAndEquipment.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c40"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c4, FY2025 PaymentsToAcquirePropertyPlantAndEquipment.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c41"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c5, calculated_facts.json#/metrics/free_cash_flow: FY2026 operating cash flow minus capital expenditures.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c43"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c7 (earnings_release_Ex99-1.txt:L26), Q3 FY2027 operating cash flows.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c44"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c8 (earnings_release_Ex99-1.txt:L26), operating cash flows for the prior-year quarter.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c45"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c9 (earnings_release_Ex99-1.txt:L26), non-GAAP free cash flows for Q3 FY2027.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c10"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c10 (10-K.txt:L1221), the FY2026 non-GAAP operating margin, attributed to Research as non-GAAP.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c11"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c11 (10-K.txt:L1221), the FY2025 non-GAAP operating margin.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c27"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c27 (earnings_release_Ex99-1.txt:L18), the Q3 FY2027 non-GAAP operating margin.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c28"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c28 (earnings_release_Ex99-1.txt:L18), the non-GAAP operating margin for the prior-year quarter.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c46"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c10, calculated_facts.json#/metrics/operating_margin, the FY2026 GAAP OperatingIncomeLoss over revenue. Saying it matches the company's rounded GAAP margin at 10-K.txt:L1220 is consistent.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c12"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c12 (10-K.txt:L1220), the FY2026 GAAP operating margin as the company presents it.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c47"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c11, FY2026 OperatingIncomeLoss.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c48"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c12, FY2025 OperatingIncomeLoss. The 'up from' comparison has the correct direction across periods.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c52"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c16, FY2026 NetIncomeLoss.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c51"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c15, calculated_facts.json#/metrics/return_on_average_equity, using the stated simple average of year-end equity.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c20"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c20 (earnings_release_Ex99-1.txt:L14), described as latest-quarter subscription revenue growth.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c57"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c21, calculated_facts.json#/metrics/quarter_revenue_growth, described as quarterly growth in total revenue.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c29"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c29 (earnings_release_Ex99-1.txt:L103), full-year FY2027 subscription guidance.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c30"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c30 (earnings_release_Ex99-1.txt:L103), the growth implied by the full-year FY2027 guidance.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c31"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c31 (earnings_release_Ex99-1.txt:L97), the growth implied by the Q4 FY2027 subscription guidance.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c21"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c21 (earnings_release_Ex99-1.txt:L24), growth in next-year subscription backlog as of Q3 FY2027.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c22"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c22 (earnings_release_Ex99-1.txt:L24), growth in total subscription backlog as of Q3 FY2027.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c23"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c23 (earnings_release_Ex99-1.txt:L24), total backlog at the latest quarter-end of October 31, 2026.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c6"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c6 (10-K.txt:L1101), total backlog at FY2026 year-end, January 31, 2026.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c36"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c36 (10-K.txt:L1101), the next-year portion of backlog at January 31, 2026. The text dates it 'at year-end'.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c17"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c17 (10-K.txt:L1147), FY2026 growth in costs of subscription services.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c15"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c15 (10-K.txt:L1153), FY2026 growth in product development expenses.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c16"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c16 (10-K.txt:L1156), FY2026 growth in sales and marketing expenses.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c14"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c14 (10-K.txt:L1039), approximate FY2026 restructuring costs.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c56"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c20 (earnings_release_Ex99-1.txt:L18), Q3 FY2027 restructuring expenses.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c55"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c19 (earnings_release_Ex99-1.txt:L16), Q3 FY2027 GAAP operating income.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c13"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c13 (10-K.txt:L1033), the purchase consideration for Paradox.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c19"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c19 (10-K.txt:L1036), FY2026 share repurchases.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c18"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c18 (10-K.txt:L1397), expected FY2027 capital expenditures.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c32"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c32 (earnings_release_Ex99-1.txt:L71), the aggregate principal of senior notes issued in the latest quarter.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c58"
+          },
+          "status": "wrong",
+          "reason": "{c1} is LongTermDebtNoncurrent as of 2026-01-31 (filing 0001327811-26-000014). The Advisor gives it without a date, right after saying {c2} of senior notes was issued in the latest quarter. That placement implies it is current debt that reflects the issuance, but the figure predates the Q3 FY2027 notes.",
+          "correction": "Noncurrent long-term debt was {c1} at January 31, 2026 (FY2026 10-K), before the {c2} of senior notes issued in Q3 FY2027. Debt at October 31, 2026 is not established by the supplied evidence."
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c53"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c17, StockholdersEquity at 2026-01-31. The 'fell to ... from' wording makes clear this is the year-end comparison.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c54"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c18, StockholdersEquity at 2025-01-31.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c60"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c24 (10-K.txt:L1354), liquidity at FY2026 year-end, dated correctly.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c61"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c25 (earnings_release_Ex99-1.txt:L31), liquidity at the latest quarter-end of October 31, 2026, dated correctly.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c59"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c23 (10-K.txt:L1355), the 2022 Credit Agreement's unsecured financing capacity, correctly described as one facility's capacity.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c24"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c24 (earnings_release_Ex99-1.txt:L47), core customers that have bought an AI product.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c25"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c25 (earnings_release_Ex99-1.txt:L47), the sequential increase from the prior quarter.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c26"
+          },
+          "status": "correct",
+          "reason": "This reuses Research Analyst c26 (earnings_release_Ex99-1.txt:L36), AI new ACV, correctly treated as a management statement.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c63"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c27: EarningsPerShareDiluted, period end 2026-01-31, fy 2026, filing 0001327811-26-000014, labeled FY2026 GAAP diluted EPS.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c64"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c28: EarningsPerShareDiluted, period end 2025-01-31, as the prior-year comparison.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c65"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c29 (earnings_release_Ex99-1.txt:L21), latest-quarter GAAP diluted EPS, stated as not annualized.",
+          "correction": ""
+        },
+        {
+          "target": {
+            "role": "Investment Advisor",
+            "claim": "c42"
+          },
+          "status": "correct",
+          "reason": "This reuses Financial Analyst c6, calculated_facts.json#/quarter_results/latest_10q_capital_spending for 2026-08-01 to 2026-10-31, described as latest-quarter capital spending.",
+          "correction": ""
+        }
+      ]
+    },
+    "errors": []
+  }
+]

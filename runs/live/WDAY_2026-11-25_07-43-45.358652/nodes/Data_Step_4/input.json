@@ -1,0 +1,9 @@
+{
+  "task": "Fetch XBRL facts",
+  "context": {
+    "ticker": "WDAY",
+    "peers": [],
+    "filed": null
+  },
+  "expected_output": "Step 4 data and status"
+}

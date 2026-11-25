@@ -1,0 +1,914 @@
+{
+  "checks": [
+    {
+      "claim": "11,500 [10-K.txt:L247]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "11,500 [10-K.txt:L247]"
+    },
+    {
+      "claim": "75 million [10-K.txt:L248]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "75 million [10-K.txt:L248]"
+    },
+    {
+      "claim": "65% [10-K.txt:L248]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "65% [10-K.txt:L248]"
+    },
+    {
+      "claim": "92% [10-K.txt:L1048]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "92% [10-K.txt:L1048]"
+    },
+    {
+      "claim": "$9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$8.446 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$8.446 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$8.8 billion [10-K.txt:L1096]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$8.8 billion [10-K.txt:L1096]"
+    },
+    {
+      "claim": "14% [10-K.txt:L1096]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "14% [10-K.txt:L1096]"
+    },
+    {
+      "claim": "60% [10-K.txt:L1096]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "60% [10-K.txt:L1096]"
+    },
+    {
+      "claim": "40% [10-K.txt:L1096]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "40% [10-K.txt:L1096]"
+    },
+    {
+      "claim": "97% [10-K.txt:L1098]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "97% [10-K.txt:L1098]"
+    },
+    {
+      "claim": "$28.1 billion [10-K.txt:L1101]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$28.1 billion [10-K.txt:L1101]"
+    },
+    {
+      "claim": "$8.8 billion [10-K.txt:L1101]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$8.8 billion [10-K.txt:L1101]"
+    },
+    {
+      "claim": "12.8% [earnings_release_Ex99-1.txt:L14]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "12.8% [earnings_release_Ex99-1.txt:L14]"
+    },
+    {
+      "claim": "12.3% [earnings_release_Ex99-1.txt:L24]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "12.3% [earnings_release_Ex99-1.txt:L24]"
+    },
+    {
+      "claim": "29.6% [10-K.txt:L1221]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "29.6% [10-K.txt:L1221]"
+    },
+    {
+      "claim": "25.9% [10-K.txt:L1221]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "25.9% [10-K.txt:L1221]"
+    },
+    {
+      "claim": "31.4% [earnings_release_Ex99-1.txt:L18]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "31.4% [earnings_release_Ex99-1.txt:L18]"
+    },
+    {
+      "claim": "28.5% [earnings_release_Ex99-1.txt:L18]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "28.5% [earnings_release_Ex99-1.txt:L18]"
+    },
+    {
+      "claim": "7.5% [10-K.txt:L1220]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "7.5% [10-K.txt:L1220]"
+    },
+    {
+      "claim": "$303 million [10-K.txt:L1039]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$303 million [10-K.txt:L1039]"
+    },
+    {
+      "claim": "2,200 [earnings_release_Ex99-1.txt:L47]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "2,200 [earnings_release_Ex99-1.txt:L47]"
+    },
+    {
+      "claim": "25% [earnings_release_Ex99-1.txt:L47]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "25% [earnings_release_Ex99-1.txt:L47]"
+    },
+    {
+      "claim": "$150 million [earnings_release_Ex99-1.txt:L36]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$150 million [earnings_release_Ex99-1.txt:L36]"
+    },
+    {
+      "claim": "21% [10-K.txt:L1147]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "21% [10-K.txt:L1147]"
+    },
+    {
+      "claim": "2% [10-K.txt:L1153]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "2% [10-K.txt:L1153]"
+    },
+    {
+      "claim": "8% [10-K.txt:L1156]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "8% [10-K.txt:L1156]"
+    },
+    {
+      "claim": "$1.1 billion [10-K.txt:L1033]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$1.1 billion [10-K.txt:L1033]"
+    },
+    {
+      "claim": "$270 million [10-K.txt:L1397]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$270 million [10-K.txt:L1397]"
+    },
+    {
+      "claim": "$2.9 billion [10-K.txt:L1036]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.9 billion [10-K.txt:L1036]"
+    },
+    {
+      "claim": "$2.5 billion [earnings_release_Ex99-1.txt:L71]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.5 billion [earnings_release_Ex99-1.txt:L71]"
+    },
+    {
+      "claim": "$9.958 billion [earnings_release_Ex99-1.txt:L103]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$9.958 billion [earnings_release_Ex99-1.txt:L103]"
+    },
+    {
+      "claim": "13% [earnings_release_Ex99-1.txt:L103]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "13% [earnings_release_Ex99-1.txt:L103]"
+    },
+    {
+      "claim": "10% [earnings_release_Ex99-1.txt:L97]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "10% [earnings_release_Ex99-1.txt:L97]"
+    },
+    {
+      "claim": "$2.939 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.939 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$2.461 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.461 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$162 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$162 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$269 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$269 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$44 million [saved calculated_facts.json#/quarter_results/latest_10q_capital_spending; computed, rechecked given calculations; formula 183000000 - 139000000; inputs: XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-10-31, filing 0001327811-26-000058, filed 2026-11-24, unit USD; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-07-31, filing 0001327811-26-000044, filed 2026-08-27, unit USD]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$44 million [saved calculated_facts.json#/quarter_results/latest_10q_capital_spending; computed, rechecked given calculations; formula 183000000 - 139000000; inputs: XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-10-31, filing 0001327811-26-000058, filed 2026-11-24, unit USD; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-07-31, filing 0001327811-26-000044, filed 2026-08-27, unit USD]"
+    },
+    {
+      "claim": "$735 million [earnings_release_Ex99-1.txt:L26]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$735 million [earnings_release_Ex99-1.txt:L26]"
+    },
+    {
+      "claim": "$588 million [earnings_release_Ex99-1.txt:L26]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$588 million [earnings_release_Ex99-1.txt:L26]"
+    },
+    {
+      "claim": "$691 million [earnings_release_Ex99-1.txt:L26]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$691 million [earnings_release_Ex99-1.txt:L26]"
+    },
+    {
+      "claim": "7.55% [saved calculated_facts.json#/metrics/operating_margin; computed, rechecked given calculations; formula 721000000 / 9552000000; inputs: XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "7.55% [saved calculated_facts.json#/metrics/operating_margin; computed, rechecked given calculations; formula 721000000 / 9552000000; inputs: XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$721 million [XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$721 million [XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$415 million [XBRL tag OperatingIncomeLoss, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$415 million [XBRL tag OperatingIncomeLoss, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "13.09% [saved calculated_facts.json#/metrics/revenue_growth; computed, rechecked given calculations; formula (9552000000 - 8446000000) / 8446000000; inputs: XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "13.09% [saved calculated_facts.json#/metrics/revenue_growth; computed, rechecked given calculations; formula (9552000000 - 8446000000) / 8446000000; inputs: XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "8.23% [saved calculated_facts.json#/metrics/return_on_average_equity; computed, rechecked given calculations; formula 693000000 / ((7805000000 + 9034000000) / 2); inputs: XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "8.23% [saved calculated_facts.json#/metrics/return_on_average_equity; computed, rechecked given calculations; formula 693000000 / ((7805000000 + 9034000000) / 2); inputs: XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$693 million [XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$693 million [XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$7.805 billion [XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$7.805 billion [XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$9.034 billion [XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$9.034 billion [XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$329 million [earnings_release_Ex99-1.txt:L16]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$329 million [earnings_release_Ex99-1.txt:L16]"
+    },
+    {
+      "claim": "$51 million [earnings_release_Ex99-1.txt:L18]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$51 million [earnings_release_Ex99-1.txt:L18]"
+    },
+    {
+      "claim": "11.23% [saved calculated_facts.json#/metrics/quarter_revenue_growth; computed, rechecked given calculations; formula (2705.0 - 2432.0) / 2432.0 * 100; inputs: earnings_release_Ex99-1.txt:L265-L266; quote: \"Total revenues\\n2,705\"; earnings_release_Ex99-1.txt:L265-L267; quote: \"Total revenues\\n2,705\\n2,432\"]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "11.23% [saved calculated_facts.json#/metrics/quarter_revenue_growth; computed, rechecked given calculations; formula (2705.0 - 2432.0) / 2432.0 * 100; inputs: earnings_release_Ex99-1.txt:L265-L266; quote: \"Total revenues\\n2,705\"; earnings_release_Ex99-1.txt:L265-L267; quote: \"Total revenues\\n2,705\\n2,432\"]"
+    },
+    {
+      "claim": "$2.987 billion [XBRL tag LongTermDebtNoncurrent, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.987 billion [XBRL tag LongTermDebtNoncurrent, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$1.0 billion [10-K.txt:L1355]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$1.0 billion [10-K.txt:L1355]"
+    },
+    {
+      "claim": "$5.4 billion [10-K.txt:L1354]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$5.4 billion [10-K.txt:L1354]"
+    },
+    {
+      "claim": "$5.643 billion [earnings_release_Ex99-1.txt:L31]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$5.643 billion [earnings_release_Ex99-1.txt:L31]"
+    },
+    {
+      "claim": "69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$2.59 [XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.59 [XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$1.95 [XBRL tag EarningsPerShareDiluted, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$1.95 [XBRL tag EarningsPerShareDiluted, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$0.96 [earnings_release_Ex99-1.txt:L21]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$0.96 [earnings_release_Ex99-1.txt:L21]"
+    },
+    {
+      "claim": "$27.548 billion [earnings_release_Ex99-1.txt:L24]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$27.548 billion [earnings_release_Ex99-1.txt:L24]"
+    },
+    {
+      "claim": "6.1% [earnings_release_Ex99-1.txt:L24]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "6.1% [earnings_release_Ex99-1.txt:L24]"
+    },
+    {
+      "claim": "69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "11,500 [10-K.txt:L247]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "11,500 [10-K.txt:L247]"
+    },
+    {
+      "claim": "75 million [10-K.txt:L248]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "75 million [10-K.txt:L248]"
+    },
+    {
+      "claim": "65% [10-K.txt:L248]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "65% [10-K.txt:L248]"
+    },
+    {
+      "claim": "92% [10-K.txt:L1048]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "92% [10-K.txt:L1048]"
+    },
+    {
+      "claim": "$8.8 billion [10-K.txt:L1096]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$8.8 billion [10-K.txt:L1096]"
+    },
+    {
+      "claim": "14% [10-K.txt:L1096]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "14% [10-K.txt:L1096]"
+    },
+    {
+      "claim": "$9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$8.446 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$8.446 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "13.09% [saved calculated_facts.json#/metrics/revenue_growth; computed, rechecked given calculations; formula (9552000000 - 8446000000) / 8446000000; inputs: XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "13.09% [saved calculated_facts.json#/metrics/revenue_growth; computed, rechecked given calculations; formula (9552000000 - 8446000000) / 8446000000; inputs: XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "60% [10-K.txt:L1096]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "60% [10-K.txt:L1096]"
+    },
+    {
+      "claim": "40% [10-K.txt:L1096]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "40% [10-K.txt:L1096]"
+    },
+    {
+      "claim": "97% [10-K.txt:L1098]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "97% [10-K.txt:L1098]"
+    },
+    {
+      "claim": "$2.939 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.939 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$2.461 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.461 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$162 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$162 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$269 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$269 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$735 million [earnings_release_Ex99-1.txt:L26]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$735 million [earnings_release_Ex99-1.txt:L26]"
+    },
+    {
+      "claim": "$588 million [earnings_release_Ex99-1.txt:L26]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$588 million [earnings_release_Ex99-1.txt:L26]"
+    },
+    {
+      "claim": "$691 million [earnings_release_Ex99-1.txt:L26]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$691 million [earnings_release_Ex99-1.txt:L26]"
+    },
+    {
+      "claim": "29.6% [10-K.txt:L1221]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "29.6% [10-K.txt:L1221]"
+    },
+    {
+      "claim": "25.9% [10-K.txt:L1221]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "25.9% [10-K.txt:L1221]"
+    },
+    {
+      "claim": "31.4% [earnings_release_Ex99-1.txt:L18]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "31.4% [earnings_release_Ex99-1.txt:L18]"
+    },
+    {
+      "claim": "28.5% [earnings_release_Ex99-1.txt:L18]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "28.5% [earnings_release_Ex99-1.txt:L18]"
+    },
+    {
+      "claim": "7.55% [saved calculated_facts.json#/metrics/operating_margin; computed, rechecked given calculations; formula 721000000 / 9552000000; inputs: XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "7.55% [saved calculated_facts.json#/metrics/operating_margin; computed, rechecked given calculations; formula 721000000 / 9552000000; inputs: XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "7.5% [10-K.txt:L1220]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "7.5% [10-K.txt:L1220]"
+    },
+    {
+      "claim": "$721 million [XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$721 million [XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$415 million [XBRL tag OperatingIncomeLoss, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$415 million [XBRL tag OperatingIncomeLoss, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$693 million [XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$693 million [XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "8.23% [saved calculated_facts.json#/metrics/return_on_average_equity; computed, rechecked given calculations; formula 693000000 / ((7805000000 + 9034000000) / 2); inputs: XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "8.23% [saved calculated_facts.json#/metrics/return_on_average_equity; computed, rechecked given calculations; formula 693000000 / ((7805000000 + 9034000000) / 2); inputs: XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "12.8% [earnings_release_Ex99-1.txt:L14]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "12.8% [earnings_release_Ex99-1.txt:L14]"
+    },
+    {
+      "claim": "11.23% [saved calculated_facts.json#/metrics/quarter_revenue_growth; computed, rechecked given calculations; formula (2705.0 - 2432.0) / 2432.0 * 100; inputs: earnings_release_Ex99-1.txt:L265-L266; quote: \"Total revenues\\n2,705\"; earnings_release_Ex99-1.txt:L265-L267; quote: \"Total revenues\\n2,705\\n2,432\"]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "11.23% [saved calculated_facts.json#/metrics/quarter_revenue_growth; computed, rechecked given calculations; formula (2705.0 - 2432.0) / 2432.0 * 100; inputs: earnings_release_Ex99-1.txt:L265-L266; quote: \"Total revenues\\n2,705\"; earnings_release_Ex99-1.txt:L265-L267; quote: \"Total revenues\\n2,705\\n2,432\"]"
+    },
+    {
+      "claim": "$9.958 billion [earnings_release_Ex99-1.txt:L103]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$9.958 billion [earnings_release_Ex99-1.txt:L103]"
+    },
+    {
+      "claim": "13% [earnings_release_Ex99-1.txt:L103]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "13% [earnings_release_Ex99-1.txt:L103]"
+    },
+    {
+      "claim": "10% [earnings_release_Ex99-1.txt:L97]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "10% [earnings_release_Ex99-1.txt:L97]"
+    },
+    {
+      "claim": "12.3% [earnings_release_Ex99-1.txt:L24]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "12.3% [earnings_release_Ex99-1.txt:L24]"
+    },
+    {
+      "claim": "6.1% [earnings_release_Ex99-1.txt:L24]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "6.1% [earnings_release_Ex99-1.txt:L24]"
+    },
+    {
+      "claim": "$27.548 billion [earnings_release_Ex99-1.txt:L24]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$27.548 billion [earnings_release_Ex99-1.txt:L24]"
+    },
+    {
+      "claim": "$28.1 billion [10-K.txt:L1101]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$28.1 billion [10-K.txt:L1101]"
+    },
+    {
+      "claim": "$8.8 billion [10-K.txt:L1101]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$8.8 billion [10-K.txt:L1101]"
+    },
+    {
+      "claim": "21% [10-K.txt:L1147]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "21% [10-K.txt:L1147]"
+    },
+    {
+      "claim": "2% [10-K.txt:L1153]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "2% [10-K.txt:L1153]"
+    },
+    {
+      "claim": "8% [10-K.txt:L1156]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "8% [10-K.txt:L1156]"
+    },
+    {
+      "claim": "$303 million [10-K.txt:L1039]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$303 million [10-K.txt:L1039]"
+    },
+    {
+      "claim": "$51 million [earnings_release_Ex99-1.txt:L18]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$51 million [earnings_release_Ex99-1.txt:L18]"
+    },
+    {
+      "claim": "$329 million [earnings_release_Ex99-1.txt:L16]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$329 million [earnings_release_Ex99-1.txt:L16]"
+    },
+    {
+      "claim": "$1.1 billion [10-K.txt:L1033]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$1.1 billion [10-K.txt:L1033]"
+    },
+    {
+      "claim": "$2.9 billion [10-K.txt:L1036]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.9 billion [10-K.txt:L1036]"
+    },
+    {
+      "claim": "$270 million [10-K.txt:L1397]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$270 million [10-K.txt:L1397]"
+    },
+    {
+      "claim": "$2.5 billion [earnings_release_Ex99-1.txt:L71]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.5 billion [earnings_release_Ex99-1.txt:L71]"
+    },
+    {
+      "claim": "$2.987 billion [XBRL tag LongTermDebtNoncurrent, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.987 billion [XBRL tag LongTermDebtNoncurrent, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$7.805 billion [XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$7.805 billion [XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$9.034 billion [XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$9.034 billion [XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$5.4 billion [10-K.txt:L1354]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$5.4 billion [10-K.txt:L1354]"
+    },
+    {
+      "claim": "$5.643 billion [earnings_release_Ex99-1.txt:L31]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$5.643 billion [earnings_release_Ex99-1.txt:L31]"
+    },
+    {
+      "claim": "$1.0 billion [10-K.txt:L1355]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$1.0 billion [10-K.txt:L1355]"
+    },
+    {
+      "claim": "2,200 [earnings_release_Ex99-1.txt:L47]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "2,200 [earnings_release_Ex99-1.txt:L47]"
+    },
+    {
+      "claim": "25% [earnings_release_Ex99-1.txt:L47]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "25% [earnings_release_Ex99-1.txt:L47]"
+    },
+    {
+      "claim": "$150 million [earnings_release_Ex99-1.txt:L36]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$150 million [earnings_release_Ex99-1.txt:L36]"
+    },
+    {
+      "claim": "$2.59 [XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$2.59 [XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$1.95 [XBRL tag EarningsPerShareDiluted, period end 2025-01-31, filing 0001327811-26-000014]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$1.95 [XBRL tag EarningsPerShareDiluted, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "claim": "$0.96 [earnings_release_Ex99-1.txt:L21]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$0.96 [earnings_release_Ex99-1.txt:L21]"
+    },
+    {
+      "claim": "$44 million [saved calculated_facts.json#/quarter_results/latest_10q_capital_spending; computed, rechecked given calculations; formula 183000000 - 139000000; inputs: XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-10-31, filing 0001327811-26-000058, filed 2026-11-24, unit USD; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-07-31, filing 0001327811-26-000044, filed 2026-08-27, unit USD]",
+      "status": "correct",
+      "reason": "Saved claim, source and rendering match; meaning requires verifier review.",
+      "correction": "",
+      "source": "$44 million [saved calculated_facts.json#/quarter_results/latest_10q_capital_spending; computed, rechecked given calculations; formula 183000000 - 139000000; inputs: XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-10-31, filing 0001327811-26-000058, filed 2026-11-24, unit USD; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-07-31, filing 0001327811-26-000044, filed 2026-08-27, unit USD]"
+    }
+  ]
+}

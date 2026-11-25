@@ -1,0 +1,14 @@
+{
+  "part": "Verifier_Code",
+  "requested_outputs": [
+    "nodes/Verifier_Code/output.json"
+  ],
+  "outputs": [
+    {
+      "path": "nodes/Verifier_Code/output.json",
+      "sha256": "041f6a018d1322e771220f86480071fb7f4bf7066f825b256811f3af74ccc6a6"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

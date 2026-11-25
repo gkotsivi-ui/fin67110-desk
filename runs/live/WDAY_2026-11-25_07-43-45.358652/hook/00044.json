@@ -1,0 +1,14 @@
+{
+  "part": "Strategy Manager 1",
+  "requested_outputs": [
+    "nodes/Strategy_Manager_1/output.json"
+  ],
+  "outputs": [
+    {
+      "path": "nodes/Strategy_Manager_1/output.json",
+      "sha256": "ef587aad45a867a53a9e6122b7cb5902b77ad0874c476116fc9322b60ea74e16"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

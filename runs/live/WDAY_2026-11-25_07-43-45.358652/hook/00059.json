@@ -1,0 +1,49 @@
+{
+  "part": "worksheet",
+  "requested_outputs": [
+    "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model input.json",
+    "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model output.json",
+    "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model raw response.json",
+    "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652.json",
+    "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652.md",
+    "timings/hook_worksheet_model_input__1795611510208862200.json",
+    "timings/reader_daily_closes_and_volumes_1795611522453660200.json",
+    "timings/reader_last_close_before_1795611508520220800.json"
+  ],
+  "outputs": [
+    {
+      "path": "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model input.json",
+      "sha256": "c0f21e71e386d8e8e27351c8619d3ce33cf958c1020e27669263f1081bbaaabc"
+    },
+    {
+      "path": "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model output.json",
+      "sha256": "382323915ffbe408eadec3e80d6ca7054cac3be5e33f3156dbf75c0ce6c1015f"
+    },
+    {
+      "path": "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model raw response.json",
+      "sha256": "a3cf3c0c5914eacfc4a85b2850c64920c0ddf234ee68929fd375a5d3c7ef213e"
+    },
+    {
+      "path": "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652.json",
+      "sha256": "d5326ebe3134154699648686f0cefdf4fa07a962eeb102e5f7a0338e4f6bac73"
+    },
+    {
+      "path": "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652.md",
+      "sha256": "e7740e448080721039aead3826b36853eb757860175a81cd7231ce13cade8991"
+    },
+    {
+      "path": "timings/hook_worksheet_model_input__1795611510208862200.json",
+      "sha256": "33a17cfd990a794c45dfc53b9e728c0a462331f25e19b6162e3758ae9e0d9c1a"
+    },
+    {
+      "path": "timings/reader_daily_closes_and_volumes_1795611522453660200.json",
+      "sha256": "7b6a6fbc6e19b129e2ead188f6252d92c33b02d0731dd37bfbf813c37f145874"
+    },
+    {
+      "path": "timings/reader_last_close_before_1795611508520220800.json",
+      "sha256": "3a64563b027a6e800802398f3a079d45d98a21e6d87029543d12b64778d3682e"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

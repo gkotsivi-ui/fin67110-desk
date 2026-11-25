@@ -1,0 +1,36 @@
+{
+  "reads": [
+    {
+      "file": "nodes/Research_Analyst_1/output.json",
+      "sha256": "45942efe58c4e639ced03cf275f468ad9d96f9ab0dc05b0c196b5d61ce9728ef"
+    },
+    {
+      "file": "nodes/Research_Analyst_1/draft.md",
+      "sha256": "c28fdce4aa78d2b3f284fa631048feb35aaca2137866c4e273b19597508c2b3a"
+    },
+    {
+      "file": "nodes/Financial_Analyst_1/output.json",
+      "sha256": "daa0bdd1e99b05254625a0ff5fb60767d89ce346fb6d9b5c72df83265672a6ee"
+    },
+    {
+      "file": "nodes/Financial_Analyst_1/draft.md",
+      "sha256": "0fe58a095b77c38a337f502cf42d39c78a4b6f5ddd3c6458c723ada94c9aa7c3"
+    },
+    {
+      "file": "nodes/Research_Analyst_1/output.json",
+      "sha256": "45942efe58c4e639ced03cf275f468ad9d96f9ab0dc05b0c196b5d61ce9728ef"
+    },
+    {
+      "file": "nodes/Research_Analyst_1/draft.md",
+      "sha256": "c28fdce4aa78d2b3f284fa631048feb35aaca2137866c4e273b19597508c2b3a"
+    },
+    {
+      "file": "nodes/Financial_Analyst_1/output.json",
+      "sha256": "daa0bdd1e99b05254625a0ff5fb60767d89ce346fb6d9b5c72df83265672a6ee"
+    },
+    {
+      "file": "nodes/Financial_Analyst_1/draft.md",
+      "sha256": "0fe58a095b77c38a337f502cf42d39c78a4b6f5ddd3c6458c723ada94c9aa7c3"
+    }
+  ]
+}

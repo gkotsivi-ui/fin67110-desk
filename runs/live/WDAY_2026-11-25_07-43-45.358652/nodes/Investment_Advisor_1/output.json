@@ -1,0 +1,399 @@
+{
+  "contract": "claims",
+  "role": "Investment Advisor",
+  "claims": [
+    {
+      "id": "c1",
+      "from": "Research Analyst",
+      "claim": "c1",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c2",
+      "from": "Research Analyst",
+      "claim": "c2",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c3",
+      "from": "Research Analyst",
+      "claim": "c3",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c4",
+      "from": "Research Analyst",
+      "claim": "c4",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c5",
+      "from": "Research Analyst",
+      "claim": "c5",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c6",
+      "from": "Research Analyst",
+      "claim": "c6",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c7",
+      "from": "Research Analyst",
+      "claim": "c7",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c8",
+      "from": "Research Analyst",
+      "claim": "c8",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c9",
+      "from": "Research Analyst",
+      "claim": "c9",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c10",
+      "from": "Research Analyst",
+      "claim": "c10",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c11",
+      "from": "Research Analyst",
+      "claim": "c11",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c12",
+      "from": "Research Analyst",
+      "claim": "c12",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c13",
+      "from": "Research Analyst",
+      "claim": "c13",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c14",
+      "from": "Research Analyst",
+      "claim": "c14",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c15",
+      "from": "Research Analyst",
+      "claim": "c15",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c16",
+      "from": "Research Analyst",
+      "claim": "c16",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c17",
+      "from": "Research Analyst",
+      "claim": "c17",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c18",
+      "from": "Research Analyst",
+      "claim": "c18",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c19",
+      "from": "Research Analyst",
+      "claim": "c19",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c20",
+      "from": "Research Analyst",
+      "claim": "c20",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c21",
+      "from": "Research Analyst",
+      "claim": "c21",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c22",
+      "from": "Research Analyst",
+      "claim": "c22",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c23",
+      "from": "Research Analyst",
+      "claim": "c23",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c24",
+      "from": "Research Analyst",
+      "claim": "c24",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c25",
+      "from": "Research Analyst",
+      "claim": "c25",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c26",
+      "from": "Research Analyst",
+      "claim": "c26",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c27",
+      "from": "Research Analyst",
+      "claim": "c27",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c28",
+      "from": "Research Analyst",
+      "claim": "c28",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c29",
+      "from": "Research Analyst",
+      "claim": "c29",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c30",
+      "from": "Research Analyst",
+      "claim": "c30",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c31",
+      "from": "Research Analyst",
+      "claim": "c31",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c32",
+      "from": "Research Analyst",
+      "claim": "c32",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c33",
+      "from": "Research Analyst",
+      "claim": "c33",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c34",
+      "from": "Research Analyst",
+      "claim": "c34",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c35",
+      "from": "Research Analyst",
+      "claim": "c35",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c36",
+      "from": "Research Analyst",
+      "claim": "c36",
+      "from_file": "nodes/Research_Analyst_1/output.json"
+    },
+    {
+      "id": "c37",
+      "from": "Financial Analyst",
+      "claim": "c1",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c38",
+      "from": "Financial Analyst",
+      "claim": "c2",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c39",
+      "from": "Financial Analyst",
+      "claim": "c3",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c40",
+      "from": "Financial Analyst",
+      "claim": "c4",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c41",
+      "from": "Financial Analyst",
+      "claim": "c5",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c42",
+      "from": "Financial Analyst",
+      "claim": "c6",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c43",
+      "from": "Financial Analyst",
+      "claim": "c7",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c44",
+      "from": "Financial Analyst",
+      "claim": "c8",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c45",
+      "from": "Financial Analyst",
+      "claim": "c9",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c46",
+      "from": "Financial Analyst",
+      "claim": "c10",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c47",
+      "from": "Financial Analyst",
+      "claim": "c11",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c48",
+      "from": "Financial Analyst",
+      "claim": "c12",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c49",
+      "from": "Financial Analyst",
+      "claim": "c13",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c50",
+      "from": "Financial Analyst",
+      "claim": "c14",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c51",
+      "from": "Financial Analyst",
+      "claim": "c15",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c52",
+      "from": "Financial Analyst",
+      "claim": "c16",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c53",
+      "from": "Financial Analyst",
+      "claim": "c17",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c54",
+      "from": "Financial Analyst",
+      "claim": "c18",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c55",
+      "from": "Financial Analyst",
+      "claim": "c19",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c56",
+      "from": "Financial Analyst",
+      "claim": "c20",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c57",
+      "from": "Financial Analyst",
+      "claim": "c21",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c58",
+      "from": "Financial Analyst",
+      "claim": "c22",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c59",
+      "from": "Financial Analyst",
+      "claim": "c23",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c60",
+      "from": "Financial Analyst",
+      "claim": "c24",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c61",
+      "from": "Financial Analyst",
+      "claim": "c25",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c62",
+      "from": "Financial Analyst",
+      "claim": "c26",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c63",
+      "from": "Financial Analyst",
+      "claim": "c27",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c64",
+      "from": "Financial Analyst",
+      "claim": "c28",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    },
+    {
+      "id": "c65",
+      "from": "Financial Analyst",
+      "claim": "c29",
+      "from_file": "nodes/Financial_Analyst_1/output.json"
+    }
+  ],
+  "template": "## Investment Recommendation: Workday, Inc. (WDAY)\n\n**Rating: Hold**\n\n**Thesis.** The business is durable and produces a lot of cash. However, the supplied P/E of {c62} already prices in growth that is slowing. Both analysts agree on the core: a recurring subscription base and strong cash conversion. They also agree that GAAP profitability is thin. The research evidence shows growth slowing at the same time. With no peer comparison to anchor the multiple, the case for Buy is not established. The cash and retention evidence is too strong to support Sell.\n\n**Thesis support: supported.** The business and financial evidence point the same way. Workday serves more than {c1} organizations and more than {c2} users under contract, including more than {c33} of the companies on the Fortune list. Subscription services made up approximately {c7} of FY2026 revenues. Subscription services revenues reached {c8}, up {c9}.\n\nThe Financial Analyst's XBRL figures show total revenues of {c49}. Research shows the same total, {c34}, up from {c35}. Revenue growth was {c50}. Expansion within existing customers drove approximately {c4} of the subscription revenue increase, and newly added customers drove the remaining {c5}.\n\nGross revenue retention was approximately {c3}. That fits the financial results: operating cash flow rose to {c37} from {c38}, while capital spending fell to {c39} from {c40}. Free cash flow was {c41}. In the latest quarter, operating cash flows were {c43}, compared with {c44} a year earlier, and free cash flows were {c45}.\n\nThe two analysts read profitability differently. Research cites non-GAAP operating margin of {c10} in FY2026, up from {c11}, and {c27} in the latest quarter, up from {c28}. The Financial Analyst sets non-GAAP measures aside. On a GAAP basis it finds an operating margin of {c46}, matching the research figure of {c12}. Operating income was {c47}, up from {c48}, and net income was {c52}. Return on average equity was {c51}. I give the GAAP view more weight for valuation because the P/E is built on GAAP diluted EPS.\n\n**Downside exposure: mixed.** The main exposure is slowing growth, not a funding shortfall. Latest-quarter subscription revenue growth was {c20}, and quarterly total revenue growth was {c57}. Full-year FY2027 subscription guidance is {c29}, implying growth of {c30}, but the Q4 guide implies only {c31}.\n\nThe subscription revenue backlog due within the next year grew {c21}, but total subscription revenue backlog grew only {c22}. Total backlog stood at {c23} in the latest quarter, compared with {c6} at fiscal year-end. At year-end, {c36} of that backlog was expected to be recognized within the next year.\n\nCosts and capital outlays also bear on the downside. Costs of subscription services grew {c17}, against product development growth of {c15} and sales and marketing growth of {c16}. Restructuring costs were approximately {c14} in FY2026, and latest-quarter restructuring expenses were {c56} against GAAP operating income of {c55}. Capital allocation is heavy: the Paradox acquisition cost {c13}, share repurchases were {c19}, and expected FY2027 capital expenditures are approximately {c18}.\n\nOn funding, Workday issued {c32} of senior notes in the latest quarter. Noncurrent long-term debt was {c58}. Equity fell to {c53} from {c54}. Liquidity was {c60} at fiscal year-end and {c61} at the latest quarter-end.\n\nThe {c59} of unsecured financing describes the capacity of one credit agreement only. It does not show that short-term debt is zero. The Financial Analyst found that the current portion of long-term debt and short-term borrowings are not available in the supplied XBRL data and are not stated in the supplied passages. Debt to equity therefore could not be computed. This is a limit of the supplied evidence, not a finding that the filing omits these items.\n\nResearch treats AI demand as early support: more than {c24} core customers have bought an AI product, up nearly {c25} from the prior quarter. Research classes the claim of nearly {c26} in new AI ACV as a management statement, so I give it limited weight.\n\n**Valuation support: mixed.** The P/E of {c62} divides a November pre-filing price by FY2026 GAAP diluted EPS of {c63}, which was up from {c64}. Its stated limits:\n- The multiple is not based on trailing-twelve-month earnings.\n- Latest-quarter GAAP diluted EPS of {c65} was not annualized.\n- No peer facts were supplied, so a peer P/E comparison is not established.\n\nThe multiple looks less stretched next to free cash flow of {c41} and latest-quarter capital spending of {c42}. Without peer evidence, though, it does not support adding to a position while growth is slowing.\n\n**Deciding number: the P/E of {c62}.** It carries the most weight because it is where the two analyses meet. Research shows durable demand but slowing growth, with the Q4 guide at {c31}. The Financial Analyst shows that the multiple rests on thin GAAP earnings and has no peer anchor. At this multiple, durability alone justifies holding, not buying.\n\n**Main risk.** Backlog that is growing slowly beyond the next year, combined with slowing subscription growth guidance, could erode the growth premium built into the multiple.\n\n**What would change the rating.** If the next 10-K reports gross revenue retention below the current {c3}, I would move to Sell, because a decline would mean the recurring base itself is shrinking.\n\nInsight: At a P/E of {c62}, the investment rests on cash generation ({c41} of free cash flow) and retention ({c3}). Next-year backlog growth of {c21} against total backlog growth of {c22} shows that longer-dated contracts do not yet confirm the growth the multiple implies, which supports Hold rather than Buy.",
+  "draft": "## Investment Recommendation: Workday, Inc. (WDAY)\n\n**Rating: Hold**\n\n**Thesis.** The business is durable and produces a lot of cash. However, the supplied P/E of 69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014] already prices in growth that is slowing. Both analysts agree on the core: a recurring subscription base and strong cash conversion. They also agree that GAAP profitability is thin. The research evidence shows growth slowing at the same time. With no peer comparison to anchor the multiple, the case for Buy is not established. The cash and retention evidence is too strong to support Sell.\n\n**Thesis support: supported.** The business and financial evidence point the same way. Workday serves more than 11,500 [10-K.txt:L247] organizations and more than 75 million [10-K.txt:L248] users under contract, including more than 65% [10-K.txt:L248] of the companies on the Fortune list. Subscription services made up approximately 92% [10-K.txt:L1048] of FY2026 revenues. Subscription services revenues reached $8.8 billion [10-K.txt:L1096], up 14% [10-K.txt:L1096].\n\nThe Financial Analyst's XBRL figures show total revenues of $9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]. Research shows the same total, $9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014], up from $8.446 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]. Revenue growth was 13.09% [saved calculated_facts.json#/metrics/revenue_growth; computed, rechecked given calculations; formula (9552000000 - 8446000000) / 8446000000; inputs: XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]. Expansion within existing customers drove approximately 60% [10-K.txt:L1096] of the subscription revenue increase, and newly added customers drove the remaining 40% [10-K.txt:L1096].\n\nGross revenue retention was approximately 97% [10-K.txt:L1098]. That fits the financial results: operating cash flow rose to $2.939 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014] from $2.461 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2025-01-31, filing 0001327811-26-000014], while capital spending fell to $162 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014] from $269 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2025-01-31, filing 0001327811-26-000014]. Free cash flow was $2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]. In the latest quarter, operating cash flows were $735 million [earnings_release_Ex99-1.txt:L26], compared with $588 million [earnings_release_Ex99-1.txt:L26] a year earlier, and free cash flows were $691 million [earnings_release_Ex99-1.txt:L26].\n\nThe two analysts read profitability differently. Research cites non-GAAP operating margin of 29.6% [10-K.txt:L1221] in FY2026, up from 25.9% [10-K.txt:L1221], and 31.4% [earnings_release_Ex99-1.txt:L18] in the latest quarter, up from 28.5% [earnings_release_Ex99-1.txt:L18]. The Financial Analyst sets non-GAAP measures aside. On a GAAP basis it finds an operating margin of 7.55% [saved calculated_facts.json#/metrics/operating_margin; computed, rechecked given calculations; formula 721000000 / 9552000000; inputs: XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014], matching the research figure of 7.5% [10-K.txt:L1220]. Operating income was $721 million [XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014], up from $415 million [XBRL tag OperatingIncomeLoss, period end 2025-01-31, filing 0001327811-26-000014], and net income was $693 million [XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]. Return on average equity was 8.23% [saved calculated_facts.json#/metrics/return_on_average_equity; computed, rechecked given calculations; formula 693000000 / ((7805000000 + 9034000000) / 2); inputs: XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]. I give the GAAP view more weight for valuation because the P/E is built on GAAP diluted EPS.\n\n**Downside exposure: mixed.** The main exposure is slowing growth, not a funding shortfall. Latest-quarter subscription revenue growth was 12.8% [earnings_release_Ex99-1.txt:L14], and quarterly total revenue growth was 11.23% [saved calculated_facts.json#/metrics/quarter_revenue_growth; computed, rechecked given calculations; formula (2705.0 - 2432.0) / 2432.0 * 100; inputs: earnings_release_Ex99-1.txt:L265-L266; quote: \"Total revenues\\n2,705\"; earnings_release_Ex99-1.txt:L265-L267; quote: \"Total revenues\\n2,705\\n2,432\"]. Full-year FY2027 subscription guidance is $9.958 billion [earnings_release_Ex99-1.txt:L103], implying growth of 13% [earnings_release_Ex99-1.txt:L103], but the Q4 guide implies only 10% [earnings_release_Ex99-1.txt:L97].\n\nThe subscription revenue backlog due within the next year grew 12.3% [earnings_release_Ex99-1.txt:L24], but total subscription revenue backlog grew only 6.1% [earnings_release_Ex99-1.txt:L24]. Total backlog stood at $27.548 billion [earnings_release_Ex99-1.txt:L24] in the latest quarter, compared with $28.1 billion [10-K.txt:L1101] at fiscal year-end. At year-end, $8.8 billion [10-K.txt:L1101] of that backlog was expected to be recognized within the next year.\n\nCosts and capital outlays also bear on the downside. Costs of subscription services grew 21% [10-K.txt:L1147], against product development growth of 2% [10-K.txt:L1153] and sales and marketing growth of 8% [10-K.txt:L1156]. Restructuring costs were approximately $303 million [10-K.txt:L1039] in FY2026, and latest-quarter restructuring expenses were $51 million [earnings_release_Ex99-1.txt:L18] against GAAP operating income of $329 million [earnings_release_Ex99-1.txt:L16]. Capital allocation is heavy: the Paradox acquisition cost $1.1 billion [10-K.txt:L1033], share repurchases were $2.9 billion [10-K.txt:L1036], and expected FY2027 capital expenditures are approximately $270 million [10-K.txt:L1397].\n\nOn funding, Workday issued $2.5 billion [earnings_release_Ex99-1.txt:L71] of senior notes in the latest quarter. Noncurrent long-term debt was $2.987 billion [XBRL tag LongTermDebtNoncurrent, period end 2026-01-31, filing 0001327811-26-000014]. Equity fell to $7.805 billion [XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014] from $9.034 billion [XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]. Liquidity was $5.4 billion [10-K.txt:L1354] at fiscal year-end and $5.643 billion [earnings_release_Ex99-1.txt:L31] at the latest quarter-end.\n\nThe $1.0 billion [10-K.txt:L1355] of unsecured financing describes the capacity of one credit agreement only. It does not show that short-term debt is zero. The Financial Analyst found that the current portion of long-term debt and short-term borrowings are not available in the supplied XBRL data and are not stated in the supplied passages. Debt to equity therefore could not be computed. This is a limit of the supplied evidence, not a finding that the filing omits these items.\n\nResearch treats AI demand as early support: more than 2,200 [earnings_release_Ex99-1.txt:L47] core customers have bought an AI product, up nearly 25% [earnings_release_Ex99-1.txt:L47] from the prior quarter. Research classes the claim of nearly $150 million [earnings_release_Ex99-1.txt:L36] in new AI ACV as a management statement, so I give it limited weight.\n\n**Valuation support: mixed.** The P/E of 69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014] divides a November pre-filing price by FY2026 GAAP diluted EPS of $2.59 [XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014], which was up from $1.95 [XBRL tag EarningsPerShareDiluted, period end 2025-01-31, filing 0001327811-26-000014]. Its stated limits:\n- The multiple is not based on trailing-twelve-month earnings.\n- Latest-quarter GAAP diluted EPS of $0.96 [earnings_release_Ex99-1.txt:L21] was not annualized.\n- No peer facts were supplied, so a peer P/E comparison is not established.\n\nThe multiple looks less stretched next to free cash flow of $2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014] and latest-quarter capital spending of $44 million [saved calculated_facts.json#/quarter_results/latest_10q_capital_spending; computed, rechecked given calculations; formula 183000000 - 139000000; inputs: XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-10-31, filing 0001327811-26-000058, filed 2026-11-24, unit USD; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-07-31, filing 0001327811-26-000044, filed 2026-08-27, unit USD]. Without peer evidence, though, it does not support adding to a position while growth is slowing.\n\n**Deciding number: the P/E of 69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014].** It carries the most weight because it is where the two analyses meet. Research shows durable demand but slowing growth, with the Q4 guide at 10% [earnings_release_Ex99-1.txt:L97]. The Financial Analyst shows that the multiple rests on thin GAAP earnings and has no peer anchor. At this multiple, durability alone justifies holding, not buying.\n\n**Main risk.** Backlog that is growing slowly beyond the next year, combined with slowing subscription growth guidance, could erode the growth premium built into the multiple.\n\n**What would change the rating.** If the next 10-K reports gross revenue retention below the current 97% [10-K.txt:L1098], I would move to Sell, because a decline would mean the recurring base itself is shrinking.\n\nInsight: At a P/E of 69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014], the investment rests on cash generation ($2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014] of free cash flow) and retention (97% [10-K.txt:L1098]). Next-year backlog growth of 12.3% [earnings_release_Ex99-1.txt:L24] against total backlog growth of 6.1% [earnings_release_Ex99-1.txt:L24] shows that longer-dated contracts do not yet confirm the growth the multiple implies, which supports Hold rather than Buy.",
+  "claim_attempts": 2
+}

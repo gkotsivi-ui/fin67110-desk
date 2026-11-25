@@ -1,0 +1,16 @@
+{
+  "schema_version": 2,
+  "ticker": "WDAY",
+  "filing_time": "2026-11-24T16:01:55-05:00",
+  "time": "2026-11-25T07:54:14.403457-05:00",
+  "view_time": "2026-11-25T07:54:14.403457-05:00",
+  "direction": "not computed",
+  "reaction_window": {
+    "definition": "Last official close at or before filing acceptance to the first official close strictly after filing acceptance; XNYS sessions, including holidays and early closes.",
+    "calendar": "XNYS",
+    "baseline_close_time": "2026-11-24T16:00:00-05:00",
+    "first_close_after_filing_time": "2026-11-25T16:00:00-05:00"
+  },
+  "prediction_basis": "Code maps the existing low-value versus price comparison to direction. This is not a statistical price-reaction model.",
+  "reason": null
+}

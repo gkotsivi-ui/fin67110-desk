@@ -1,0 +1,14 @@
+{
+  "part": "Financial Analyst 1",
+  "requested_outputs": [
+    "nodes/Financial_Analyst_1/claim_attempts.json"
+  ],
+  "outputs": [
+    {
+      "path": "nodes/Financial_Analyst_1/claim_attempts.json",
+      "sha256": "81a13f60df081db572d094583cc895f59a9e1e1a8cefb8a1aa58373b3b16bce8"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

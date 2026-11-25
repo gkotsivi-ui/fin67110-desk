@@ -1,0 +1,362 @@
+[
+  {
+    "output": {
+      "claims": [
+        {
+          "id": "c1",
+          "fact": "cash_from_operations",
+          "which": "value"
+        },
+        {
+          "id": "c2",
+          "fact": "cash_from_operations",
+          "which": "prior_value"
+        },
+        {
+          "id": "c3",
+          "fact": "additions_to_property_and_equipment",
+          "which": "value"
+        },
+        {
+          "id": "c4",
+          "fact": "additions_to_property_and_equipment",
+          "which": "prior_value"
+        },
+        {
+          "id": "c5",
+          "computed": "free_cash_flow"
+        },
+        {
+          "id": "c6",
+          "quarter": "latest_10q_capital_spending"
+        },
+        {
+          "id": "c7",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 26,
+          "quote": "Operating cash flows were $735 million",
+          "value": "$735 million"
+        },
+        {
+          "id": "c8",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 26,
+          "quote": "compared to $588 million in the same period last year",
+          "value": "$588 million"
+        },
+        {
+          "id": "c9",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 26,
+          "quote": "Free cash flows were $691 million",
+          "value": "$691 million"
+        },
+        {
+          "id": "c10",
+          "computed": "operating_margin"
+        },
+        {
+          "id": "c11",
+          "fact": "operating_income",
+          "which": "value"
+        },
+        {
+          "id": "c12",
+          "fact": "operating_income",
+          "which": "prior_value"
+        },
+        {
+          "id": "c13",
+          "fact": "revenue",
+          "which": "value"
+        },
+        {
+          "id": "c14",
+          "computed": "revenue_growth"
+        },
+        {
+          "id": "c15",
+          "computed": "return_on_average_equity"
+        },
+        {
+          "id": "c16",
+          "fact": "net_income",
+          "which": "value"
+        },
+        {
+          "id": "c17",
+          "fact": "stockholders_equity",
+          "which": "value"
+        },
+        {
+          "id": "c18",
+          "fact": "stockholders_equity",
+          "which": "prior_value"
+        },
+        {
+          "id": "c19",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 16,
+          "quote": "Operating income was $329 million",
+          "value": "$329 million"
+        },
+        {
+          "id": "c20",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 18,
+          "quote": "Current quarter operating income was impacted by restructuring expenses of $51 million",
+          "value": "$51 million"
+        },
+        {
+          "id": "c21",
+          "computed": "quarter_revenue_growth"
+        },
+        {
+          "id": "c22",
+          "fact": "long_term_debt",
+          "which": "value"
+        },
+        {
+          "id": "c23",
+          "file": "10-K.txt",
+          "line": 1355,
+          "quote": "our borrowing capacity under our 2022 Credit Agreement that provides for $1.0 billion of unsecured financing",
+          "value": "$1.0 billion"
+        },
+        {
+          "id": "c24",
+          "file": "10-K.txt",
+          "line": 1354,
+          "quote": "our principal sources of liquidity were cash, cash equivalents, and marketable securities totaling $5.4 billion",
+          "value": "$5.4 billion"
+        },
+        {
+          "id": "c25",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 31,
+          "quote": "Cash, cash equivalents, and marketable securities were $5.643 billion as of October 31, 2026",
+          "value": "$5.643 billion"
+        },
+        {
+          "id": "c26",
+          "computed": "pe"
+        },
+        {
+          "id": "c27",
+          "fact": "diluted_eps",
+          "which": "value"
+        },
+        {
+          "id": "c28",
+          "fact": "diluted_eps",
+          "which": "prior_value"
+        },
+        {
+          "id": "c29",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 21,
+          "quote": "Diluted net income per share was $0.96",
+          "value": "$0.96"
+        }
+      ],
+      "calculator_requests": [
+        {
+          "metric": "debt_to_equity",
+          "reason": "Saved value is null because current_portion_of_long_term_debt (LongTermDebtCurrent) is not available in the supplied XBRL data. Requested: (LongTermDebtNoncurrent + LongTermDebtCurrent) / StockholdersEquity for period end 2026-01-31, filing 0001327811-26-000014, after the current portion is sourced from a filing line."
+        },
+        {
+          "metric": "long_term_debt_with_current_portion",
+          "reason": "Saved value is null. The noncurrent and current balance-sheet lines must come as a pair from the same 10-K."
+        },
+        {
+          "metric": "peer_pe",
+          "reason": "facts.json has an empty peers object. To compare peers, request peer P/E built from compatible fiscal periods and diluted EPS definitions, using pre-filing official closes from the same source."
+        }
+      ],
+      "draft": "Valuation Insights: Workday, Inc. (WDAY), fiscal year ended January 31, 2026\n\nCash generation: supported. In the annual XBRL data, operating cash flow (NetCashProvidedByUsedInOperatingActivities) was {c1}, compared with {c2} in the prior year. Capital spending (PaymentsToAcquirePropertyPlantAndEquipment) was {c3}, compared with {c4}. Free cash flow was {c5}: computed, rechecked given calculations, as operating cash flow minus capital spending, with both inputs cited to filing 0001327811-26-000014. Operating cash flow rose while capital spending fell, so the company needed little reinvestment to produce its growth. Capital spending in the latest quarter (August 1 to October 31, 2026) was {c6}: computed, rechecked given calculations, as the fiscal year-to-date amount through October 31, 2026 from filing 0001327811-26-000058 minus the year-to-date amount through July 31, 2026 from filing 0001327811-26-000044. The release states for the quarter: \"Operating cash flows were {c7}\" (earnings_release_Ex99-1.txt:L26), \"compared to {c8} in the same period last year\" (L26), and \"Free cash flows were {c9}\" (L26). The release defines free cash flow as a non-GAAP measure that treats capital expenditures as a reduction to cash flows (L890).\n\nProfitability: mixed. The annual operating margin was {c10}: computed, rechecked given calculations, as OperatingIncomeLoss divided by RevenueFromContractWithCustomerExcludingAssessedTax for the fiscal year ended January 31, 2026. Operating income was {c11} (prior year {c12}) on revenue of {c13}. Annual revenue growth was {c14}: computed, rechecked given calculations, from the current and prior RevenueFromContractWithCustomerExcludingAssessedTax facts. Return on average equity was {c15}: computed, rechecked given calculations. It is defined as reported net income ({c16}, NetIncomeLoss) divided by the simple average of year-end stockholders' equity ({c17} at January 31, 2026 and {c18} at January 31, 2025). The GAAP operating margin is much thinner than the cash conversion. In the latest quarter, \"Operating income was {c19}\" (earnings_release_Ex99-1.txt:L16), and \"Current quarter operating income was impacted by restructuring expenses of {c20}\" (L18). Quarterly revenue growth was {c21}: computed, rechecked given calculations, from release lines L265 to L267. I use GAAP figures only. The release's non-GAAP margin excludes share-based compensation and other items (L890), so it is not used here.\n\nFunding risk: mixed. Debt to equity is not available. The saved value is null because the current portion of long-term debt (LongTermDebtCurrent) is not available in the supplied XBRL data, and I have requested the calculation. The defined ratio counts long-term debt plus its current portion and excludes short-term borrowings. Noncurrent long-term debt (LongTermDebtNoncurrent) was {c22} at January 31, 2026. Short-term borrowings are also not available in the supplied XBRL data. I checked the supplied filing passages and none states the current portion of long-term debt or short-term borrowings, so both are not established by the supplied evidence. The 10-K says liquidity may include, \"if necessary, our borrowing capacity under our 2022 Credit Agreement that provides for {c23} of unsecured financing\" (10-K.txt:L1355). That describes one facility's capacity and does not show that short-term debt is zero. As of January 31, 2026, \"our principal sources of liquidity were cash, cash equivalents, and marketable securities totaling {c24}\" (10-K.txt:L1354). The release reports that \"Cash, cash equivalents, and marketable securities were {c25} as of October 31, 2026\" (earnings_release_Ex99-1.txt:L31). Equity fell from {c18} to {c17}, so the debt-to-equity ratio, once computed, would be measured against a smaller equity base.\n\nValuation: mixed. P/E was {c26}: computed, rechecked given calculations. It divides the pre-filing official close from LSEG TR.PriceClose (WDAY.O), taken at 2026-11-24T16:00:00-05:00, strictly before the filing at 2026-11-24T16:01:55-05:00, by annual GAAP diluted EPS (EarningsPerShareDiluted) of {c27} for the fiscal year ended January 31, 2026. Prior-year diluted EPS was {c28}. Comparability limit: the price is from November 2026, but the EPS is for a fiscal year that ended in January 2026, so the multiple is not based on trailing-twelve-month earnings. Latest-quarter GAAP diluted EPS was \"{c29}\" (earnings_release_Ex99-1.txt:L21), and I did not annualize it. No peer facts were supplied because the peers object is empty, so a peer P/E comparison is not established by the supplied evidence. I have requested it. I set aside headline EPS growth. The P/E rests on GAAP earnings that are much smaller than free cash flow of {c5}, while return on average equity was {c15}.\n\nWhat would change my view: the latest-quarter GAAP operating cash flow of {c7}. If next year's same quarter came in below this figure, while capital spending (latest quarter {c6}) held steady or rose, it would challenge my view that cash generation supports the {c26} P/E.\n\nInsight: The {c26} GAAP P/E looks less stretched when set against annual free cash flow of {c5}, which needed only {c3} of capital spending. But GAAP profitability is still thin, with operating margin of {c10} and return on average equity of {c15}. Until the current portion of debt behind the null debt-to-equity ratio is disclosed, funding risk rests mainly on noncurrent debt of {c22} against liquidity of {c25}."
+    },
+    "errors": [
+      "draft line 7: number '2022' is typed directly; use a {cN} claim.",
+      "draft line 9: number '2026,' is typed directly; use a {cN} claim.",
+      "draft line 9: number '2026,' is typed directly; use a {cN} claim."
+    ]
+  },
+  {
+    "output": {
+      "claims": [
+        {
+          "id": "c1",
+          "fact": "cash_from_operations",
+          "which": "value"
+        },
+        {
+          "id": "c2",
+          "fact": "cash_from_operations",
+          "which": "prior_value"
+        },
+        {
+          "id": "c3",
+          "fact": "additions_to_property_and_equipment",
+          "which": "value"
+        },
+        {
+          "id": "c4",
+          "fact": "additions_to_property_and_equipment",
+          "which": "prior_value"
+        },
+        {
+          "id": "c5",
+          "computed": "free_cash_flow"
+        },
+        {
+          "id": "c6",
+          "quarter": "latest_10q_capital_spending"
+        },
+        {
+          "id": "c7",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 26,
+          "quote": "Operating cash flows were $735 million",
+          "value": "$735 million"
+        },
+        {
+          "id": "c8",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 26,
+          "quote": "compared to $588 million in the same period last year",
+          "value": "$588 million"
+        },
+        {
+          "id": "c9",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 26,
+          "quote": "Free cash flows were $691 million",
+          "value": "$691 million"
+        },
+        {
+          "id": "c10",
+          "computed": "operating_margin"
+        },
+        {
+          "id": "c11",
+          "fact": "operating_income",
+          "which": "value"
+        },
+        {
+          "id": "c12",
+          "fact": "operating_income",
+          "which": "prior_value"
+        },
+        {
+          "id": "c13",
+          "fact": "revenue",
+          "which": "value"
+        },
+        {
+          "id": "c14",
+          "computed": "revenue_growth"
+        },
+        {
+          "id": "c15",
+          "computed": "return_on_average_equity"
+        },
+        {
+          "id": "c16",
+          "fact": "net_income",
+          "which": "value"
+        },
+        {
+          "id": "c17",
+          "fact": "stockholders_equity",
+          "which": "value"
+        },
+        {
+          "id": "c18",
+          "fact": "stockholders_equity",
+          "which": "prior_value"
+        },
+        {
+          "id": "c19",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 16,
+          "quote": "Operating income was $329 million",
+          "value": "$329 million"
+        },
+        {
+          "id": "c20",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 18,
+          "quote": "Current quarter operating income was impacted by restructuring expenses of $51 million",
+          "value": "$51 million"
+        },
+        {
+          "id": "c21",
+          "computed": "quarter_revenue_growth"
+        },
+        {
+          "id": "c22",
+          "fact": "long_term_debt",
+          "which": "value"
+        },
+        {
+          "id": "c23",
+          "file": "10-K.txt",
+          "line": 1355,
+          "quote": "our borrowing capacity under our 2022 Credit Agreement that provides for $1.0 billion of unsecured financing",
+          "value": "$1.0 billion"
+        },
+        {
+          "id": "c24",
+          "file": "10-K.txt",
+          "line": 1354,
+          "quote": "our principal sources of liquidity were cash, cash equivalents, and marketable securities totaling $5.4 billion",
+          "value": "$5.4 billion"
+        },
+        {
+          "id": "c25",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 31,
+          "quote": "Cash, cash equivalents, and marketable securities were $5.643 billion as of October 31, 2026",
+          "value": "$5.643 billion"
+        },
+        {
+          "id": "c26",
+          "computed": "pe"
+        },
+        {
+          "id": "c27",
+          "fact": "diluted_eps",
+          "which": "value"
+        },
+        {
+          "id": "c28",
+          "fact": "diluted_eps",
+          "which": "prior_value"
+        },
+        {
+          "id": "c29",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 21,
+          "quote": "Diluted net income per share was $0.96",
+          "value": "$0.96"
+        }
+      ],
+      "calculator_requests": [
+        {
+          "metric": "debt_to_equity",
+          "reason": "The saved value is null because current_portion_of_long_term_debt (LongTermDebtCurrent) is not available in the supplied XBRL data. Please calculate (LongTermDebtNoncurrent + LongTermDebtCurrent) / StockholdersEquity for the period ending 2026-01-31, filing 0001327811-26-000014, once the current portion has been sourced from a filing line."
+        },
+        {
+          "metric": "long_term_debt_with_current_portion",
+          "reason": "The saved value is null. The noncurrent and current balance-sheet lines must come as a pair from the same 10-K."
+        },
+        {
+          "metric": "peer_pe",
+          "reason": "The peers object in facts.json is empty. For a peer comparison, please calculate peer P/E using compatible fiscal periods and diluted EPS definitions, with pre-filing official closes from the same price source."
+        }
+      ],
+      "draft": "Valuation Insights: Workday, Inc. (WDAY), fiscal year ended January 31, 2026\n\nCash generation: supported. In the annual XBRL data, operating cash flow (NetCashProvidedByUsedInOperatingActivities) was {c1}, up from {c2} in the prior year. Capital spending (PaymentsToAcquirePropertyPlantAndEquipment) was {c3}, down from {c4}. Free cash flow was {c5}: computed, rechecked given calculations, as operating cash flow minus capital spending, with both inputs cited to filing 0001327811-26-000014. Operating cash flow rose while capital spending fell, so the company needed little reinvestment to produce its growth. Capital spending in the latest quarter was {c6}: computed, rechecked given calculations. It equals the fiscal year-to-date amount from filing 0001327811-26-000058 minus the preceding year-to-date amount from filing 0001327811-26-000044. For the quarter, the release says \\\"Operating cash flows were {c7}\\\" (earnings_release_Ex99-1.txt:L26), \\\"compared to {c8} in the same period last year\\\" (L26), and \\\"Free cash flows were {c9}\\\" (L26). The release defines free cash flow as a non-GAAP measure that treats capital expenditures as a reduction to cash flows (L890).\n\nProfitability: mixed. The annual operating margin was {c10}: computed, rechecked given calculations, as OperatingIncomeLoss divided by RevenueFromContractWithCustomerExcludingAssessedTax for the fiscal year ended January 31, 2026. Operating income was {c11} (prior year {c12}) on revenue of {c13}. Annual revenue growth was {c14}: computed, rechecked given calculations, from the current and prior RevenueFromContractWithCustomerExcludingAssessedTax facts. Return on average equity was {c15}: computed, rechecked given calculations. It is defined as reported net income ({c16}, NetIncomeLoss) divided by the simple average of year-end stockholders' equity ({c17} at January 31, 2026 and {c18} at January 31, 2025). The GAAP operating margin is much thinner than the company's cash conversion. In the latest quarter, \\\"Operating income was {c19}\\\" (earnings_release_Ex99-1.txt:L16), and \\\"Current quarter operating income was impacted by restructuring expenses of {c20}\\\" (L18). Quarterly revenue growth was {c21}: computed, rechecked given calculations, from release lines L265 to L267. This analysis uses GAAP figures only. The release's non-GAAP margin excludes share-based compensation and other items (L890), so it is not used here.\n\nFunding risk: mixed. Debt to equity is not available. The saved value is null because the current portion of long-term debt (LongTermDebtCurrent) is not available in the supplied XBRL data, and I have requested the calculation. The defined ratio includes long-term debt plus its current portion and excludes short-term borrowings. Noncurrent long-term debt (LongTermDebtNoncurrent) was {c22} at January 31, 2026. Short-term borrowings are also not available in the supplied XBRL data. I checked the supplied filing passages, and none states the current portion of long-term debt or short-term borrowings. Both are therefore not established by the supplied evidence. The 10-K says that, if necessary, liquidity may include borrowing capacity under a credit agreement \\\"that provides for {c23} of unsecured financing\\\" (10-K.txt:L1355). That statement describes one facility's capacity. It does not show that short-term debt is zero. The 10-K also says that, as of January 31, 2026, \\\"our principal sources of liquidity were cash, cash equivalents, and marketable securities totaling {c24}\\\" (10-K.txt:L1354). The release reports that \\\"Cash, cash equivalents, and marketable securities were {c25} as of October 31, 2026\\\" (earnings_release_Ex99-1.txt:L31). Equity fell from {c18} to {c17}, so a debt-to-equity ratio, once computed, would use a smaller equity base.\n\nValuation: mixed. P/E was {c26}: computed, rechecked given calculations. It divides the pre-filing official close from LSEG TR.PriceClose (WDAY.O), taken at 2026-11-24T16:00:00-05:00 and strictly before the filing at 2026-11-24T16:01:55-05:00, by annual GAAP diluted EPS (EarningsPerShareDiluted) of {c27} for the fiscal year ended January 31, 2026. Prior-year diluted EPS was {c28}. Comparability limit: the price is from the November pre-filing date, while the EPS covers an earlier fiscal year, so the multiple is not based on trailing-twelve-month earnings. Latest-quarter GAAP diluted EPS was \\\"{c29}\\\" (earnings_release_Ex99-1.txt:L21), and I did not annualize it. The peers object is empty, so no peer facts were supplied and a peer P/E comparison is not established by the supplied evidence. I have requested one. I set aside headline EPS growth. The P/E rests on GAAP earnings that are much smaller than free cash flow of {c5}, while return on average equity was {c15}.\n\nWhat would change my view: the latest-quarter GAAP operating cash flow of {c7}. If next year's same quarter came in below this figure while capital spending (latest quarter {c6}) held steady or rose, it would challenge my view that cash generation supports the {c26} P/E.\n\nInsight: The {c26} GAAP P/E looks less stretched against annual free cash flow of {c5}, which needed only {c3} of capital spending. Still, GAAP profitability remains thin, with an operating margin of {c10} and return on average equity of {c15}. Until the current portion of debt is disclosed and the null debt-to-equity ratio can be computed, funding risk rests mainly on noncurrent debt of {c22} against liquidity of {c25}."
+    },
+    "errors": []
+  }
+]

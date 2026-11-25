@@ -1,0 +1,9 @@
+{
+  "task": "Calculate ratios",
+  "context": {
+    "ticker": "WDAY",
+    "peers": [],
+    "filed": null
+  },
+  "expected_output": "Step 5 data and status"
+}

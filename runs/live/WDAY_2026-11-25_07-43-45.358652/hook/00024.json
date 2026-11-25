@@ -1,0 +1,14 @@
+{
+  "part": "Research Analyst 1",
+  "requested_outputs": [
+    "nodes/Research_Analyst_1/claim_attempts.json"
+  ],
+  "outputs": [
+    {
+      "path": "nodes/Research_Analyst_1/claim_attempts.json",
+      "sha256": "388eb6c7cdcd2c8464ead293c4e553c19e9580f65dbbfa276e5a61c20a0eef22"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

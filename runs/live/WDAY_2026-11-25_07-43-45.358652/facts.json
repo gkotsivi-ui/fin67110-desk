@@ -1,0 +1,148 @@
+{
+  "ticker": "WDAY",
+  "company": "Workday, Inc.",
+  "cik": "0001327811",
+  "report_period": "2026-01-31",
+  "annual_problem": "",
+  "facts": {
+    "revenue": {
+      "tag": "RevenueFromContractWithCustomerExcludingAssessedTax",
+      "period_end": "2026-01-31",
+      "fy": 2026,
+      "filing": "0001327811-26-000014",
+      "value": 9552000000,
+      "prior_period_end": "2025-01-31",
+      "prior_filing": "0001327811-26-000014",
+      "prior_value": 8446000000
+    },
+    "operating_income": {
+      "tag": "OperatingIncomeLoss",
+      "period_end": "2026-01-31",
+      "fy": 2026,
+      "filing": "0001327811-26-000014",
+      "value": 721000000,
+      "prior_period_end": "2025-01-31",
+      "prior_filing": "0001327811-26-000014",
+      "prior_value": 415000000
+    },
+    "net_income": {
+      "tag": "NetIncomeLoss",
+      "period_end": "2026-01-31",
+      "fy": 2026,
+      "filing": "0001327811-26-000014",
+      "value": 693000000,
+      "prior_period_end": "2025-01-31",
+      "prior_filing": "0001327811-26-000014",
+      "prior_value": 526000000
+    },
+    "noncontrolling_interest_income": {
+      "tag": null,
+      "period_end": "2026-01-31",
+      "fy": 2026,
+      "filing": null,
+      "value": null,
+      "prior_period_end": null,
+      "prior_filing": null,
+      "prior_value": null
+    },
+    "net_income_attributable_to_parent": {
+      "tag": "NetIncomeLoss",
+      "period_end": "2026-01-31",
+      "fy": 2026,
+      "filing": "0001327811-26-000014",
+      "value": 693000000,
+      "prior_period_end": "2025-01-31",
+      "prior_filing": "0001327811-26-000014",
+      "prior_value": 526000000
+    },
+    "diluted_eps": {
+      "tag": "EarningsPerShareDiluted",
+      "period_end": "2026-01-31",
+      "fy": 2026,
+      "filing": "0001327811-26-000014",
+      "value": 2.59,
+      "prior_period_end": "2025-01-31",
+      "prior_filing": "0001327811-26-000014",
+      "prior_value": 1.95
+    },
+    "stockholders_equity": {
+      "tag": "StockholdersEquity",
+      "period_end": "2026-01-31",
+      "fy": 2026,
+      "filing": "0001327811-26-000014",
+      "value": 7805000000,
+      "prior_period_end": "2025-01-31",
+      "prior_filing": "0001327811-26-000014",
+      "prior_value": 9034000000
+    },
+    "long_term_debt": {
+      "tag": "LongTermDebtNoncurrent",
+      "period_end": "2026-01-31",
+      "fy": 2026,
+      "filing": "0001327811-26-000014",
+      "value": 2987000000,
+      "prior_period_end": "2025-01-31",
+      "prior_filing": "0001327811-26-000014",
+      "prior_value": 2984000000,
+      "label": "long-term debt, excluding current maturities (balance sheet)"
+    },
+    "current_portion_of_long_term_debt": {
+      "tag": "LongTermDebtCurrent",
+      "period_end": "2026-01-31",
+      "fy": 2026,
+      "filing": null,
+      "value": null,
+      "prior_period_end": null,
+      "prior_filing": null,
+      "prior_value": null,
+      "label": "current maturities of long-term debt (balance sheet)"
+    },
+    "short_term_borrowings": {
+      "tag": null,
+      "period_end": "2026-01-31",
+      "fy": 2026,
+      "filing": null,
+      "value": null,
+      "prior_period_end": null,
+      "prior_filing": null,
+      "prior_value": null,
+      "label": "short-term borrowings; not part of debt to equity"
+    },
+    "cash_from_operations": {
+      "tag": "NetCashProvidedByUsedInOperatingActivities",
+      "period_end": "2026-01-31",
+      "fy": 2026,
+      "filing": "0001327811-26-000014",
+      "value": 2939000000,
+      "prior_period_end": "2025-01-31",
+      "prior_filing": "0001327811-26-000014",
+      "prior_value": 2461000000
+    },
+    "additions_to_property_and_equipment": {
+      "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+      "period_end": "2026-01-31",
+      "fy": 2026,
+      "filing": "0001327811-26-000014",
+      "value": 162000000,
+      "prior_period_end": "2025-01-31",
+      "prior_filing": "0001327811-26-000014",
+      "prior_value": 269000000
+    }
+  },
+  "peers": {},
+  "market_price": {
+    "edgar_accepted": "2026-11-24 16:01:55",
+    "edgar_index_url": "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000057/0001327811-26-000057-index.html",
+    "earnings_accession": "0001327811-26-000057",
+    "filed_override": null,
+    "effective_filed_eastern": "2026-11-24T16:01:55-05:00",
+    "selected_close": {
+      "ticker": "WDAY",
+      "date": "2026-11-24",
+      "close": 179.23,
+      "close_time": "2026-11-24T16:00:00-05:00",
+      "source": "LSEG TR.PriceClose (WDAY.O)"
+    },
+    "price_source": "LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00"
+  }
+}

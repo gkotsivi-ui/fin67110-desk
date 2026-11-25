@@ -1,0 +1,19 @@
+{
+  "part": "seeker",
+  "requested_outputs": [
+    "registry.json",
+    "seeker_status.json"
+  ],
+  "outputs": [
+    {
+      "path": "registry.json",
+      "sha256": "9815d5048ed0ad2f7309b5ce38c092b548f619b1053935230dd154fdedeed892"
+    },
+    {
+      "path": "seeker_status.json",
+      "sha256": "984160a092214519fb8587ac5f6b3b931022309b4aeb7a57c8b1732445daad66"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

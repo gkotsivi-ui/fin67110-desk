@@ -1,0 +1,9 @@
+{
+  "task": "Resolve ticker to CIK",
+  "context": {
+    "ticker": "WDAY",
+    "peers": [],
+    "filed": null
+  },
+  "expected_output": "Step 1 data and status"
+}

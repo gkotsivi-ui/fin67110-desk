@@ -1,0 +1,9 @@
+{
+  "task": "Download filing texts",
+  "context": {
+    "ticker": "WDAY",
+    "peers": [],
+    "filed": null
+  },
+  "expected_output": "Step 3 data and status"
+}

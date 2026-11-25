@@ -1,0 +1,919 @@
+{
+  "compiled_report": "Filings read: 10-K 0001327811-26-000014 (fiscal year ended 2026-01-31, accepted 2026-03-06 16:13:04 ET); 10-Q 0001327811-26-000058 (quarter ended 2026-10-31, accepted 2026-11-24 16:03:21 ET); 8-K 0001327811-26-000057 (Item 2.02 earnings release, Exhibit 99.1 wday-10312026x991.htm, accepted 2026-11-24 16:01:55 ET); XBRL company facts, CIK 0001327811\nRun time: 2026-11-25T07:43:45.358652-05:00\n\n## Overview\nThis review tests Workday's growth claims using only the FY2026 10-K Business and MD&A sections and the Q3 FY2027 earnings release. Workday describes itself as an enterprise AI platform for HCM, financial management, spend management and planning. It serves more than 11,500 [10-K.txt:L247] organizations with more than 75 million [10-K.txt:L248] users under contract, including more than 65% [10-K.txt:L248] of the companies on the Fortune list of the largest U.S. companies. Revenue is mostly recurring: subscription services made up approximately 92% [10-K.txt:L1048] of total revenues in FY2026. Total revenues were $9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014] in FY2026, up from $8.446 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014] in FY2025. Subscription services revenues reached $8.8 billion [10-K.txt:L1096], up 14% [10-K.txt:L1096]. Expansion within existing customers accounted for approximately 60% [10-K.txt:L1096] of the subscription revenue increase, and newly added customers accounted for the remaining 40% [10-K.txt:L1096]. Neither the extracted 10-K sections nor the earnings release give a customer-concentration figure, so revenue concentration is not established by the supplied evidence.\n\n**Demand durability: supported.** The 10-K reports a gross revenue retention rate of approximately 97% [10-K.txt:L1098] as of January 31, 2026. Total subscription revenue backlog was $28.1 billion [10-K.txt:L1101], with $8.8 billion [10-K.txt:L1101] expected to be recognized over the following year. In Q3 FY2027, subscription revenues grew 12.8% [earnings_release_Ex99-1.txt:L14] year-over-year, and the portion of subscription revenue backlog due within the next year grew 12.3% [earnings_release_Ex99-1.txt:L24]. The MD&A also flags risks to this view: lengthening sales cycles in net new opportunities and reduced growth in headcount-level commitments when existing customers renew.\n\n### The 11 core claims, read and computed in code\n\n| # | Claim | Value | Source |\n|---|---|---|---|\n| 1 | Total revenue, fiscal year ended 2026-01-31 | $9.552 billion | XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014 |\n| 2 | Revenue growth versus the prior year | 13.09% | computed in code: (9552000000 - 8446000000) / 8446000000 |\n| 3 | Operating income | $721 million | XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014 |\n| 3 | Operating margin (operating income / total revenue) | 7.55% | computed in code: 721000000 / 9552000000 |\n| 4 | Net income attributable to the company | $693 million | XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014 |\n| 5 | Diluted EPS, GAAP | $2.59 | XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014 |\n| 6 | Return on average equity | 8.23% | computed in code: 693000000 / ((7805000000 + 9034000000) / 2) |\n| 7 | Debt to equity (long-term debt with its current portion) | not established by code | no saved calculation |\n| 8 | Free cash flow (cash from operations - additions to property and equipment) | $2.777 billion | computed in code: 2939000000 - 162000000 |\n| 9 | Latest quarter's revenue | 2,705 (USD millions), as the release table prints it | earnings_release_Ex99-1.txt:L265-L266 |\n| 10 | Quarter growth versus the same quarter last year | 11.23% | computed in code: (2705.0 - 2432.0) / 2432.0 * 100 |\n| 11 | Latest quarter's diluted EPS, GAAP | $0.96 | earnings_release_Ex99-1.txt:L346-L348 |\n\n## Market Positioning and Growth Outlook\n**Competitive position: mixed.** Workday names Oracle and SAP as its primary competitors and says it competes favorably on factors such as customer satisfaction, breadth of functionality and AI capability. The supplied materials contain no segment results, so a segment-level advantage is not established by the supplied evidence. Operating measures partly support the claim. Non-GAAP operating margin was 29.6% [10-K.txt:L1221] in FY2026, compared with 25.9% [10-K.txt:L1221] in FY2025. In Q3 FY2027 it was 31.4% [earnings_release_Ex99-1.txt:L18], compared with 28.5% [earnings_release_Ex99-1.txt:L18] a year earlier. However, GAAP operating margin was only 7.5% [10-K.txt:L1220] in FY2026, and the company booked approximately $303 million [10-K.txt:L1039] in restructuring costs. Gartner Leader designations are third-party opinions, not operating measures, so I give them no weight in this assessment.\n\nAI adoption is an early sign of advantage. More than 2,200 [earnings_release_Ex99-1.txt:L47] core customers have purchased at least one AI product, up nearly 25% [earnings_release_Ex99-1.txt:L47] from the prior quarter. Management also says AI products drove nearly $150 million [earnings_release_Ex99-1.txt:L36] in new ACV in the quarter. That figure comes from a CEO quote rather than the financial statements, so I treat it as a management claim.\n\n**Growth execution: mixed.** Investment rose unevenly in FY2026. Costs of subscription services grew 21% [10-K.txt:L1147], driven by third-party hosted infrastructure, while product development grew only 2% [10-K.txt:L1153] and sales and marketing grew 8% [10-K.txt:L1156]. Workday paid $1.1 billion [10-K.txt:L1033] for Paradox and made several other AI acquisitions, and it expects capital expenditures of approximately $270 million [10-K.txt:L1397] in FY2027. At the same time, it spent $2.9 billion [10-K.txt:L1036] on share repurchases in FY2026 and issued $2.5 billion [earnings_release_Ex99-1.txt:L71] of senior notes in Q3 FY2027. Management raised FY2027 subscription revenue guidance to $9.958 billion [earnings_release_Ex99-1.txt:L103], implying growth of 13% [earnings_release_Ex99-1.txt:L103]. However, Q4 FY2027 guidance implies subscription growth of only 10% [earnings_release_Ex99-1.txt:L97], which points to slowing growth.\n\n## Valuation Insights\nCash generation: supported. In the annual XBRL data, operating cash flow (NetCashProvidedByUsedInOperatingActivities) was $2.939 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014], up from $2.461 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2025-01-31, filing 0001327811-26-000014] in the prior year. Capital spending (PaymentsToAcquirePropertyPlantAndEquipment) was $162 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014], down from $269 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2025-01-31, filing 0001327811-26-000014]. Free cash flow was $2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]: computed, rechecked given calculations, as operating cash flow minus capital spending, with both inputs cited to filing 0001327811-26-000014. Operating cash flow rose while capital spending fell, so the company needed little reinvestment to produce its growth. Capital spending in the latest quarter was $44 million [saved calculated_facts.json#/quarter_results/latest_10q_capital_spending; computed, rechecked given calculations; formula 183000000 - 139000000; inputs: XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-10-31, filing 0001327811-26-000058, filed 2026-11-24, unit USD; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-07-31, filing 0001327811-26-000044, filed 2026-08-27, unit USD]: computed, rechecked given calculations. It equals the fiscal year-to-date amount from filing 0001327811-26-000058 minus the preceding year-to-date amount from filing 0001327811-26-000044. For the quarter, the release says \\\"Operating cash flows were $735 million [earnings_release_Ex99-1.txt:L26]\\\" (earnings_release_Ex99-1.txt:L26), \\\"compared to $588 million [earnings_release_Ex99-1.txt:L26] in the same period last year\\\" (L26), and \\\"Free cash flows were $691 million [earnings_release_Ex99-1.txt:L26]\\\" (L26). The release defines free cash flow as a non-GAAP measure that treats capital expenditures as a reduction to cash flows (L890).\n\nProfitability: mixed. The annual operating margin was 7.55% [saved calculated_facts.json#/metrics/operating_margin; computed, rechecked given calculations; formula 721000000 / 9552000000; inputs: XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]: computed, rechecked given calculations, as OperatingIncomeLoss divided by RevenueFromContractWithCustomerExcludingAssessedTax for the fiscal year ended January 31, 2026. Operating income was $721 million [XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014] (prior year $415 million [XBRL tag OperatingIncomeLoss, period end 2025-01-31, filing 0001327811-26-000014]) on revenue of $9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]. Annual revenue growth was 13.09% [saved calculated_facts.json#/metrics/revenue_growth; computed, rechecked given calculations; formula (9552000000 - 8446000000) / 8446000000; inputs: XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]: computed, rechecked given calculations, from the current and prior RevenueFromContractWithCustomerExcludingAssessedTax facts. Return on average equity was 8.23% [saved calculated_facts.json#/metrics/return_on_average_equity; computed, rechecked given calculations; formula 693000000 / ((7805000000 + 9034000000) / 2); inputs: XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]: computed, rechecked given calculations. It is defined as reported net income ($693 million [XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014], NetIncomeLoss) divided by the simple average of year-end stockholders' equity ($7.805 billion [XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014] at January 31, 2026 and $9.034 billion [XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014] at January 31, 2025). The GAAP operating margin is much thinner than the company's cash conversion. In the latest quarter, \\\"Operating income was $329 million [earnings_release_Ex99-1.txt:L16]\\\" (earnings_release_Ex99-1.txt:L16), and \\\"Current quarter operating income was impacted by restructuring expenses of $51 million [earnings_release_Ex99-1.txt:L18]\\\" (L18). Quarterly revenue growth was 11.23% [saved calculated_facts.json#/metrics/quarter_revenue_growth; computed, rechecked given calculations; formula (2705.0 - 2432.0) / 2432.0 * 100; inputs: earnings_release_Ex99-1.txt:L265-L266; quote: \"Total revenues\\n2,705\"; earnings_release_Ex99-1.txt:L265-L267; quote: \"Total revenues\\n2,705\\n2,432\"]: computed, rechecked given calculations, from release lines L265 to L267. This analysis uses GAAP figures only. The release's non-GAAP margin excludes share-based compensation and other items (L890), so it is not used here.\n\nFunding risk: mixed. Debt to equity is not available. The saved value is null because the current portion of long-term debt (LongTermDebtCurrent) is not available in the supplied XBRL data, and I have requested the calculation. The defined ratio includes long-term debt plus its current portion and excludes short-term borrowings. Noncurrent long-term debt (LongTermDebtNoncurrent) was $2.987 billion [XBRL tag LongTermDebtNoncurrent, period end 2026-01-31, filing 0001327811-26-000014] at January 31, 2026. Short-term borrowings are also not available in the supplied XBRL data. I checked the supplied filing passages, and none states the current portion of long-term debt or short-term borrowings. Both are therefore not established by the supplied evidence. The 10-K says that, if necessary, liquidity may include borrowing capacity under a credit agreement \\\"that provides for $1.0 billion [10-K.txt:L1355] of unsecured financing\\\" (10-K.txt:L1355). That statement describes one facility's capacity. It does not show that short-term debt is zero. The 10-K also says that, as of January 31, 2026, \\\"our principal sources of liquidity were cash, cash equivalents, and marketable securities totaling $5.4 billion [10-K.txt:L1354]\\\" (10-K.txt:L1354). The release reports that \\\"Cash, cash equivalents, and marketable securities were $5.643 billion [earnings_release_Ex99-1.txt:L31] as of October 31, 2026\\\" (earnings_release_Ex99-1.txt:L31). Equity fell from $9.034 billion [XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014] to $7.805 billion [XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014], so a debt-to-equity ratio, once computed, would use a smaller equity base.\n\nValuation: mixed. P/E was 69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014]: computed, rechecked given calculations. It divides the pre-filing official close from LSEG TR.PriceClose (WDAY.O), taken at 2026-11-24T16:00:00-05:00 and strictly before the filing at 2026-11-24T16:01:55-05:00, by annual GAAP diluted EPS (EarningsPerShareDiluted) of $2.59 [XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014] for the fiscal year ended January 31, 2026. Prior-year diluted EPS was $1.95 [XBRL tag EarningsPerShareDiluted, period end 2025-01-31, filing 0001327811-26-000014]. Comparability limit: the price is from the November pre-filing date, while the EPS covers an earlier fiscal year, so the multiple is not based on trailing-twelve-month earnings. Latest-quarter GAAP diluted EPS was \\\"$0.96 [earnings_release_Ex99-1.txt:L21]\\\" (earnings_release_Ex99-1.txt:L21), and I did not annualize it. The peers object is empty, so no peer facts were supplied and a peer P/E comparison is not established by the supplied evidence. I have requested one. I set aside headline EPS growth. The P/E rests on GAAP earnings that are much smaller than free cash flow of $2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014], while return on average equity was 8.23% [saved calculated_facts.json#/metrics/return_on_average_equity; computed, rechecked given calculations; formula 693000000 / ((7805000000 + 9034000000) / 2); inputs: XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014].\n\nWhat would change my view: the latest-quarter GAAP operating cash flow of $735 million [earnings_release_Ex99-1.txt:L26]. If next year's same quarter came in below this figure while capital spending (latest quarter $44 million [saved calculated_facts.json#/quarter_results/latest_10q_capital_spending; computed, rechecked given calculations; formula 183000000 - 139000000; inputs: XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-10-31, filing 0001327811-26-000058, filed 2026-11-24, unit USD; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-07-31, filing 0001327811-26-000044, filed 2026-08-27, unit USD]) held steady or rose, it would challenge my view that cash generation supports the 69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014] P/E.\n\nInsight: The 69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014] GAAP P/E looks less stretched against annual free cash flow of $2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014], which needed only $162 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014] of capital spending. Still, GAAP profitability remains thin, with an operating margin of 7.55% [saved calculated_facts.json#/metrics/operating_margin; computed, rechecked given calculations; formula 721000000 / 9552000000; inputs: XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014] and return on average equity of 8.23% [saved calculated_facts.json#/metrics/return_on_average_equity; computed, rechecked given calculations; formula 693000000 / ((7805000000 + 9034000000) / 2); inputs: XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]. Until the current portion of debt is disclosed and the null debt-to-equity ratio can be computed, funding risk rests mainly on noncurrent debt of $2.987 billion [XBRL tag LongTermDebtNoncurrent, period end 2026-01-31, filing 0001327811-26-000014] against liquidity of $5.643 billion [earnings_release_Ex99-1.txt:L31].\n\n## Future Developments and Strategic Recommendations\nThe catalysts to watch are new AI products and pricing: Workday Build, Workday Data Cloud, Flex Credits pricing and the partnerships with Anthropic and Accenture. The 10-K itself warns that Workday has limited experience pricing Flex Credits contracts and that AI monetization remains uncertain. Investors should track whether AI purchasing (currently more than 2,200 [earnings_release_Ex99-1.txt:L47] core customers) turns into subscription growth above the Q4 FY2027 guide of 10% [earnings_release_Ex99-1.txt:L97].\n\nThe backlog is also worth watching. Total subscription revenue backlog was $27.548 billion [earnings_release_Ex99-1.txt:L24] in Q3 FY2027, compared with $28.1 billion [10-K.txt:L1101] at fiscal year-end. Workday describes Q4 as its seasonally heaviest quarter for signings and renewals, so the year-end figure will show whether total backlog growth picks up again.\n\n**What would change my view.** My strongest conclusion is that demand is durable. It would be challenged if the next 10-K reports gross revenue retention below the current 97% [10-K.txt:L1098]. A lower figure would mean the recurring base itself is shrinking, not just slowing. It would also undercut the MD&A's claim that existing customers drive approximately 60% [10-K.txt:L1096] of the subscription revenue increase.\n\nInsight: In Q3 FY2027, subscription revenue backlog due within the next year grew 12.3% [earnings_release_Ex99-1.txt:L24] while total subscription revenue backlog grew only 6.1% [earnings_release_Ex99-1.txt:L24], so contracted revenue beyond the next year is growing more slowly than near-term revenue, a duration issue the release's headline revenue figures do not show.\n\n## Investment Recommendation\n**Rating: Hold**\n\n**Thesis.** The business is durable and produces a lot of cash. However, the supplied P/E of 69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014] already prices in growth that is slowing. Both analysts agree on the core: a recurring subscription base and strong cash conversion. They also agree that GAAP profitability is thin. The research evidence shows growth slowing at the same time. With no peer comparison to anchor the multiple, the case for Buy is not established. The cash and retention evidence is too strong to support Sell.\n\n**Thesis support: supported.** The business and financial evidence point the same way. Workday serves more than 11,500 [10-K.txt:L247] organizations and more than 75 million [10-K.txt:L248] users under contract, including more than 65% [10-K.txt:L248] of the companies on the Fortune list. Subscription services made up approximately 92% [10-K.txt:L1048] of FY2026 revenues. Subscription services revenues reached $8.8 billion [10-K.txt:L1096], up 14% [10-K.txt:L1096].\n\nThe Financial Analyst's XBRL figures show total revenues of $9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]. Research shows the same total, $9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014], up from $8.446 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]. Revenue growth was 13.09% [saved calculated_facts.json#/metrics/revenue_growth; computed, rechecked given calculations; formula (9552000000 - 8446000000) / 8446000000; inputs: XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]. Expansion within existing customers drove approximately 60% [10-K.txt:L1096] of the subscription revenue increase, and newly added customers drove the remaining 40% [10-K.txt:L1096].\n\nGross revenue retention was approximately 97% [10-K.txt:L1098]. That fits the financial results: operating cash flow rose to $2.939 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014] from $2.461 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2025-01-31, filing 0001327811-26-000014], while capital spending fell to $162 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014] from $269 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2025-01-31, filing 0001327811-26-000014]. Free cash flow was $2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]. In the latest quarter, operating cash flows were $735 million [earnings_release_Ex99-1.txt:L26], compared with $588 million [earnings_release_Ex99-1.txt:L26] a year earlier, and free cash flows were $691 million [earnings_release_Ex99-1.txt:L26].\n\nThe two analysts read profitability differently. Research cites non-GAAP operating margin of 29.6% [10-K.txt:L1221] in FY2026, up from 25.9% [10-K.txt:L1221], and 31.4% [earnings_release_Ex99-1.txt:L18] in the latest quarter, up from 28.5% [earnings_release_Ex99-1.txt:L18]. The Financial Analyst sets non-GAAP measures aside. On a GAAP basis it finds an operating margin of 7.55% [saved calculated_facts.json#/metrics/operating_margin; computed, rechecked given calculations; formula 721000000 / 9552000000; inputs: XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014], matching the research figure of 7.5% [10-K.txt:L1220]. Operating income was $721 million [XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014], up from $415 million [XBRL tag OperatingIncomeLoss, period end 2025-01-31, filing 0001327811-26-000014], and net income was $693 million [XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]. Return on average equity was 8.23% [saved calculated_facts.json#/metrics/return_on_average_equity; computed, rechecked given calculations; formula 693000000 / ((7805000000 + 9034000000) / 2); inputs: XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]. I give the GAAP view more weight for valuation because the P/E is built on GAAP diluted EPS.\n\n**Downside exposure: mixed.** The main exposure is slowing growth, not a funding shortfall. Latest-quarter subscription revenue growth was 12.8% [earnings_release_Ex99-1.txt:L14], and quarterly total revenue growth was 11.23% [saved calculated_facts.json#/metrics/quarter_revenue_growth; computed, rechecked given calculations; formula (2705.0 - 2432.0) / 2432.0 * 100; inputs: earnings_release_Ex99-1.txt:L265-L266; quote: \"Total revenues\\n2,705\"; earnings_release_Ex99-1.txt:L265-L267; quote: \"Total revenues\\n2,705\\n2,432\"]. Full-year FY2027 subscription guidance is $9.958 billion [earnings_release_Ex99-1.txt:L103], implying growth of 13% [earnings_release_Ex99-1.txt:L103], but the Q4 guide implies only 10% [earnings_release_Ex99-1.txt:L97].\n\nThe subscription revenue backlog due within the next year grew 12.3% [earnings_release_Ex99-1.txt:L24], but total subscription revenue backlog grew only 6.1% [earnings_release_Ex99-1.txt:L24]. Total backlog stood at $27.548 billion [earnings_release_Ex99-1.txt:L24] in the latest quarter, compared with $28.1 billion [10-K.txt:L1101] at fiscal year-end. At year-end, $8.8 billion [10-K.txt:L1101] of that backlog was expected to be recognized within the next year.\n\nCosts and capital outlays also bear on the downside. Costs of subscription services grew 21% [10-K.txt:L1147], against product development growth of 2% [10-K.txt:L1153] and sales and marketing growth of 8% [10-K.txt:L1156]. Restructuring costs were approximately $303 million [10-K.txt:L1039] in FY2026, and latest-quarter restructuring expenses were $51 million [earnings_release_Ex99-1.txt:L18] against GAAP operating income of $329 million [earnings_release_Ex99-1.txt:L16]. Capital allocation is heavy: the Paradox acquisition cost $1.1 billion [10-K.txt:L1033], share repurchases were $2.9 billion [10-K.txt:L1036], and expected FY2027 capital expenditures are approximately $270 million [10-K.txt:L1397].\n\nOn funding, Workday issued $2.5 billion [earnings_release_Ex99-1.txt:L71] of senior notes in the latest quarter. Noncurrent long-term debt was $2.987 billion [XBRL tag LongTermDebtNoncurrent, period end 2026-01-31, filing 0001327811-26-000014]. Equity fell to $7.805 billion [XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014] from $9.034 billion [XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]. Liquidity was $5.4 billion [10-K.txt:L1354] at fiscal year-end and $5.643 billion [earnings_release_Ex99-1.txt:L31] at the latest quarter-end.\n\nThe $1.0 billion [10-K.txt:L1355] of unsecured financing describes the capacity of one credit agreement only. It does not show that short-term debt is zero. The Financial Analyst found that the current portion of long-term debt and short-term borrowings are not available in the supplied XBRL data and are not stated in the supplied passages. Debt to equity therefore could not be computed. This is a limit of the supplied evidence, not a finding that the filing omits these items.\n\nResearch treats AI demand as early support: more than 2,200 [earnings_release_Ex99-1.txt:L47] core customers have bought an AI product, up nearly 25% [earnings_release_Ex99-1.txt:L47] from the prior quarter. Research classes the claim of nearly $150 million [earnings_release_Ex99-1.txt:L36] in new AI ACV as a management statement, so I give it limited weight.\n\n**Valuation support: mixed.** The P/E of 69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014] divides a November pre-filing price by FY2026 GAAP diluted EPS of $2.59 [XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014], which was up from $1.95 [XBRL tag EarningsPerShareDiluted, period end 2025-01-31, filing 0001327811-26-000014]. Its stated limits:\n- The multiple is not based on trailing-twelve-month earnings.\n- Latest-quarter GAAP diluted EPS of $0.96 [earnings_release_Ex99-1.txt:L21] was not annualized.\n- No peer facts were supplied, so a peer P/E comparison is not established.\n\nThe multiple looks less stretched next to free cash flow of $2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014] and latest-quarter capital spending of $44 million [saved calculated_facts.json#/quarter_results/latest_10q_capital_spending; computed, rechecked given calculations; formula 183000000 - 139000000; inputs: XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-10-31, filing 0001327811-26-000058, filed 2026-11-24, unit USD; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-07-31, filing 0001327811-26-000044, filed 2026-08-27, unit USD]. Without peer evidence, though, it does not support adding to a position while growth is slowing.\n\n**Deciding number: the P/E of 69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014].** It carries the most weight because it is where the two analyses meet. Research shows durable demand but slowing growth, with the Q4 guide at 10% [earnings_release_Ex99-1.txt:L97]. The Financial Analyst shows that the multiple rests on thin GAAP earnings and has no peer anchor. At this multiple, durability alone justifies holding, not buying.\n\n**Main risk.** Backlog that is growing slowly beyond the next year, combined with slowing subscription growth guidance, could erode the growth premium built into the multiple.\n\n**What would change the rating.** If the next 10-K reports gross revenue retention below the current 97% [10-K.txt:L1098], I would move to Sell, because a decline would mean the recurring base itself is shrinking.\n\nInsight: At a P/E of 69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014], the investment rests on cash generation ($2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014] of free cash flow) and retention (97% [10-K.txt:L1098]). Next-year backlog growth of 12.3% [earnings_release_Ex99-1.txt:L24] against total backlog growth of 6.1% [earnings_release_Ex99-1.txt:L24] shows that longer-dated contracts do not yet confirm the growth the multiple implies, which supports Hold rather than Buy.\n",
+  "published_claims": [
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c1"
+      },
+      "value": "11,500 [10-K.txt:L247]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c2"
+      },
+      "value": "75 million [10-K.txt:L248]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c33"
+      },
+      "value": "65% [10-K.txt:L248]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c7"
+      },
+      "value": "92% [10-K.txt:L1048]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c34"
+      },
+      "value": "$9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c35"
+      },
+      "value": "$8.446 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c8"
+      },
+      "value": "$8.8 billion [10-K.txt:L1096]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c9"
+      },
+      "value": "14% [10-K.txt:L1096]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c4"
+      },
+      "value": "60% [10-K.txt:L1096]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c5"
+      },
+      "value": "40% [10-K.txt:L1096]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c3"
+      },
+      "value": "97% [10-K.txt:L1098]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c6"
+      },
+      "value": "$28.1 billion [10-K.txt:L1101]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c36"
+      },
+      "value": "$8.8 billion [10-K.txt:L1101]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c20"
+      },
+      "value": "12.8% [earnings_release_Ex99-1.txt:L14]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c21"
+      },
+      "value": "12.3% [earnings_release_Ex99-1.txt:L24]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c10"
+      },
+      "value": "29.6% [10-K.txt:L1221]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c11"
+      },
+      "value": "25.9% [10-K.txt:L1221]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c27"
+      },
+      "value": "31.4% [earnings_release_Ex99-1.txt:L18]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c28"
+      },
+      "value": "28.5% [earnings_release_Ex99-1.txt:L18]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c12"
+      },
+      "value": "7.5% [10-K.txt:L1220]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c14"
+      },
+      "value": "$303 million [10-K.txt:L1039]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c24"
+      },
+      "value": "2,200 [earnings_release_Ex99-1.txt:L47]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c25"
+      },
+      "value": "25% [earnings_release_Ex99-1.txt:L47]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c26"
+      },
+      "value": "$150 million [earnings_release_Ex99-1.txt:L36]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c17"
+      },
+      "value": "21% [10-K.txt:L1147]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c15"
+      },
+      "value": "2% [10-K.txt:L1153]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c16"
+      },
+      "value": "8% [10-K.txt:L1156]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c13"
+      },
+      "value": "$1.1 billion [10-K.txt:L1033]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c18"
+      },
+      "value": "$270 million [10-K.txt:L1397]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c19"
+      },
+      "value": "$2.9 billion [10-K.txt:L1036]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c32"
+      },
+      "value": "$2.5 billion [earnings_release_Ex99-1.txt:L71]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c29"
+      },
+      "value": "$9.958 billion [earnings_release_Ex99-1.txt:L103]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c30"
+      },
+      "value": "13% [earnings_release_Ex99-1.txt:L103]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c31"
+      },
+      "value": "10% [earnings_release_Ex99-1.txt:L97]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c1"
+      },
+      "value": "$2.939 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c2"
+      },
+      "value": "$2.461 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c3"
+      },
+      "value": "$162 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c4"
+      },
+      "value": "$269 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c5"
+      },
+      "value": "$2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c6"
+      },
+      "value": "$44 million [saved calculated_facts.json#/quarter_results/latest_10q_capital_spending; computed, rechecked given calculations; formula 183000000 - 139000000; inputs: XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-10-31, filing 0001327811-26-000058, filed 2026-11-24, unit USD; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-07-31, filing 0001327811-26-000044, filed 2026-08-27, unit USD]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c7"
+      },
+      "value": "$735 million [earnings_release_Ex99-1.txt:L26]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c8"
+      },
+      "value": "$588 million [earnings_release_Ex99-1.txt:L26]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c9"
+      },
+      "value": "$691 million [earnings_release_Ex99-1.txt:L26]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c10"
+      },
+      "value": "7.55% [saved calculated_facts.json#/metrics/operating_margin; computed, rechecked given calculations; formula 721000000 / 9552000000; inputs: XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c11"
+      },
+      "value": "$721 million [XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c12"
+      },
+      "value": "$415 million [XBRL tag OperatingIncomeLoss, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c13"
+      },
+      "value": "$9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c14"
+      },
+      "value": "13.09% [saved calculated_facts.json#/metrics/revenue_growth; computed, rechecked given calculations; formula (9552000000 - 8446000000) / 8446000000; inputs: XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c15"
+      },
+      "value": "8.23% [saved calculated_facts.json#/metrics/return_on_average_equity; computed, rechecked given calculations; formula 693000000 / ((7805000000 + 9034000000) / 2); inputs: XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c16"
+      },
+      "value": "$693 million [XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c17"
+      },
+      "value": "$7.805 billion [XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c18"
+      },
+      "value": "$9.034 billion [XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c19"
+      },
+      "value": "$329 million [earnings_release_Ex99-1.txt:L16]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c20"
+      },
+      "value": "$51 million [earnings_release_Ex99-1.txt:L18]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c21"
+      },
+      "value": "11.23% [saved calculated_facts.json#/metrics/quarter_revenue_growth; computed, rechecked given calculations; formula (2705.0 - 2432.0) / 2432.0 * 100; inputs: earnings_release_Ex99-1.txt:L265-L266; quote: \"Total revenues\\n2,705\"; earnings_release_Ex99-1.txt:L265-L267; quote: \"Total revenues\\n2,705\\n2,432\"]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c22"
+      },
+      "value": "$2.987 billion [XBRL tag LongTermDebtNoncurrent, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c23"
+      },
+      "value": "$1.0 billion [10-K.txt:L1355]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c24"
+      },
+      "value": "$5.4 billion [10-K.txt:L1354]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c25"
+      },
+      "value": "$5.643 billion [earnings_release_Ex99-1.txt:L31]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c26"
+      },
+      "value": "69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c27"
+      },
+      "value": "$2.59 [XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c28"
+      },
+      "value": "$1.95 [XBRL tag EarningsPerShareDiluted, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Financial Analyst",
+        "claim": "c29"
+      },
+      "value": "$0.96 [earnings_release_Ex99-1.txt:L21]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c23"
+      },
+      "value": "$27.548 billion [earnings_release_Ex99-1.txt:L24]"
+    },
+    {
+      "target": {
+        "role": "Research Analyst",
+        "claim": "c22"
+      },
+      "value": "6.1% [earnings_release_Ex99-1.txt:L24]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c62"
+      },
+      "value": "69.201 times [saved calculated_facts.json#/metrics/pe; computed, rechecked given calculations; formula 179.23 / 2.59; inputs: LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00; XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c1"
+      },
+      "value": "11,500 [10-K.txt:L247]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c2"
+      },
+      "value": "75 million [10-K.txt:L248]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c33"
+      },
+      "value": "65% [10-K.txt:L248]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c7"
+      },
+      "value": "92% [10-K.txt:L1048]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c8"
+      },
+      "value": "$8.8 billion [10-K.txt:L1096]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c9"
+      },
+      "value": "14% [10-K.txt:L1096]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c49"
+      },
+      "value": "$9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c34"
+      },
+      "value": "$9.552 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c35"
+      },
+      "value": "$8.446 billion [XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c50"
+      },
+      "value": "13.09% [saved calculated_facts.json#/metrics/revenue_growth; computed, rechecked given calculations; formula (9552000000 - 8446000000) / 8446000000; inputs: XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c4"
+      },
+      "value": "60% [10-K.txt:L1096]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c5"
+      },
+      "value": "40% [10-K.txt:L1096]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c3"
+      },
+      "value": "97% [10-K.txt:L1098]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c37"
+      },
+      "value": "$2.939 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c38"
+      },
+      "value": "$2.461 billion [XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c39"
+      },
+      "value": "$162 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c40"
+      },
+      "value": "$269 million [XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c41"
+      },
+      "value": "$2.777 billion [saved calculated_facts.json#/metrics/free_cash_flow; computed, rechecked given calculations; formula 2939000000 - 162000000; inputs: XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c43"
+      },
+      "value": "$735 million [earnings_release_Ex99-1.txt:L26]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c44"
+      },
+      "value": "$588 million [earnings_release_Ex99-1.txt:L26]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c45"
+      },
+      "value": "$691 million [earnings_release_Ex99-1.txt:L26]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c10"
+      },
+      "value": "29.6% [10-K.txt:L1221]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c11"
+      },
+      "value": "25.9% [10-K.txt:L1221]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c27"
+      },
+      "value": "31.4% [earnings_release_Ex99-1.txt:L18]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c28"
+      },
+      "value": "28.5% [earnings_release_Ex99-1.txt:L18]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c46"
+      },
+      "value": "7.55% [saved calculated_facts.json#/metrics/operating_margin; computed, rechecked given calculations; formula 721000000 / 9552000000; inputs: XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c12"
+      },
+      "value": "7.5% [10-K.txt:L1220]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c47"
+      },
+      "value": "$721 million [XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c48"
+      },
+      "value": "$415 million [XBRL tag OperatingIncomeLoss, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c52"
+      },
+      "value": "$693 million [XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c51"
+      },
+      "value": "8.23% [saved calculated_facts.json#/metrics/return_on_average_equity; computed, rechecked given calculations; formula 693000000 / ((7805000000 + 9034000000) / 2); inputs: XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014; XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c20"
+      },
+      "value": "12.8% [earnings_release_Ex99-1.txt:L14]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c57"
+      },
+      "value": "11.23% [saved calculated_facts.json#/metrics/quarter_revenue_growth; computed, rechecked given calculations; formula (2705.0 - 2432.0) / 2432.0 * 100; inputs: earnings_release_Ex99-1.txt:L265-L266; quote: \"Total revenues\\n2,705\"; earnings_release_Ex99-1.txt:L265-L267; quote: \"Total revenues\\n2,705\\n2,432\"]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c29"
+      },
+      "value": "$9.958 billion [earnings_release_Ex99-1.txt:L103]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c30"
+      },
+      "value": "13% [earnings_release_Ex99-1.txt:L103]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c31"
+      },
+      "value": "10% [earnings_release_Ex99-1.txt:L97]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c21"
+      },
+      "value": "12.3% [earnings_release_Ex99-1.txt:L24]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c22"
+      },
+      "value": "6.1% [earnings_release_Ex99-1.txt:L24]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c23"
+      },
+      "value": "$27.548 billion [earnings_release_Ex99-1.txt:L24]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c6"
+      },
+      "value": "$28.1 billion [10-K.txt:L1101]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c36"
+      },
+      "value": "$8.8 billion [10-K.txt:L1101]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c17"
+      },
+      "value": "21% [10-K.txt:L1147]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c15"
+      },
+      "value": "2% [10-K.txt:L1153]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c16"
+      },
+      "value": "8% [10-K.txt:L1156]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c14"
+      },
+      "value": "$303 million [10-K.txt:L1039]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c56"
+      },
+      "value": "$51 million [earnings_release_Ex99-1.txt:L18]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c55"
+      },
+      "value": "$329 million [earnings_release_Ex99-1.txt:L16]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c13"
+      },
+      "value": "$1.1 billion [10-K.txt:L1033]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c19"
+      },
+      "value": "$2.9 billion [10-K.txt:L1036]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c18"
+      },
+      "value": "$270 million [10-K.txt:L1397]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c32"
+      },
+      "value": "$2.5 billion [earnings_release_Ex99-1.txt:L71]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c58"
+      },
+      "value": "$2.987 billion [XBRL tag LongTermDebtNoncurrent, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c53"
+      },
+      "value": "$7.805 billion [XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c54"
+      },
+      "value": "$9.034 billion [XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c60"
+      },
+      "value": "$5.4 billion [10-K.txt:L1354]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c61"
+      },
+      "value": "$5.643 billion [earnings_release_Ex99-1.txt:L31]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c59"
+      },
+      "value": "$1.0 billion [10-K.txt:L1355]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c24"
+      },
+      "value": "2,200 [earnings_release_Ex99-1.txt:L47]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c25"
+      },
+      "value": "25% [earnings_release_Ex99-1.txt:L47]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c26"
+      },
+      "value": "$150 million [earnings_release_Ex99-1.txt:L36]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c63"
+      },
+      "value": "$2.59 [XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c64"
+      },
+      "value": "$1.95 [XBRL tag EarningsPerShareDiluted, period end 2025-01-31, filing 0001327811-26-000014]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c65"
+      },
+      "value": "$0.96 [earnings_release_Ex99-1.txt:L21]"
+    },
+    {
+      "target": {
+        "role": "Investment Advisor",
+        "claim": "c42"
+      },
+      "value": "$44 million [saved calculated_facts.json#/quarter_results/latest_10q_capital_spending; computed, rechecked given calculations; formula 183000000 - 139000000; inputs: XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-10-31, filing 0001327811-26-000058, filed 2026-11-24, unit USD; XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-07-31, filing 0001327811-26-000044, filed 2026-08-27, unit USD]"
+    }
+  ],
+  "saved_filing_texts": {
+    "10-K.txt": "10-K.txt:L239: and similar expressions are intended to identify forward-looking statements. We have based these forward-looking statements largely on our current expectations, beliefs, and projections about future events, conditions, and trends that we believe may affect our financial condition, operating results, business strategy, short-term and long-term business operations and objectives, and financial needs. These forward-looking statements are subject to a number of risks, uncertainties, assumptions, and changes in circumstances that are difficult to predict and many of which are outside of our control, such as those arising from the impact of recent macroeconomic events, including geopolitical instability, increased tariffs, elevated inflation, and fluctuating interest rates and foreign currency exchange rates, as well as those described in the\n10-K.txt:L240: \u201c\n10-K.txt:L241: Risk Factors\n10-K.txt:L242: \u201d\n10-K.txt:L243: section, which we encourage you to read carefully. Moreover, we operate in a very competitive and rapidly changing environment. New risks emerge from time to time. It is not possible for our management to predict all risks, nor can we assess the impact of all factors on our business or the extent to which any factor, or combination of factors, may cause actual results to differ materially from those contained in any forward-looking statements we may make.\n10-K.txt:L244: In light of these risks, uncertainties, assumptions, and potential changes in circumstances, the future events, conditions, and trends discussed in this report may not occur and actual results could differ materially and adversely from those anticipated or implied by the forward-looking statements. Accordingly, you should not rely upon any forward-looking statements. Although we believe that the expectations reflected in the forward-looking statements are reasonable, we cannot guarantee future results, levels of activities, performance, or achievements. We are under no duty to update any of these forward-looking statements after the date of this report or to conform these statements to actual results or revised expectations, except as required by applicable law. If we do update any forward-looking statements, no inference should be drawn that we will make additional updates with respect to those or other forward-looking statements.\n10-K.txt:L245: ITEM 1. BUSINESS\n10-K.txt:L246: Overview\n10-K.txt:L247: Workday is the enterprise AI platform for managing people, money, and agents. Workday provides more than 11,500 organizations with cloud solutions powered by artificial intelligence (\u201cAI\u201d) to help solve some of today\u2019s most complex business challenges, including supporting and empowering their workforce, managing their finances and spend in an ever-changing environment, and planning for the unexpected.\n10-K.txt:L248: We strive to reimagine how work gets done and hope to empower customers to do the same through an innovative suite of solutions with more than 75 million users under contract around the world and across industries \u2013 from emerging and medium-sized businesses to more than 65% of the Fortune\n10-K.txt:L249: 500. Central to our purpose is a set of core values \u2013 with our employees as number one \u2013 along with customer service, innovation, integrity, fun, and profitability. We believe that happy employees lead to happy customers, and we are committed to helping our customers adapt and thrive in this increasingly dynamic business environment.\n10-K.txt:L250: As organizations face changing conditions, we believe the need for an intuitive, open, scalable, and secure platform that provides unified management of human resources (\u201cHR\u201d), finances, AI agents, suppliers, and planning is more important than ever. Workday AI is built into our platform, allowing us to rapidly deliver and sustain models that can transform business processes and solve countless business problems. Workday\u2019s insight into how people, money, and agents move through organizations provides a depth of context in HR and finance, allowing us to understand how and where work gets done and to strategically design solutions to have the greatest impact. As a result, Workday helps deliver better employee experiences, increase productivity, improve operational efficiencies, and provide insights for faster, data-driven decision-making. In fiscal 2026, we introduced new Workday AI agents to accelerate hiring, enhance frontline worker experiences, simplify financial processes, and improve employee information access. In fiscal 2026, we also announced new Workday AI agents that are expected to be available in fiscal 2027, purpose-built to assist with complex human capital management (\u201cHCM\u201d) and finance processes, such as performance reviews, workforce planning, and financial close. To support our customers and help them continuously adapt how they manage their business and operations, Workday delivers weekly product updates in addition to\n10-K.txt:L251: 1\n10-K.txt:L252: Table of\n10-K.txt:L253: Contents\n10-K.txt:L254: major feature releases throughout the year. Through this model, Workday customers are able to adopt and implement innovations quickly and adapt at a time that fits their business needs. We sell our solutions worldwide through direct sales by our field sales teams; through referrals and our co-selling partners; by reselling through partners; and over Workday Marketplace. We also offer professional services, as do our Workday Services Partners, to help customers deploy our solutions and continually adopt new capabilities.\n10-K.txt:L255: Workday\u2019s open platform enables our customers and partners to innovate by building AI-powered solutions and agents that can work across their organization. In fiscal 2026, we announced Workday Build, a new open developer platform that will give customers and our partners the ability to create and share AI-powered solutions directly on the Workday platform. Workday Build will feature Workday Flowise Agent Builder, a low-code tool designed to simplify building, deploying, and managing custom AI agents within Workday that is expected to be available to early adopter customers in fiscal 2027. In fiscal 2026, we also announced Workday Data Cloud, a new data service based on an open architecture and industry standards, such as Apache Iceberg, designed to enable organizations to gain greater strategic value from their HCM and finance data by connecting to their existing analytics platforms and operational systems with bidirectional, zero-copy access. The Workday Data Cloud includes key partnerships that will allow organizations to share data to and from certain other platforms with Workday, helping organizations to securely connect and analyze HCM and finance data in context with customer, market, and operational data. The Workday Data Cloud is expected to become available later in fiscal 2027.\n10-K.txt:L256: Our innovation strategy includes the selective acquisition of technologies that complement our core offerings and align with our long-term growth objectives. During fiscal 2026, we expanded our AI capabilities through the acquisitions of FlowiseAI, Inc. (\u201cFlowise\u201d), a low-code platform that makes it easy to build AI agents; Paradox, Inc. (\u201cParadox\u201d), a candidate experience agent that uses conversational AI to simplify every step of the job application journey; Sana Labs AB (\u201cSana\u201d), a leading AI company building the next generation of enterprise knowledge tools; and Pipedream, Inc. (\u201cPipedream\u201d), a leading integration platform for AI agents.\n10-K.txt:L1025: 20,482\n10-K.txt:L1026: 3\n10-K.txt:L1027: %\n10-K.txt:L1028: (1)\n10-K.txt:L1029: See \u201cNon-GAAP Financial Measures\u201d below for further information.\n10-K.txt:L1030: Additional notable transactions from fiscal 2026 include:\n10-K.txt:L1031: \u2022\n10-K.txt:L1032: Business combinations:\n10-K.txt:L1033: In September 2025, we acquired Paradox, a candidate experience agent that uses conversational AI to simplify every step of the job application journey, for purchase consideration of $1.1 billion, and in November 2025, we acquired Sana, a leading AI company building the next generation of enterprise knowledge tools, for purchase consideration of $1.1 billion.\n10-K.txt:L1034: \u2022\n10-K.txt:L1035: Share repurchases\n10-K.txt:L1036: : During fiscal 2026, we repurchased approximately 12.8 million shares of our Class A common stock for $2.9 billion as part of our share repurchase programs.\n10-K.txt:L1037: \u2022\n10-K.txt:L1038: Restructuring activities:\n10-K.txt:L1039: In February 2025, we announced a restructuring plan (\u201cFiscal 2026 Restructuring Plan\u201d), intended to prioritize our investments and continue advancing our ongoing focus on durable growth. The plan resulted in the reduction of approximately 7.5% of our workforce and the exit of certain owned office space. In February 2026, we announced an additional restructuring plan (\u201cFiscal 2027 Restructuring Plan\u201d) intended to better align our people and resources to our highest priorities in fiscal 2027. The plan is expected to result in the reduction of approximately 2% of our workforce, and in the impairment of certain office space and long-lived assets. For fiscal 2026, we incurred approximately $303 million in costs related to these restructuring activities.\n10-K.txt:L1040: Impact of Current Economic Conditions\n10-K.txt:L1041: Recent macroeconomic events including increased tariffs, elevated inflation, and fluctuating interest rates and foreign currency exchange rates, as well as geopolitical instability, continue to impact the global economy and create uncertainty, volatility, and disruption of financial markets. As a result, we have experienced, and may continue to experience, a moderation of revenue growth rates due to deal scrutiny and the lengthening of certain sales cycles, particularly within net new opportunities, as well as reduced growth in headcount-level commitments upon renewals of existing customers. The extended sales cycles are particularly evident in the government, higher education, and healthcare industries which are tied to federal funding. Further, we have provided, and may continue to provide, certain customers with more flexible payment terms. For further discussion of the potential impacts of recent macroeconomic events on our business, financial condition, and operating results, see \u201cRisk Factors\u201d included in Part I, Item 1A of this report.\n10-K.txt:L1042: 38\n10-K.txt:L1043: Table of\n10-K.txt:L1044: Contents\n10-K.txt:L1045: Components of Results of Operations\n10-K.txt:L1046: Revenues\n10-K.txt:L1047: We derive our revenues from subscription services and professional services. Subscription services revenues primarily consist of fees that provide customers access to our cloud applications, with standard and enhanced customer support. Professional services revenues include fees for deployment services, optimization services, and training.\n10-K.txt:L1048: Subscription services revenues accounted for approximately 92% of our total revenues for the fiscal year ended January\u00a031, 2026, and represented 97% of our total unearned revenue as of January\u00a031, 2026. Subscription services revenues are driven primarily by the number of customers, the number of workers at each customer, the specific applications subscribed to by each customer, and the price of our applications.\n10-K.txt:L1049: The mix of applications to which each customer subscribes can affect our financial performance due to price differentials in our applications. Pricing for our applications varies based on many factors, including the complexity and maturity of the application and its acceptance in the marketplace. New products or services offerings by competitors in the future could also impact the mix and pricing of our offerings.\n10-K.txt:L1050: Subscription services revenues are recognized over time as services are delivered, beginning on the date our service is made available to the customer. Our subscription contracts typically have a term of three years or longer and are generally noncancelable. We generally invoice our customers annually in advance for subscription services. We may provide certain customers flexible payment terms and the timing of revenue recognition may differ from the timing of invoicing to our customers.\n10-K.txt:L1051: Our professional services consulting engagements are billed on a time and materials or fixed price basis. We generally invoice our customers as the work is performed for time and materials arrangements, and in advance for fixed price arrangements. For contracts billed on a time and materials basis, revenues are recognized over time as the professional services are performed. For contracts billed on a fixed price basis, revenues are recognized over time based on the proportion of the professional services performed. In some cases, we supplement our consulting teams by subcontracting resources from our service partners and deploying them on customer engagements. As the Workday-related consulting practices of our partner firms continue to develop, we expect these partners to increasingly contract directly with our subscription customers for services engagements.\n10-K.txt:L1052: Subscription Revenue Backlog\n10-K.txt:L1053: Our subscription revenue backlog, which is also referred to as remaining performance obligations for subscription contracts, represents contracted subscription services revenues that have not yet been recognized and includes billed and unbilled amounts. Subscription revenue backlog may fluctuate from period-to-period due to a number of factors, including the timing of renewals and overall renewal rates, new business growth, average contract duration, business combinations, and seasonality.\n10-K.txt:L1054: Costs and Expenses\n10-K.txt:L1055: Costs of subscription services revenues\n10-K.txt:L1056: . Costs of subscription services revenues consist primarily of expenses associated with hosting our applications and delivering standard and enhanced customer support services. These costs include employee-related expenses, expenses related to data center capacity and third-party hosted infrastructure, depreciation of our data center equipment, amortization of certain acquisition-related intangible assets, and allocated overhead.\n10-K.txt:L1088: 656\n10-K.txt:L1089: Total revenues\n10-K.txt:L1090: $\n10-K.txt:L1091: 9,552\n10-K.txt:L1092: $\n10-K.txt:L1093: 8,446\n10-K.txt:L1094: $\n10-K.txt:L1095: 7,259\n10-K.txt:L1096: Total revenues were $9.6 billion for fiscal 2026, compared to $8.4 billion for fiscal 2025, an increase of $1.1 billion, or 13%. Subscription services revenues were $8.8 billion for fiscal 2026, compared to $7.7 billion for fiscal 2025, an increase of $1.1 billion, or 14%. Approximately 60% of the increase in subscription services revenues was attributable to expansion within our customers that existed as of the beginning of the comparable prior year period, and the remaining 40% was attributable to customers added after the beginning of the comparable prior year period. Professional services revenues were $719 million for fiscal 2026, compared to $728 million for fiscal 2025, a decrease of $10 million, or 1%. The decrease in professional services revenues was driven by variation in project size and mix of deployment and integration services provided as we continue to expand and leverage our service partners.\n10-K.txt:L1097: Gross Revenue Retention Rate\n10-K.txt:L1098: Our growth in subscription services revenues attributable to existing customers is further reflected by our gross revenue retention rate of approximately 97% as of January\u00a031, 2026. Our gross revenue retention rate measures the percentage of recurring revenue retained from existing customers and is calculated by taking total annual recurring revenue (\u201cARR\u201d) of our customers as of the corresponding prior period-end and comparing that to ARR from that same set of customers as of the current period-end. The metric takes into account recurring revenues lost to product or customer churn but does not account for additional revenue earned from add-ons or net expansions, which include volume and price adjustments. Our high gross revenue retention rate demonstrates our ability to maintain our existing customer base and drive strong overall customer satisfaction.\n10-K.txt:L1099: Our gross revenue retention rate is based on ARR, which represents the annualized value of active subscription contracts as of the end of each period. Each subscription contract is annualized by dividing the total contract value by the number of days in the contract term and then multiplying by 365. We exclude certain subscription contracts from the calculation, including contracts with terms less than one year that are distinct from our core product offering, such as contracts for tenants which are used for implementation and testing. To the extent that we are negotiating a renewal with a customer after the expiration of the subscription, ARR is only adjusted if the customer churns. We calculate ARR on a constant currency basis using exchange rates set at the beginning of each fiscal year.\n10-K.txt:L1100: Subscription Revenue Backlog\n10-K.txt:L1101: As of January\u00a031, 2026, our total subscription revenue backlog was $28.1\u00a0billion, with $8.8\u00a0billion expected to be recognized in revenues over the next 12 months. As of January\u00a031, 2025, our total subscription revenue backlog was $25.1 billion, with $7.6 billion expected to be recognized in revenues over the next 12 months. The increase in subscription revenue backlog was primarily driven by expansion within our existing customer base, sales to new customers, and timing of renewals for existing customers.\n10-K.txt:L1102: 40\n10-K.txt:L1103: Table of\n10-K.txt:L1104: Contents\n10-K.txt:L1105: Costs and Expenses\n10-K.txt:L1106: Our costs and expenses were as follows (in millions):\n10-K.txt:L1107: Year Ended January\u00a031,\n10-K.txt:L1108: 2026\n10-K.txt:L1109: 2025\n10-K.txt:L1139: $\n10-K.txt:L1140: 8,831\n10-K.txt:L1141: $\n10-K.txt:L1142: 8,031\n10-K.txt:L1143: $\n10-K.txt:L1144: 7,076\n10-K.txt:L1145: Total costs and expenses were $8.8 billion for fiscal 2026, compared to $8.0 billion for fiscal 2025, an increase of $800 million, or 10%. The increase in total costs and expenses included increases of $219 million in restructuring-related expenses, $159 million in third-party hosted infrastructure expenses, $212 million in employee-related expenses, net of restructuring-related cost savings, $81 million in facilities and IT-related expenses, $52 million related to professional services, $41 million in amortization of deferred sales commissions, $27 million in amortization of acquisition-related intangible assets, and $16 million related to marketing programs, offset by a reduction of $19 million in subcontractor expenses.\n10-K.txt:L1146: Costs of Subscription Services\n10-K.txt:L1147: Costs of subscription services were $1.5 billion for fiscal 2026, compared to $1.3 billion for fiscal 2025, an increase of $264 million, or 21%. The increase in costs of subscription services included increases of $139 million in third-party hosted infrastructure expenses, $74 million in employee-related expenses primarily due to delivering our enhanced customer support services, net of restructuring-related cost savings, $29 million in facilities and IT-related expenses, and $19 million in amortization of acquisition-related intangible assets.\n10-K.txt:L1148: We expect costs of subscription services will continue to increase in absolute dollars as we improve and expand our technical operations infrastructure, including third-party hosted infrastructure, and as we grow our enhanced customer support services.\n10-K.txt:L1149: Costs of Professional Services\n10-K.txt:L1150: Costs of professional services were $790 million for fiscal 2026, compared to $803 million for fiscal 2025, a decrease of $13 million, or 2%. The decrease in costs of professional services included a reduction of $19 million in subcontractor expenses offset by an increase of $7 million in facilities and IT-related expenses. Employee-related expenses remained relatively flat as a result of restructuring-related cost savings.\n10-K.txt:L1151: We expect costs of professional services as a percentage of total revenues to continue to decline as we expand and leverage our service partners to deploy our applications and focus on growing our subscription revenues.\n10-K.txt:L1152: Product Development\n10-K.txt:L1153: Product development expenses were $2.7 billion for fiscal 2026, compared to $2.6 billion for fiscal 2025, an increase of $55 million, or 2%. The increase in product development expenses included increases of $41 million in employee-related expenses, net of restructuring-related cost savings, $18 million in third-party hosted infrastructure expenses, and $14 million in facilities and IT-related expenses, offset by a reduction of $11 million related to professional services.\n10-K.txt:L1154: We expect product development expenses will continue to increase in absolute dollars as we improve and extend our applications and develop new technologies.\n10-K.txt:L1155: Sales and Marketing\n10-K.txt:L1156: Sales and marketing expenses were $2.6 billion for fiscal 2026, compared to $2.4 billion for fiscal 2025, an increase of $184 million, or 8%. The increase in sales and marketing expenses included increases of $76 million in employee-related expenses, net of restructuring-related cost savings, $41 million in amortization of deferred sales commissions, $19 million related to marketing programs, $17 million related to professional services, and $17 million in facilities and IT-related expenses.\n10-K.txt:L1157: 41\n10-K.txt:L1158: Table of\n10-K.txt:L1159: Contents\n10-K.txt:L1160: We expect sales and marketing expenses to increase in absolute dollars as we continue to invest domestically and internationally to expand awareness of our brand and product offerings to attract new and existing customers.\n10-K.txt:L1161: General and Administrative\n10-K.txt:L1162: General and administrative expenses were $912 million for fiscal 2026, compared to $820 million for fiscal 2025, an increase of $92 million, or 11%. The increase in general and administrative expenses included increases of $45 million related to professional services, $20 million in employee-related expenses, net of restructuring-related cost savings, and $14 million in facilities and IT-related expenses.\n10-K.txt:L1163: We expect general and administrative expenses will continue to increase in absolute dollars as we continue to grow our business and invest in our people, processes, and systems to support our global operations.\n10-K.txt:L1164: Restructuring\n10-K.txt:L1212: %\n10-K.txt:L1213: 18.0\n10-K.txt:L1214: %\n10-K.txt:L1215: 19.5\n10-K.txt:L1216: %\n10-K.txt:L1217: Share-based compensation expense increased by $107 million during fiscal 2026, primarily due to restructuring activities and additional grants to new and existing employees.\n10-K.txt:L1218: Equity compensation is an important element of our compensation philosophy. While we expect share-based compensation expense to grow in absolute dollars as we expand our global workforce, we expect it to decline as a percentage of total revenues.\n10-K.txt:L1219: Operating Income and Operating Margin\n10-K.txt:L1220: GAAP operating income was $721 million, or 7.5% of revenues, in fiscal 2026, compared to $415 million, or 4.9% of revenues in fiscal 2025. The increase is primarily due to our revenue growth outpacing headcount growth, moderation of operating expenses, including share-based compensation, and restructuring-related cost savings, partially offset by restructuring expenses.\n10-K.txt:L1221: Non-GAAP operating income was $2.8 billion, or 29.6% of revenues, in fiscal 2026, compared to $2.2 billion, or 25.9% of revenues in fiscal 2025. The increase is primarily due to our revenue growth outpacing headcount growth, moderation of operating expenses, and restructuring-related cost savings.\n10-K.txt:L1222: 42\n10-K.txt:L1223: Table of\n10-K.txt:L1224: Contents\n10-K.txt:L1225: Reconciliations of our GAAP to non-GAAP operating income and operating margin were as follows (in millions, except percentages). See \u201cNon-GAAP Financial Measures\u201d below for further information.\n10-K.txt:L1226: Year Ended January 31,\n10-K.txt:L1227: 2026\n10-K.txt:L1228: 2025\n10-K.txt:L1229: 2024\n10-K.txt:L1346: 43\n10-K.txt:L1347: Table of\n10-K.txt:L1348: Contents\n10-K.txt:L1349: The Organization for Economic Cooperation and Development (\u201cOECD\u201d) released Pillar Two model rules defining a 15% global minimum tax for large multinational corporations. The OECD continues to release additional guidance and countries are implementing legislation, with widespread adoption of the Pillar Two Framework expected in the near future. Pillar Two rules are at varying stages of adoption across the jurisdictions where we operate. The specific rules and timeline to implement these rules vary by jurisdiction. The adoption of Pillar Two rules may affect our effective tax rate and current tax obligations and liabilities. While we do not currently anticipate Pillar Two rules to have a material impact on our consolidated financial results, we are monitoring developments from the OECD, governmental bodies, such as the EU, and intergovernmental economic organizations, to evaluate the impact of changing global tax laws.\n10-K.txt:L1350: For further information, see\n10-K.txt:L1351: Note 17, Income Taxes\n10-K.txt:L1352: , of the Notes to Consolidated Financial Statements included in Part II, Item 8 of this report.\n10-K.txt:L1353: Liquidity and Capital Resources\n10-K.txt:L1354: As of January 31, 2026, our principal sources of liquidity were cash, cash equivalents, and marketable securities totaling $5.4 billion, which were primarily held for working capital and general corporate purposes. Our cash equivalents and marketable securities are primarily composed of, in order from largest to smallest, corporate bonds, U.S. treasury securities, money market funds, U.S. agency obligations, commercial paper, asset-backed securities, and supranational securities.\n10-K.txt:L1355: We believe our existing cash, cash equivalents, marketable securities, cash provided by operating activities, unbilled amounts related to the remaining term of contracted noncancelable subscription agreements, which are not reflected on the Consolidated Balance Sheets, and, if necessary, our borrowing capacity under our 2022 Credit Agreement that provides for $1.0 billion of unsecured financing, are sufficient to meet our working capital, capital expenditure, share repurchase, and debt repayment needs over the next 12 months and beyond.\n10-K.txt:L1356: Our long-term future capital requirements depend on many factors, including the effects of macroeconomic trends, customer growth rates, subscription renewal activity, headcount growth, the timing and extent of development efforts, the expansion of sales and marketing activities, the introduction of new and enhanced services offerings, infrastructure development, and our investment and acquisition activities. As part of our strategy, we may choose to seek additional debt or equity financing, which may not be available on terms favorable to us or at all. Additionally, our cash provided by operating activities could be affected by various risks and uncertainties, including the \u201cRisk Factors\u201d included in Part I, Item 1A of this report.\n10-K.txt:L1357: Our cash flows were as follows (in millions):\n10-K.txt:L1358: Year Ended January 31,\n10-K.txt:L1359: 2026\n10-K.txt:L1360: 2025\n10-K.txt:L1361: 2024\n10-K.txt:L1362: Net cash provided by (used in):\n10-K.txt:L1363: Operating activities\n10-K.txt:L1389: Operating Activities\n10-K.txt:L1390: Cash provided by operating activities was $2.9 billion and $2.5 billion for fiscal 2026 and 2025, respectively. The improvement in cash provided by operating activities was primarily the result of higher cash collections of $1.2 billion mainly due to increased sales, partially offset by increased supplier payments of $335 million to support our continued growth and increased employee-related payments of $272 million, which include payments made under the Fiscal 2026 Restructuring Plan.\n10-K.txt:L1391: Investing Activities\n10-K.txt:L1392: Cash provided in investing activities for fiscal 2026 was $333 million, which primarily resulted from net inflows of $2.6 billion as we converted marketable debt securities into cash to fund acquisition activities and share repurchases, offset by net outflows of $2.1 billion for acquisitions, and capital expenditures of $162 million mainly for office space projects.\n10-K.txt:L1393: Cash used in investing activities for fiscal 2025 was $1.8 billion, which primarily resulted from a net outflow of $667 million related to marketable debt securities activities, net outflows of $825 million for acquisitions, and capital expenditures of $269 million for data center and office space projects.\n10-K.txt:L1394: 44\n10-K.txt:L1395: Table of\n10-K.txt:L1396: Contents\n10-K.txt:L1397: We expect capital expenditures will be approximately $270\u00a0million in fiscal 2027. This primarily includes investments in our office facilities to support our continued growth.\n10-K.txt:L1398: Financing Activities\n10-K.txt:L1399: Cash used in financing activities for fiscal 2026 was $3.3 billion, which was due to repurchases of common stock of $2.9 billion under our share repurchase programs and taxes paid of $616 million related to net share settlement of equity awards, offset by proceeds of $192 million from the issuance of common stock from employee equity plans.\n10-K.txt:L1400: Cash used in financing activities for fiscal 2025 was $1.2 billion, which was due to repurchases of common stock of $700 million under our share repurchase programs and taxes paid of $636 million related to net share settlement of equity awards, offset by proceeds of $186 million from the issuance of common stock from employee equity plans.\n10-K.txt:L1401: Free Cash Flows\n10-K.txt:L1402: In evaluating our performance internally, we focus on long-term, sustainable growth in free cash flows. We define free cash flows, a non-GAAP financial measure, as net cash provided by operating activities minus capital expenditures. See \u201cNon-GAAP Financial Measures\u201d below for further information.\n10-K.txt:L1403: Free cash flows were $2.8 billion for fiscal 2026, compared to $2.2 billion for the prior year period. The improvement was primarily the result of higher cash collections of $1.2 billion mainly due to increased sales and decreased capital expenditures of $107 million, partially offset by increased supplier payments of $335 million to support our continued growth and increased employee-related payments of $272 million, which include payments made under the Fiscal 2026 Restructuring Plan.\n10-K.txt:L1404: Reconciliation of our GAAP net cash provided by operating activities to non-GAAP free cash flows is as follows (in millions):\n10-K.txt:L1405: Year Ended January 31,",
+    "earnings_release_Ex99-1.txt": "earnings_release_Ex99-1.txt:L6: Exhibit 99.1\nearnings_release_Ex99-1.txt:L7: Workday Announces Fiscal 2027 Third Quarter Financial Results\nearnings_release_Ex99-1.txt:L8: Fiscal Third Quarter Total Revenues of $2.705 Billion, Up 11.2% Year-Over-Year\nearnings_release_Ex99-1.txt:L9: Subscription Revenues of $2.532 Billion, Up 12.8% Year-Over-Year\nearnings_release_Ex99-1.txt:L10: PLEASANTON, Calif.,\nearnings_release_Ex99-1.txt:L11: November\u00a024, 2026 \u2013 Workday, Inc. (NASDAQ: WDAY), the trusted agentic platform for HR, finance, and IT, today announced results for the fiscal 2027 third quarter ended October\u00a031, 2026.\nearnings_release_Ex99-1.txt:L12: Fiscal 2027 Third Quarter Results\nearnings_release_Ex99-1.txt:L13: \u2022\nearnings_release_Ex99-1.txt:L14: Total revenues were $2.705 billion, an increase of 11.2% from the same period last year. Subscription revenues were $2.532 billion, an increase of 12.8% from the same period last year.\nearnings_release_Ex99-1.txt:L15: \u2022\nearnings_release_Ex99-1.txt:L16: Operating income was $329 million, or 12.1% of revenues, compared to an operating income of $259 million, or 10.7% of revenues, in the same period last year\nearnings_release_Ex99-1.txt:L17: .\nearnings_release_Ex99-1.txt:L18: Current quarter operating income was impacted by restructuring expenses of $51 million. Non-GAAP operating income for the third quarter was $850 million, or 31.4% of revenues, compared to a non-GAAP operating income of $692 million, or 28.5% of revenues, in the same period last year.\nearnings_release_Ex99-1.txt:L19: 1\nearnings_release_Ex99-1.txt:L20: \u2022\nearnings_release_Ex99-1.txt:L21: Diluted net income per share was $0.96, compared to diluted net income per share of $0.94 in the same period last year. Current quarter diluted net income per share was impacted by restructuring expenses of $0.21 per share. Non-GAAP diluted net income per share was $2.82, compared to non-GAAP diluted net income per share of $2.32 in the same period last year.\nearnings_release_Ex99-1.txt:L22: 1\nearnings_release_Ex99-1.txt:L23: \u2022\nearnings_release_Ex99-1.txt:L24: 12-month subscription revenue backlog was $9.216\u00a0billion, up 12.3% from the same period last year. Total subscription revenue backlog was $27.548\u00a0billion, increasing 6.1% year-over-year.\nearnings_release_Ex99-1.txt:L25: \u2022\nearnings_release_Ex99-1.txt:L26: Operating cash flows were $735 million compared to $588 million in the same period last year. Free cash flows were $691 million compared to $550 million in the same period last year.\nearnings_release_Ex99-1.txt:L27: 1\nearnings_release_Ex99-1.txt:L28: \u2022\nearnings_release_Ex99-1.txt:L29: Workday repurchased approximately 3.8\u00a0million shares of Class A common stock for $750\u00a0million as part of its share repurchase programs.\nearnings_release_Ex99-1.txt:L30: \u2022\nearnings_release_Ex99-1.txt:L31: Cash, cash equivalents, and marketable securities were $5.643\u00a0billion as of October\u00a031, 2026.\nearnings_release_Ex99-1.txt:L32: 1\nearnings_release_Ex99-1.txt:L33: See the section titled \u201cAbout Non-GAAP Financial Measures\u201d in the accompanying financial tables for further details.\nearnings_release_Ex99-1.txt:L34: Comments on the News\nearnings_release_Ex99-1.txt:L35: \u201c\nearnings_release_Ex99-1.txt:L36: The past few quarters have been our strongest on the innovation and invention front, and in Q3, our AI products drove nearly $150 million in new ACV, more than three times what we delivered a year ago\nearnings_release_Ex99-1.txt:L37: ,\u201d said Aneel Bhusri, co-founder, CEO, and chair, Workday. \u201c\nearnings_release_Ex99-1.txt:L38: Our focus now is on accelerating customer adoption, moving more agents into production, and helping customers realize the value of our AI products faster.\nearnings_release_Ex99-1.txt:L39: \u201d\nearnings_release_Ex99-1.txt:L40: \u201cOur Q3 results reflect ongoing adoption across our AI portfolio, reinforcing our conviction in the compelling opportunity ahead,\u201d said Zane Rowe, CFO, Workday. \u201cWe are raising our fiscal 2027 subscription revenue guidance to $9.958 billion, growth of 13%, and increasing our fiscal 2027 non-GAAP operating margin guidance to 31.5%.\u201d\nearnings_release_Ex99-1.txt:L41: Recent Business Highlights\nearnings_release_Ex99-1.txt:L42: \u2022\nearnings_release_Ex99-1.txt:L43: Workday welcomed new customers including AISIN Corporation, Dr. Oetker, Euronews, Greenpeace Australia, Pon Holdings B.V., and Standard Bots Company, and added new Sana Enterprise customers including Forvis Mazars, Virgin Cruises, and Wolters Kluwer N.V.\nearnings_release_Ex99-1.txt:L44: \u2022\nearnings_release_Ex99-1.txt:L45: Industry leaders such as Google, SMS Holdings Corporation, and WPP invested in Workday\u2019s AI products.\nearnings_release_Ex99-1.txt:L46: \u2022\nearnings_release_Ex99-1.txt:L47: More than 2,200 core customers have purchased at least one AI product, up nearly 25% from last quarter.\nearnings_release_Ex99-1.txt:L48: \u2022\nearnings_release_Ex99-1.txt:L49: Workday acquired C1.ai, a leading agentic identity platform for people and AI agents.\nearnings_release_Ex99-1.txt:L50: \u2022\nearnings_release_Ex99-1.txt:L51: Nearly 40,000 Workday customers, partners, and innovators joined Workday Rising in the U.S. and EMEA.\nearnings_release_Ex99-1.txt:L52: \u2022\nearnings_release_Ex99-1.txt:L53: Workday announced Sana is the new home experience for Workday.\nearnings_release_Ex99-1.txt:L54: \u2022\nearnings_release_Ex99-1.txt:L55: Workday launched Autopilot Agents, new agents that continuously handle routine HR, finance, and IT processes in the background.\nearnings_release_Ex99-1.txt:L63: Workday announced Workday Decision Intelligence is now available across its portfolio, giving HR and finance teams a single, governed AI experience that works the way an in-house analyst would to model business scenarios across HR and finance.\nearnings_release_Ex99-1.txt:L64: \u2022\nearnings_release_Ex99-1.txt:L65: Workday introduced Work Intelligence, which shows companies how AI is changing the work inside each job and which skills their people will need next.\nearnings_release_Ex99-1.txt:L66: \u2022\nearnings_release_Ex99-1.txt:L67: Workday and Anthropic announced a new partnership that will bring Claude\u2019s frontier reasoning together with Sana AI agents and Workday\u2019s trusted data and business context in HR and finance.\nearnings_release_Ex99-1.txt:L68: \u2022\nearnings_release_Ex99-1.txt:L69: Workday and Accenture launched a forward deployed engineering program to help organizations reinvent how work gets done in the age of AI.\nearnings_release_Ex99-1.txt:L70: \u2022\nearnings_release_Ex99-1.txt:L71: Workday completed the issuance and sale of $2.5 billion aggregate principal amount of senior notes in an underwritten, registered public offering.\nearnings_release_Ex99-1.txt:L72: \u2022\nearnings_release_Ex99-1.txt:L73: Workday launched operations in the United Arab Emirates, with a new office in Dubai and expanded local leadership.\nearnings_release_Ex99-1.txt:L74: \u2022\nearnings_release_Ex99-1.txt:L75: Workday was named a Market Shaper in the inaugural 2026 Gartner\u00ae Emerging Market Quadrant (eMQ) for AI Agents in Human Resources.\nearnings_release_Ex99-1.txt:L76: 1\nearnings_release_Ex99-1.txt:L77: \u2022\nearnings_release_Ex99-1.txt:L78: Workday was named a Leader in the 2026 Gartner\u00ae Magic Quadrant\u2122 for Cloud HCM Suites for 1,000+ Employee Enterprises,\nearnings_release_Ex99-1.txt:L79: 2\nearnings_release_Ex99-1.txt:L89: Gartner, Magic Quadrant for Cloud HCM Suites for 1,000+ Employee Enterprises, Josie Xing, Ranadip Chandra, Ron Hanscome, Sam Grinter, Kate Jensen, Anand Chouksey, 31 August 2026\nearnings_release_Ex99-1.txt:L90: 3\nearnings_release_Ex99-1.txt:L91: Gartner, Magic Quadrant for Workforce Management Technology, By Sam Grinter, Ranadip Chandra, Kelsie Marian, Anand Chouksey, 14 September 2026\nearnings_release_Ex99-1.txt:L92: 4\nearnings_release_Ex99-1.txt:L93: Gartner Magic Quadrant for Cloud ERP Finance, Mike Helsel, Irmina Melarkode 15 October 2026\nearnings_release_Ex99-1.txt:L94: Financial Outlook\nearnings_release_Ex99-1.txt:L95: Workday is providing guidance for the fiscal 2027 fourth quarter ending January 31, 2027 as follows:\nearnings_release_Ex99-1.txt:L96: \u2022\nearnings_release_Ex99-1.txt:L97: Subscription revenues of $2.600\u00a0billion, representing growth of 10%\nearnings_release_Ex99-1.txt:L98: \u2022\nearnings_release_Ex99-1.txt:L99: Non-GAAP operating margin of 31.7%\nearnings_release_Ex99-1.txt:L100: 1\nearnings_release_Ex99-1.txt:L101: Workday is updating guidance for the fiscal 2027 full year ending January 31, 2027 as follows:\nearnings_release_Ex99-1.txt:L102: \u2022\nearnings_release_Ex99-1.txt:L103: Subscription revenues of $9.958\u00a0billion, representing growth of 13%\nearnings_release_Ex99-1.txt:L104: \u2022\nearnings_release_Ex99-1.txt:L105: Non-GAAP operating margin of 31.5%\nearnings_release_Ex99-1.txt:L106: 1\nearnings_release_Ex99-1.txt:L107: 1\nearnings_release_Ex99-1.txt:L108: The Company has not provided a reconciliation of its forward outlook for non-GAAP operating margin with its forward-looking GAAP operating margin in reliance on the unreasonable efforts exception provided under Item 10(e)(1)(i)(B) of Regulation S-K. The Company is unable to predict with reasonable certainty the amount and timing of adjustments that are used to calculate this non-GAAP financial measure, particularly related to stock-based compensation and its related tax effects, acquisition-related costs, and restructuring costs.\nearnings_release_Ex99-1.txt:L109: Earnings Call Details\nearnings_release_Ex99-1.txt:L110: Workday plans to host a conference call today to review its fiscal 2027 third quarter financial results and to discuss its financial outlook. The call is scheduled to begin at 1:30 p.m. PT/4:30 p.m. ET and can be accessed via webcast. The webcast will be available live, and a replay will be available following completion of the live broadcast for approximately 90 days.\nearnings_release_Ex99-1.txt:L111: Workday uses its\nearnings_release_Ex99-1.txt:L257: 7,358\nearnings_release_Ex99-1.txt:L258: $\nearnings_release_Ex99-1.txt:L259: 6,473\nearnings_release_Ex99-1.txt:L260: Professional services\nearnings_release_Ex99-1.txt:L261: 173\nearnings_release_Ex99-1.txt:L262: 188\nearnings_release_Ex99-1.txt:L263: 539\nearnings_release_Ex99-1.txt:L264: 547\nearnings_release_Ex99-1.txt:L265: Total revenues\nearnings_release_Ex99-1.txt:L266: 2,705\nearnings_release_Ex99-1.txt:L267: 2,432\nearnings_release_Ex99-1.txt:L268: 7,897\nearnings_release_Ex99-1.txt:L269: 7,020\nearnings_release_Ex99-1.txt:L270: Costs and expenses\nearnings_release_Ex99-1.txt:L271: (1)\nearnings_release_Ex99-1.txt:L272: :\nearnings_release_Ex99-1.txt:L273: Costs of subscription services\nearnings_release_Ex99-1.txt:L338: $\nearnings_release_Ex99-1.txt:L339: 0.98\nearnings_release_Ex99-1.txt:L340: $\nearnings_release_Ex99-1.txt:L341: 0.95\nearnings_release_Ex99-1.txt:L342: $\nearnings_release_Ex99-1.txt:L343: 4.43\nearnings_release_Ex99-1.txt:L344: $\nearnings_release_Ex99-1.txt:L345: 2.06\nearnings_release_Ex99-1.txt:L346: Net income per share, diluted\nearnings_release_Ex99-1.txt:L347: $\nearnings_release_Ex99-1.txt:L348: 0.96\nearnings_release_Ex99-1.txt:L349: $\nearnings_release_Ex99-1.txt:L350: 0.94\nearnings_release_Ex99-1.txt:L351: $\nearnings_release_Ex99-1.txt:L352: 4.38\nearnings_release_Ex99-1.txt:L353: $\nearnings_release_Ex99-1.txt:L354: 2.03"
+  }
+}

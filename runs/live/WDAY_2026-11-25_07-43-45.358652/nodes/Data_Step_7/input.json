@@ -1,0 +1,9 @@
+{
+  "task": "Fetch peer facts",
+  "context": {
+    "ticker": "WDAY",
+    "peers": [],
+    "filed": null
+  },
+  "expected_output": "Step 7 data and status"
+}

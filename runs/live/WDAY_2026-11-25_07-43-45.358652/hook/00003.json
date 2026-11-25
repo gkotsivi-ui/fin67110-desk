@@ -1,0 +1,19 @@
+{
+  "part": "pick",
+  "requested_outputs": [
+    "pick.json",
+    "spinoff_status.json"
+  ],
+  "outputs": [
+    {
+      "path": "pick.json",
+      "sha256": "77da465fc4110e6ca0ef7f0a89ec593294d1509f1a9cc8a2e21cbe727fdea2db"
+    },
+    {
+      "path": "spinoff_status.json",
+      "sha256": "0744d461e0edc7d4d88e6b5c96d1cf2db4045520f3c6015b8aa9e2e3fd22c7cc"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

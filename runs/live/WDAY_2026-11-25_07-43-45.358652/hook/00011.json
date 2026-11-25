@@ -1,0 +1,19 @@
+{
+  "part": "team calculated facts",
+  "requested_outputs": [
+    "facts.json",
+    "calculated_facts.json"
+  ],
+  "outputs": [
+    {
+      "path": "facts.json",
+      "sha256": "90f8010866b3467dddc792c8a6bff05ca942f5f5c49e5433ccadc27085a3ebde"
+    },
+    {
+      "path": "calculated_facts.json",
+      "sha256": "7c2fd9e354bb0d35b057e264f4cf912afeafb1b024ac390ff436cb844c24ce70"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

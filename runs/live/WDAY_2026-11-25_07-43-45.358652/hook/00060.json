@@ -1,0 +1,14 @@
+{
+  "part": "final report",
+  "requested_outputs": [
+    "final_report.md"
+  ],
+  "outputs": [
+    {
+      "path": "final_report.md",
+      "sha256": "82333f5c58def77e5736726c90711fbf740f51d94d1752002c1abe8686a77039"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

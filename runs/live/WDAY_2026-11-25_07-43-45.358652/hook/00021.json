@@ -1,0 +1,14 @@
+{
+  "part": "Research Analyst 1",
+  "requested_outputs": [
+    "nodes/Research_Analyst_1/raw_responses.json"
+  ],
+  "outputs": [
+    {
+      "path": "nodes/Research_Analyst_1/raw_responses.json",
+      "sha256": "65a737f79273fec6d214da33bff38993f0df23cb9a8fc2db59790d9e6915dfe0"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

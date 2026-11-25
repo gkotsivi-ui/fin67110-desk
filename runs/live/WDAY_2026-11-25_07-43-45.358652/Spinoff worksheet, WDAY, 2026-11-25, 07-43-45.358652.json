@@ -1,0 +1,405 @@
+{
+  "ticker": "WDAY",
+  "run": "WDAY_2026-11-25_07-43-45.358652",
+  "worksheet_time": "2026-11-25T07:43:45.358652-05:00",
+  "facts": {
+    "parent": {
+      "value": "not applicable",
+      "source": "Ticker is not in the supplied seeker registry",
+      "kind": "not applicable"
+    },
+    "distribution_ratio": {
+      "value": "not applicable",
+      "source": "Ticker is not in the supplied seeker registry",
+      "kind": "not applicable"
+    },
+    "record_date": {
+      "value": "not applicable",
+      "source": "Ticker is not in the supplied seeker registry",
+      "kind": "not applicable"
+    },
+    "distribution_date": {
+      "value": "not applicable",
+      "source": "Ticker is not in the supplied seeker registry",
+      "kind": "not applicable"
+    },
+    "debt_raised": {
+      "value": "not applicable",
+      "source": "Ticker is not in the supplied seeker registry",
+      "kind": "not applicable"
+    },
+    "cash_to_parent": {
+      "value": "not applicable",
+      "source": "Ticker is not in the supplied seeker registry",
+      "kind": "not applicable"
+    },
+    "retained_liabilities": {
+      "value": "not applicable",
+      "source": "Ticker is not in the supplied seeker registry",
+      "kind": "not applicable"
+    },
+    "restrictions": {
+      "value": "not applicable",
+      "source": "Ticker is not in the supplied seeker registry",
+      "kind": "not applicable"
+    },
+    "after_tax_earnings": {
+      "value": 693000000.0,
+      "unit": "USD",
+      "period": "Fiscal year ended 2026-01-31",
+      "period_end": "2026-01-31",
+      "kind": "historical",
+      "source": "[10-K.txt:L1908] section CONSOLIDATED STATEMENTS OF OPERATIONS; year ended 2026-01-31; units 1e+06; Net income = 6.93e+08",
+      "reason": null
+    },
+    "depreciation_and_amortization": {
+      "value": 347000000.0,
+      "unit": "USD",
+      "period": "Fiscal year ended 2026-01-31",
+      "period_end": "2026-01-31",
+      "kind": "historical",
+      "source": "[10-K.txt:L2247] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Depreciation and amortization = 3.47e+08",
+      "reason": null
+    },
+    "capital_spending": {
+      "value": 162000000.0,
+      "unit": "USD",
+      "period": "Fiscal year ended 2026-01-31",
+      "period_end": "2026-01-31",
+      "kind": "historical",
+      "source": "[10-K.txt:L2367] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Capital expenditures = -1.62e+08; spending = -(-1.62e+08) = 1.62e+08",
+      "reason": null
+    },
+    "shares_outstanding": {
+      "value": null,
+      "source": "not known",
+      "kind": "not known",
+      "reason": "An eligible actual shares-outstanding count was not established"
+    },
+    "net_cash": {
+      "value": null,
+      "kind": "not known",
+      "source": "not known",
+      "reason": "Matching cash and explicit total-debt balance-sheet lines were not established"
+    },
+    "insider_purchases": {
+      "value": null,
+      "source": "not known",
+      "kind": "not known",
+      "reason": "No saved Form 4 XML; coverage is not established"
+    }
+  },
+  "owner_cash_flow": {
+    "value": 964000000.0,
+    "unit": "USD",
+    "kind": "historical",
+    "period": "3-fiscal-year average",
+    "annual_inputs": [
+      {
+        "value": 878000000.0,
+        "unit": "USD",
+        "period": "Fiscal year ended 2026-01-31",
+        "kind": "historical",
+        "inputs": [
+          {
+            "value": 693000000.0,
+            "unit": "USD",
+            "period": "Fiscal year ended 2026-01-31",
+            "period_end": "2026-01-31",
+            "kind": "historical",
+            "source": "[10-K.txt:L1908] section CONSOLIDATED STATEMENTS OF OPERATIONS; year ended 2026-01-31; units 1e+06; Net income = 6.93e+08",
+            "reason": null
+          },
+          {
+            "value": 347000000.0,
+            "unit": "USD",
+            "period": "Fiscal year ended 2026-01-31",
+            "period_end": "2026-01-31",
+            "kind": "historical",
+            "source": "[10-K.txt:L2247] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Depreciation and amortization = 3.47e+08",
+            "reason": null
+          },
+          {
+            "value": 162000000.0,
+            "unit": "USD",
+            "period": "Fiscal year ended 2026-01-31",
+            "period_end": "2026-01-31",
+            "kind": "historical",
+            "source": "[10-K.txt:L2367] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Capital expenditures = -1.62e+08; spending = -(-1.62e+08) = 1.62e+08",
+            "reason": null
+          }
+        ],
+        "source": "computed: 6.93e+08 + 3.47e+08 - 1.62e+08 = 8.78e+08; historical: [10-K.txt:L1908] section CONSOLIDATED STATEMENTS OF OPERATIONS; year ended 2026-01-31; units 1e+06; Net income = 6.93e+08; historical: [10-K.txt:L2247] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Depreciation and amortization = 3.47e+08; historical: [10-K.txt:L2367] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Capital expenditures = -1.62e+08; spending = -(-1.62e+08) = 1.62e+08"
+      },
+      {
+        "value": 583000000.0,
+        "unit": "USD",
+        "period": "Fiscal year ended 2025-01-31",
+        "kind": "historical",
+        "inputs": [
+          {
+            "value": 526000000.0,
+            "unit": "USD",
+            "period": "Fiscal year ended 2025-01-31",
+            "period_end": "2025-01-31",
+            "kind": "historical",
+            "source": "[10-K.txt:L1908] section CONSOLIDATED STATEMENTS OF OPERATIONS; year ended 2025-01-31; units 1e+06; Net income = 5.26e+08",
+            "reason": null
+          },
+          {
+            "value": 326000000.0,
+            "unit": "USD",
+            "period": "Fiscal year ended 2025-01-31",
+            "period_end": "2025-01-31",
+            "kind": "historical",
+            "source": "[10-K.txt:L2247] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2025-01-31; units 1e+06; Depreciation and amortization = 3.26e+08",
+            "reason": null
+          },
+          {
+            "value": 269000000.0,
+            "unit": "USD",
+            "period": "Fiscal year ended 2025-01-31",
+            "period_end": "2025-01-31",
+            "kind": "historical",
+            "source": "[10-K.txt:L2367] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2025-01-31; units 1e+06; Capital expenditures = -2.69e+08; spending = -(-2.69e+08) = 2.69e+08",
+            "reason": null
+          }
+        ],
+        "source": "computed: 5.26e+08 + 3.26e+08 - 2.69e+08 = 5.83e+08; historical: [10-K.txt:L1908] section CONSOLIDATED STATEMENTS OF OPERATIONS; year ended 2025-01-31; units 1e+06; Net income = 5.26e+08; historical: [10-K.txt:L2247] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2025-01-31; units 1e+06; Depreciation and amortization = 3.26e+08; historical: [10-K.txt:L2367] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2025-01-31; units 1e+06; Capital expenditures = -2.69e+08; spending = -(-2.69e+08) = 2.69e+08"
+      },
+      {
+        "value": 1431000000.0,
+        "unit": "USD",
+        "period": "Fiscal year ended 2024-01-31",
+        "kind": "historical",
+        "inputs": [
+          {
+            "value": 1381000000.0,
+            "unit": "USD",
+            "period": "Fiscal year ended 2024-01-31",
+            "period_end": "2024-01-31",
+            "kind": "historical",
+            "source": "[10-K.txt:L1908] section CONSOLIDATED STATEMENTS OF OPERATIONS; year ended 2024-01-31; units 1e+06; Net income = 1.381e+09",
+            "reason": null
+          },
+          {
+            "value": 282000000.0,
+            "unit": "USD",
+            "period": "Fiscal year ended 2024-01-31",
+            "period_end": "2024-01-31",
+            "kind": "historical",
+            "source": "[10-K.txt:L2247] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2024-01-31; units 1e+06; Depreciation and amortization = 2.82e+08",
+            "reason": null
+          },
+          {
+            "value": 232000000.0,
+            "unit": "USD",
+            "period": "Fiscal year ended 2024-01-31",
+            "period_end": "2024-01-31",
+            "kind": "historical",
+            "source": "[10-K.txt:L2367] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2024-01-31; units 1e+06; Capital expenditures = -2.32e+08; spending = -(-2.32e+08) = 2.32e+08",
+            "reason": null
+          }
+        ],
+        "source": "computed: 1.381e+09 + 2.82e+08 - 2.32e+08 = 1.431e+09; historical: [10-K.txt:L1908] section CONSOLIDATED STATEMENTS OF OPERATIONS; year ended 2024-01-31; units 1e+06; Net income = 1.381e+09; historical: [10-K.txt:L2247] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2024-01-31; units 1e+06; Depreciation and amortization = 2.82e+08; historical: [10-K.txt:L2367] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2024-01-31; units 1e+06; Capital expenditures = -2.32e+08; spending = -(-2.32e+08) = 2.32e+08"
+      }
+    ],
+    "reason": null,
+    "source": "computed: (878000000.0 + 583000000.0 + 1431000000.0) / 3 = 9.64e+08; computed: 6.93e+08 + 3.47e+08 - 1.62e+08 = 8.78e+08; historical: [10-K.txt:L1908] section CONSOLIDATED STATEMENTS OF OPERATIONS; year ended 2026-01-31; units 1e+06; Net income = 6.93e+08; historical: [10-K.txt:L2247] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Depreciation and amortization = 3.47e+08; historical: [10-K.txt:L2367] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Capital expenditures = -1.62e+08; spending = -(-1.62e+08) = 1.62e+08; computed: 5.26e+08 + 3.26e+08 - 2.69e+08 = 5.83e+08; historical: [10-K.txt:L1908] section CONSOLIDATED STATEMENTS OF OPERATIONS; year ended 2025-01-31; units 1e+06; Net income = 5.26e+08; historical: [10-K.txt:L2247] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2025-01-31; units 1e+06; Depreciation and amortization = 3.26e+08; historical: [10-K.txt:L2367] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2025-01-31; units 1e+06; Capital expenditures = -2.69e+08; spending = -(-2.69e+08) = 2.69e+08; computed: 1.381e+09 + 2.82e+08 - 2.32e+08 = 1.431e+09; historical: [10-K.txt:L1908] section CONSOLIDATED STATEMENTS OF OPERATIONS; year ended 2024-01-31; units 1e+06; Net income = 1.381e+09; historical: [10-K.txt:L2247] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2024-01-31; units 1e+06; Depreciation and amortization = 2.82e+08; historical: [10-K.txt:L2367] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2024-01-31; units 1e+06; Capital expenditures = -2.32e+08; spending = -(-2.32e+08) = 2.32e+08"
+  },
+  "value_range": {
+    "low": {
+      "value": null,
+      "source": "not known",
+      "kind": "not known",
+      "reason": "Worksheet method, rates or sourced valuation inputs are unavailable",
+      "rates": {
+        "discount_rate": 0.1
+      },
+      "formula": "owner_cash_flow / discount_rate / shares_outstanding"
+    },
+    "mid": {
+      "value": null,
+      "source": "not known",
+      "kind": "not known",
+      "reason": "Worksheet method, rates or sourced valuation inputs are unavailable",
+      "rates": {
+        "discount_rate": 0.07
+      },
+      "formula": "owner_cash_flow / discount_rate / shares_outstanding"
+    }
+  },
+  "price_vs_low": {
+    "price": 179.23,
+    "price_date": "2026-11-24",
+    "price_source": "LSEG TR.PriceClose (WDAY.O)",
+    "low_value": null,
+    "difference": null,
+    "comparison": "not computed",
+    "percent_price_minus_low": null
+  },
+  "judgment": {
+    "judgment": "Not the forced-seller story here because this registry supplies no spinoff evidence for this ticker. No parent, distribution date, distribution ratio, debt raised, cash sent to a parent or retained liabilities was supplied, so there is no record of who received shares or whether they were made to sell. That is why code scored the forced seller, indifferent seller, load pushed in and parent motive criteria as absent. This is a limitation of the registry, not proof the company has never been spun off. Insider buying is also unestablished, because no saved insider report was supplied. The price against value criterion is absent too, but for a different reason. The supplied price has no low case to be compared with. The annual report does give the owner cash flow inputs: net income [10-K.txt:L1908] section CONSOLIDATED STATEMENTS OF OPERATIONS; year ended 2026-01-31; units 1e+06; Net income = 6.93e+08, depreciation and amortization [10-K.txt:L2247] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Depreciation and amortization = 3.47e+08 and capital spending [10-K.txt:L2367] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Capital expenditures = -1.62e+08; spending = -(-1.62e+08) = 1.62e+08. But neither a share count nor matching cash and total debt lines were established, so code could not compute the low case or the mid case. Without a spinoff seller and without a low case, there is no supported argument that selling has pushed the price below what the business is worth.",
+    "next_filing_trigger": "What would change the view: the next quarterly report could state the actual shares outstanding on its cover page and give matching cash and total debt lines on its balance sheet. Code could then compute the low case from the multi-year owner cash flow average at the low-case discount rate. If the price then sits at or below the low case, the price against value criterion would move off absent, even without a forced-seller story.",
+    "insight": "Insight: the annual report's consolidated statements of cash flows show depreciation and amortization [10-K.txt:L2247] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Depreciation and amortization = 3.47e+08 running above capital spending [10-K.txt:L2367] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Capital expenditures = -1.62e+08; spending = -(-1.62e+08) = 1.62e+08. Owner cash flow would therefore sit above reported net income [10-K.txt:L1908] section CONSOLIDATED STATEMENTS OF OPERATIONS; year ended 2026-01-31; units 1e+06; Net income = 6.93e+08, something a reader of the income statement alone would miss."
+  },
+  "liquidity": {
+    "median_daily_dollar_volume": 411118293.46000004,
+    "purchase_size": 125000.0,
+    "purchase_fraction": 0.0003040487421466735,
+    "exceeds_median": false,
+    "dates": [
+      "2026-09-01",
+      "2026-09-02",
+      "2026-09-03",
+      "2026-09-04",
+      "2026-09-08",
+      "2026-09-09",
+      "2026-09-10",
+      "2026-09-11",
+      "2026-09-14",
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-21",
+      "2026-09-22",
+      "2026-09-23",
+      "2026-09-24",
+      "2026-09-25",
+      "2026-09-28",
+      "2026-09-29",
+      "2026-09-30",
+      "2026-10-01",
+      "2026-10-02",
+      "2026-10-05",
+      "2026-10-06",
+      "2026-10-07",
+      "2026-10-08",
+      "2026-10-09",
+      "2026-10-12",
+      "2026-10-13",
+      "2026-10-14",
+      "2026-10-15",
+      "2026-10-16",
+      "2026-10-19",
+      "2026-10-20",
+      "2026-10-21",
+      "2026-10-22",
+      "2026-10-23",
+      "2026-10-26",
+      "2026-10-27",
+      "2026-10-28",
+      "2026-10-29",
+      "2026-10-30",
+      "2026-11-02",
+      "2026-11-03",
+      "2026-11-04",
+      "2026-11-05",
+      "2026-11-06",
+      "2026-11-09",
+      "2026-11-10",
+      "2026-11-11",
+      "2026-11-12",
+      "2026-11-13",
+      "2026-11-16",
+      "2026-11-17",
+      "2026-11-18",
+      "2026-11-19",
+      "2026-11-20",
+      "2026-11-23",
+      "2026-11-24"
+    ],
+    "observations": 60,
+    "unit": "USD",
+    "reason": null,
+    "basis": "historical",
+    "method": "median of same-day close * volume",
+    "sources": [
+      "LSEG TR.PriceClose (WDAY.O)"
+    ],
+    "daily_capacity": 41111829.34600001,
+    "minimum_trading_days": 1,
+    "buyable": true,
+    "participation_rate": 0.1,
+    "max_trading_days": 3,
+    "inputs_file": "sources/licensed/Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, liquidity rows.json",
+    "inputs_sha256": "03f49156f63cc2be29f03a90bc2baff7c074aaf739e0fc61b8bd3e78df504e8b",
+    "first_date": "2026-09-01",
+    "last_date": "2026-11-24"
+  },
+  "view": {
+    "direction": "not computed",
+    "time": "2026-11-25T07:54:14.403457-05:00",
+    "deciding_number": null,
+    "source": ""
+  },
+  "conviction": "no conviction",
+  "not_known": [
+    "shares_outstanding: An eligible actual shares-outstanding count was not established",
+    "net_cash: Matching cash and explicit total-debt balance-sheet lines were not established",
+    "insider_purchases: No saved Form 4 XML; coverage is not established",
+    "low value: Worksheet method, rates or sourced valuation inputs are unavailable",
+    "mid value: Worksheet method, rates or sourced valuation inputs are unavailable"
+  ],
+  "judgment_attempts": 1,
+  "model_error_type": null,
+  "model_error_message": null,
+  "criteria_scores": [
+    {
+      "criterion": 1,
+      "name": "Forced seller",
+      "score": 0,
+      "source": "not known"
+    },
+    {
+      "criterion": 2,
+      "name": "Indifferent seller",
+      "score": 0,
+      "source": "not known"
+    },
+    {
+      "criterion": 3,
+      "name": "Price against value",
+      "score": 0,
+      "source": "Code price/low comparison; LSEG TR.PriceClose (WDAY.O)"
+    },
+    {
+      "criterion": 4,
+      "name": "Load pushed in",
+      "score": 0,
+      "source": "not known"
+    },
+    {
+      "criterion": 5,
+      "name": "Insiders buying",
+      "score": 0,
+      "source": "not known"
+    },
+    {
+      "criterion": 6,
+      "name": "Parent motive",
+      "score": 0,
+      "source": "not known"
+    }
+  ],
+  "conviction_reason": "A required numerical input or citation is missing",
+  "worksheet_source": "spinoff-rules.md",
+  "view_time": "2026-11-25T07:54:14.403457-05:00",
+  "prediction": {
+    "schema_version": 2,
+    "ticker": "WDAY",
+    "filing_time": "2026-11-24T16:01:55-05:00",
+    "time": "2026-11-25T07:54:14.403457-05:00",
+    "view_time": "2026-11-25T07:54:14.403457-05:00",
+    "direction": "not computed",
+    "reaction_window": {
+      "definition": "Last official close at or before filing acceptance to the first official close strictly after filing acceptance; XNYS sessions, including holidays and early closes.",
+      "calendar": "XNYS",
+      "baseline_close_time": "2026-11-24T16:00:00-05:00",
+      "first_close_after_filing_time": "2026-11-25T16:00:00-05:00"
+    },
+    "prediction_basis": "Code maps the existing low-value versus price comparison to direction. This is not a statistical price-reaction model.",
+    "reason": null
+  }
+}

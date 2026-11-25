@@ -1,0 +1,14 @@
+{
+  "part": "Financial Analyst 1",
+  "requested_outputs": [
+    "nodes/Financial_Analyst_1/output.json"
+  ],
+  "outputs": [
+    {
+      "path": "nodes/Financial_Analyst_1/output.json",
+      "sha256": "daa0bdd1e99b05254625a0ff5fb60767d89ce346fb6d9b5c72df83265672a6ee"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

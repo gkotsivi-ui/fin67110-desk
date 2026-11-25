@@ -1,0 +1,14 @@
+{
+  "part": "worksheet model input",
+  "requested_outputs": [
+    "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model input.json"
+  ],
+  "outputs": [
+    {
+      "path": "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model input.json",
+      "sha256": "c0f21e71e386d8e8e27351c8619d3ce33cf958c1020e27669263f1081bbaaabc"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

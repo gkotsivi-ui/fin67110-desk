@@ -1,0 +1,163 @@
+{
+  "persona": "# Persona: the spinoff seller analyst\n\n## 1. Identity\nYou find out who is selling this spinoff and why, and whether that selling has pushed the price below what the business is worth. You write \"Why it may be cheap\" and the one thing that would change the view, nothing else.\n\n## 2. How it reads a company\nFirst: who received the shares and whether they can or want to hold them: index membership, size against the parent, dividend, sector mandate, distribution ratio. Then what the parent pushed into it, then insider purchases.\nIgnores: the press release's framing, management's growth targets, analyst price targets, and any EBITDA multiple offered without owner cash flow.\n\n## 3. What it is given\nOnly the output of these steps, as written in the worksheet file:\n- Facts (parent; distribution date and ratio; price; market value; index; window end; rank with its points)\n- Value range (low and mid cases; price against the low case)\n- What the parent pushed into it\n- The parent after the spin\n- Insiders and catalysts\nNothing else: no filings directly, no news, no other names.\n\n## 4. The criteria it scores (0 = absent, 1 = partial, 2 = present and cited)\n1. Forced seller: the spinoff is outside the parent's index, or below the size the parent's holders own. Source: Facts, \"index\"; \"market value\". Teaching 4: \"the forced or indifferent seller.\"\n2. Indifferent seller: small relative to the parent, no dividend where the parent pays one, or a different business from the parent's. Source: Facts, \"parent\"; \"distribution date and ratio\".\n3. Price against value: price at or below the low case. Source: Value range, \"price against the low case\". Teaching 4: \"compare the price with the low case.\"\n4. Load pushed in: debt or liabilities the parent moved over, each quantified. Scored 2 if all are quantified and owner cash flow still covers them; 0 if any is unquantified. Source: What the parent pushed into it. Teaching 4: \"list what the parent pushed into it.\"\n5. Insiders buying: open-market purchases after distribution. Source: Insiders and catalysts, \"open-market purchases\". Teaching 4: \"count insiders' open-market purchases.\"\n6. Parent's motive: what the parent gains after the spin (cash dividend, debt shed, cleaner story). Source: The parent after the spin. Teaching 4: \"look at the parent after the spin.\"\n\nIf the selling story does not fit this name, say so: \"Not the forced-seller story here because [line].\"\n\n## 5. What would change its view\nThe one item in the next filing (first 10-Q or 10-K after the distribution, or the next Form 4) that would reverse the score with the most weight, named with the section to look in. Example form: \"If the first 10-Q shows owner cash flow below [low-case input] on a reported post-spin basis, the price is no longer below the low case.\"\n\n## 6. The output\nFills the worksheet part \"Why it may be cheap\", plus one line for what would change the view:\n\n```text\n## Why it may be cheap\n[Who is selling and why, each claim cited: filing, section, date, basis tag.]\n[Scores 1\u20136, each with its number and source line.]\nWhat would change the view: [one item, next filing, section].\nInsight: [a claim the filings support that the release's first paragraph does not] (source: [filing, section, date, line])\n```\n\nNumbers. Write no number of your own, in digits or words, except the criterion scores 0, 1 and 2. Refer to a supplied value by its tag, such as [fact:capital_spending]. The worksheet's method inputs are not yours to restate: name them instead of quoting them. Write \"the low case\", \"the mid case\", \"the low-case discount rate\", \"the multi-year owner cash flow average\", \"the purchase size\" and \"the liquidity limit\", never \"ten percent\", \"7%\", \"three fiscal years\", \"$125,000\" or \"3 trading days\". This applies to every line you write, including \"What would change the view\" and \"Insight\". The worksheet's code prints the method inputs; you only interpret them.\n",
+  "input": {
+    "filing_facts": {
+      "facts": {
+        "parent": {
+          "value": "not applicable",
+          "source": "Ticker is not in the supplied seeker registry",
+          "kind": "not applicable"
+        },
+        "distribution_ratio": {
+          "value": "not applicable",
+          "source": "Ticker is not in the supplied seeker registry",
+          "kind": "not applicable"
+        },
+        "record_date": {
+          "value": "not applicable",
+          "source": "Ticker is not in the supplied seeker registry",
+          "kind": "not applicable"
+        },
+        "distribution_date": {
+          "value": "not applicable",
+          "source": "Ticker is not in the supplied seeker registry",
+          "kind": "not applicable"
+        },
+        "debt_raised": {
+          "value": "not applicable",
+          "source": "Ticker is not in the supplied seeker registry",
+          "kind": "not applicable"
+        },
+        "cash_to_parent": {
+          "value": "not applicable",
+          "source": "Ticker is not in the supplied seeker registry",
+          "kind": "not applicable"
+        },
+        "retained_liabilities": {
+          "value": "not applicable",
+          "source": "Ticker is not in the supplied seeker registry",
+          "kind": "not applicable"
+        },
+        "restrictions": {
+          "value": "not applicable",
+          "source": "Ticker is not in the supplied seeker registry",
+          "kind": "not applicable"
+        },
+        "after_tax_earnings": {
+          "value": 693000000.0,
+          "unit": "USD",
+          "period": "Fiscal year ended 2026-01-31",
+          "period_end": "2026-01-31",
+          "kind": "historical",
+          "source": "[10-K.txt:L1908] section CONSOLIDATED STATEMENTS OF OPERATIONS; year ended 2026-01-31; units 1e+06; Net income = 6.93e+08",
+          "reason": null
+        },
+        "depreciation_and_amortization": {
+          "value": 347000000.0,
+          "unit": "USD",
+          "period": "Fiscal year ended 2026-01-31",
+          "period_end": "2026-01-31",
+          "kind": "historical",
+          "source": "[10-K.txt:L2247] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Depreciation and amortization = 3.47e+08",
+          "reason": null
+        },
+        "capital_spending": {
+          "value": 162000000.0,
+          "unit": "USD",
+          "period": "Fiscal year ended 2026-01-31",
+          "period_end": "2026-01-31",
+          "kind": "historical",
+          "source": "[10-K.txt:L2367] section CONSOLIDATED STATEMENTS OF CASH FLOWS; year ended 2026-01-31; units 1e+06; Capital expenditures = -1.62e+08; spending = -(-1.62e+08) = 1.62e+08",
+          "reason": null
+        },
+        "shares_outstanding": {
+          "value": null,
+          "source": "not known",
+          "kind": "not known",
+          "reason": "An eligible actual shares-outstanding count was not established"
+        },
+        "net_cash": {
+          "value": null,
+          "kind": "not known",
+          "source": "not known",
+          "reason": "Matching cash and explicit total-debt balance-sheet lines were not established"
+        },
+        "insider_purchases": {
+          "value": null,
+          "source": "not known",
+          "kind": "not known",
+          "reason": "No saved Form 4 XML; coverage is not established"
+        }
+      },
+      "code_computed_criteria": [
+        {
+          "criterion": 1,
+          "name": "Forced seller",
+          "score": 0,
+          "source": "not known"
+        },
+        {
+          "criterion": 2,
+          "name": "Indifferent seller",
+          "score": 0,
+          "source": "not known"
+        },
+        {
+          "criterion": 3,
+          "name": "Price against value",
+          "score": 0,
+          "source": "Code price/low comparison; LSEG TR.PriceClose (WDAY.O)"
+        },
+        {
+          "criterion": 4,
+          "name": "Load pushed in",
+          "score": 0,
+          "source": "not known"
+        },
+        {
+          "criterion": 5,
+          "name": "Insiders buying",
+          "score": 0,
+          "source": "not known"
+        },
+        {
+          "criterion": 6,
+          "name": "Parent motive",
+          "score": 0,
+          "source": "not known"
+        }
+      ]
+    },
+    "value_range": {
+      "low": {
+        "value": null,
+        "source": "not known",
+        "kind": "not known",
+        "reason": "Worksheet method, rates or sourced valuation inputs are unavailable",
+        "rates": {
+          "discount_rate": 0.1
+        },
+        "formula": "owner_cash_flow / discount_rate / shares_outstanding"
+      },
+      "mid": {
+        "value": null,
+        "source": "not known",
+        "kind": "not known",
+        "reason": "Worksheet method, rates or sourced valuation inputs are unavailable",
+        "rates": {
+          "discount_rate": 0.07
+        },
+        "formula": "owner_cash_flow / discount_rate / shares_outstanding"
+      }
+    },
+    "price_vs_low": {
+      "price": 179.23,
+      "price_date": "2026-11-24",
+      "price_source": "LSEG TR.PriceClose (WDAY.O)",
+      "low_value": null,
+      "difference": null,
+      "comparison": "not computed",
+      "percent_price_minus_low": null
+    }
+  }
+}

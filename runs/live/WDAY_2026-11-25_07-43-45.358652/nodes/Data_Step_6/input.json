@@ -1,0 +1,9 @@
+{
+  "task": "Extract quarterly results",
+  "context": {
+    "ticker": "WDAY",
+    "peers": [],
+    "filed": null
+  },
+  "expected_output": "Step 6 data and status"
+}

@@ -1,0 +1,130 @@
+{
+  "responses": {
+    "https://www.sec.gov/files/company_tickers.json": {
+      "path": "sources/http/ace4a0fb8e9e22bbcc3aac993c3d786cd9ad1d6184ae5640bed2a7a320809f3c.bin",
+      "sha256": "a312b31e2a7da0f9f4ada166e915f32c5114f44da74df2f4ab2a05d45ff44ce6",
+      "parts": [
+        "team"
+      ]
+    },
+    "https://data.sec.gov/submissions/CIK0001327811.json": {
+      "path": "sources/http/3a487c33e0e2085abec2b841bead8d9a2d7f9a527c0fd29417e2bfd531053e90.bin",
+      "sha256": "a73441ab42009b01746e5b3d1d369f05a5549c0ffe9d3da133665e01f4f2db7e",
+      "parts": [
+        "team"
+      ]
+    },
+    "https://data.sec.gov/submissions/CIK0001327811-submissions-001.json": {
+      "path": "sources/http/b9732487700da0f75d1fb85335ab47ab8d1c01000d0812474f0f64fab770ef64.bin",
+      "sha256": "dad446121f1c003cd78602b81fa0af13533c8e9d350b7c5e1ad0d703bb85cac8",
+      "parts": [
+        "team"
+      ]
+    },
+    "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000058/0001327811-26-000058-index.html": {
+      "path": "sources/http/d26da2d664ad0a29487fa0acb1f1ccd4e0cb5fe103b354a84f80e97d76a4408e.bin",
+      "sha256": "c515844a3048aacd6d673b9d03ae571997f773c34b595e9fa759da7866e042cf",
+      "parts": [
+        "team"
+      ]
+    },
+    "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000057/0001327811-26-000057-index.html": {
+      "path": "sources/http/7f02ece788aedf9e956033c8f81e094732b7f7c3553bfdf2baf73fb66b3861a2.bin",
+      "sha256": "4bc8eaaac9a1d7802b313ccdbc73648d75920154eb8f1c65522ffd4996a2fcac",
+      "parts": [
+        "team"
+      ]
+    },
+    "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000014/0001327811-26-000014-index.html": {
+      "path": "sources/http/ec2438b6c071edd70a369eed7c75c11ad1cf3294ce168e6c16fae834f106065e.bin",
+      "sha256": "ee01af29c4e8849e6e9b7cc0217275a9c19678e06e8137571b351a6a8bc7458a",
+      "parts": [
+        "team"
+      ]
+    },
+    "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000058/wday-20261031.htm": {
+      "path": "sources/http/54add714be1fe5938deaea0972ab57ccfebbdb1181729be8f9ba5682a74531d7.bin",
+      "sha256": "7c13987ee6d6353adf84d9dbdbce3a761b07893f16946accc5587e418532c2d6",
+      "parts": [
+        "team"
+      ]
+    },
+    "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000057/wday-10312026x991.htm": {
+      "path": "sources/http/4afc54ee43eda3bdb4858c528fa51b9053f283a234cba64b080ab50bb048ddc9.bin",
+      "sha256": "095a9ccbf234dfdb9d1dfd3dedade1a32a12af92986e3fd02e3743f2300e611c",
+      "parts": [
+        "team"
+      ]
+    },
+    "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000014/wday-20260131.htm": {
+      "path": "sources/http/9c277dbed64c97b284990be3c1fc4a2b26a390919adf11b575c3d9a0eb9b7a4a.bin",
+      "sha256": "683cdbfb443faf765d13717b5cc41576db6bef882ae630a1359bdc744ac806d3",
+      "parts": [
+        "team"
+      ]
+    },
+    "https://data.sec.gov/api/xbrl/companyfacts/CIK0001327811.json": {
+      "path": "sources/http/61ff13c6fc5074665dcc95d8c875005efa18bf1066c51edfaa8dacc823e40f8d.bin",
+      "sha256": "f3ab5b80cb55104226db9a2a3697a89d50956a3e4e4b88e8f74d8f2f87d9d6e5",
+      "parts": [
+        "team"
+      ]
+    }
+  },
+  "filings": {
+    "0001327811-26-000058": {
+      "accession": "0001327811-26-000058",
+      "cik": "1327811",
+      "form": "10-Q",
+      "documents": [
+        "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000058/0001327811-26-000058-index.html",
+        "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000058/wday-20261031.htm"
+      ],
+      "parts": [
+        "team"
+      ],
+      "saved_texts": [
+        "10-Q.txt"
+      ],
+      "saved_text_hashes": {
+        "10-Q.txt": "670b43b0d1cc2393f6ccc901f5033443f0629a95a18c5dfd8b91486bb08e8289"
+      }
+    },
+    "0001327811-26-000057": {
+      "accession": "0001327811-26-000057",
+      "cik": "1327811",
+      "form": "8-K",
+      "documents": [
+        "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000057/0001327811-26-000057-index.html",
+        "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000057/wday-10312026x991.htm"
+      ],
+      "parts": [
+        "team"
+      ],
+      "saved_texts": [
+        "earnings_release_Ex99-1.txt"
+      ],
+      "saved_text_hashes": {
+        "earnings_release_Ex99-1.txt": "7c2aeaec85598e898fd22d7d5f05b647daf9b74585363d841b2ea8be6881a855"
+      }
+    },
+    "0001327811-26-000014": {
+      "accession": "0001327811-26-000014",
+      "cik": "1327811",
+      "form": "10-K",
+      "documents": [
+        "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000014/0001327811-26-000014-index.html",
+        "https://www.sec.gov/Archives/edgar/data/1327811/000132781126000014/wday-20260131.htm"
+      ],
+      "parts": [
+        "team"
+      ],
+      "saved_texts": [
+        "10-K.txt"
+      ],
+      "saved_text_hashes": {
+        "10-K.txt": "8c4cf33477ca3a02150b90eeb67cd7d41cf2305a1cd842909639897f585200d0"
+      }
+    }
+  }
+}

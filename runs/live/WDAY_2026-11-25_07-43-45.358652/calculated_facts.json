@@ -1,0 +1,130 @@
+{
+  "metrics": {
+    "revenue_growth": {
+      "formula": "(9552000000 - 8446000000) / 8446000000",
+      "value": 13.09495619228037,
+      "unit": "%",
+      "sources": [
+        "XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014",
+        "XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2025-01-31, filing 0001327811-26-000014"
+      ]
+    },
+    "operating_margin": {
+      "formula": "721000000 / 9552000000",
+      "value": 7.548157453936348,
+      "unit": "%",
+      "sources": [
+        "XBRL tag OperatingIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014",
+        "XBRL tag RevenueFromContractWithCustomerExcludingAssessedTax, period end 2026-01-31, filing 0001327811-26-000014"
+      ]
+    },
+    "return_on_average_equity": {
+      "formula": "693000000 / ((7805000000 + 9034000000) / 2)",
+      "value": 8.230892570817744,
+      "unit": "%",
+      "method": "reported net income fact divided by the simple average of current and prior year-end stockholders' equity",
+      "sources": [
+        "XBRL tag NetIncomeLoss, period end 2026-01-31, filing 0001327811-26-000014",
+        "XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014",
+        "XBRL tag StockholdersEquity, period end 2025-01-31, filing 0001327811-26-000014"
+      ]
+    },
+    "debt_to_equity": {
+      "formula": "(n/a) / 7805000000",
+      "value": null,
+      "unit": "ratio",
+      "definition": "long-term debt with its current portion, the balance sheet's noncurrent and current lines filed as one pair in the same 10-K, divided by year-end stockholders' equity; short-term borrowings are not included",
+      "sources": [
+        "XBRL tag StockholdersEquity, period end 2026-01-31, filing 0001327811-26-000014"
+      ]
+    },
+    "long_term_debt_with_current_portion": {
+      "formula": "n/a",
+      "value": null,
+      "unit": "USD",
+      "definition": "long-term debt with its current portion: the balance sheet's noncurrent and current lines, one pair in the same 10-K",
+      "sources": []
+    },
+    "free_cash_flow": {
+      "formula": "2939000000 - 162000000",
+      "value": 2777000000,
+      "unit": "USD",
+      "sources": [
+        "XBRL tag NetCashProvidedByUsedInOperatingActivities, period end 2026-01-31, filing 0001327811-26-000014",
+        "XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period end 2026-01-31, filing 0001327811-26-000014"
+      ]
+    },
+    "pe": {
+      "formula": "179.23 / 2.59",
+      "value": 69.2007722007722,
+      "unit": "ratio",
+      "price_source": "LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00",
+      "sources": [
+        "LSEG TR.PriceClose (WDAY.O); official close at 2026-11-24T16:00:00-05:00; strictly before filing 2026-11-24T16:01:55-05:00",
+        "XBRL tag EarningsPerShareDiluted, period end 2026-01-31, filing 0001327811-26-000014"
+      ]
+    },
+    "quarter_revenue_growth": {
+      "formula": "(2705.0 - 2432.0) / 2432.0 * 100",
+      "value": 11.225328947368421,
+      "unit": "%",
+      "sources": [
+        "earnings_release_Ex99-1.txt:L265-L266; quote: \"Total revenues\\n2,705\"",
+        "earnings_release_Ex99-1.txt:L265-L267; quote: \"Total revenues\\n2,705\\n2,432\""
+      ]
+    }
+  },
+  "quarter_results": {
+    "results": [
+      "Reported revenue, Total revenues (three months ended 2026, USD millions): 2,705",
+      "GAAP diluted EPS, Net income per share, diluted (three months ended 2026): $0.96",
+      "Prior-year reported revenue, Total revenues (three months ended 2025, USD millions): 2,432"
+    ],
+    "adjusted_eps_flags": [],
+    "release_file": "earnings_release_Ex99-1.txt",
+    "filing_accession": "0001327811-26-000057",
+    "total_revenue": 2705.0,
+    "total_revenue_printed": "2,705",
+    "revenue_unit": "USD millions",
+    "prior_year_total_revenue": 2432.0,
+    "quarter_revenue_growth_percent": 11.225328947368421,
+    "revenue_source": "earnings_release_Ex99-1.txt:L265-L266; quote: \"Total revenues\\n2,705\"",
+    "prior_revenue_source": "earnings_release_Ex99-1.txt:L265-L267; quote: \"Total revenues\\n2,705\\n2,432\"",
+    "diluted_eps": 0.96,
+    "diluted_eps_source": "earnings_release_Ex99-1.txt:L346-L348; quote: \"Net income per share, diluted\\n$\\n0.96\"",
+    "latest_10q_capital_spending": {
+      "value": 44000000,
+      "unit": "USD",
+      "formula": "183000000 - 139000000",
+      "inputs": [
+        {
+          "value": 183000000,
+          "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+          "unit": "USD",
+          "period_start": "2026-02-01",
+          "period_end": "2026-10-31",
+          "filing": "0001327811-26-000058",
+          "filed": "2026-11-24"
+        },
+        {
+          "value": 139000000,
+          "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+          "unit": "USD",
+          "period_start": "2026-02-01",
+          "period_end": "2026-07-31",
+          "filing": "0001327811-26-000044",
+          "filed": "2026-08-27"
+        }
+      ],
+      "sources": [
+        "XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-10-31, filing 0001327811-26-000058, filed 2026-11-24, unit USD",
+        "XBRL tag PaymentsToAcquirePropertyPlantAndEquipment, period start 2026-02-01, period end 2026-07-31, filing 0001327811-26-000044, filed 2026-08-27, unit USD"
+      ],
+      "reason": null,
+      "period_end": "2026-10-31",
+      "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+      "period_start": "2026-08-01",
+      "method": "computed: current fiscal-year-to-date amount minus preceding fiscal-year-to-date amount from a different filing"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "part": "Data Step 6",
+  "requested_outputs": [
+    "nodes/Data_Step_6/input.json"
+  ],
+  "outputs": [
+    {
+      "path": "nodes/Data_Step_6/input.json",
+      "sha256": "6d0422eee253778d2ef11ba15b27bbe1ae74fa6675857bcd3387e035f7cbe381"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

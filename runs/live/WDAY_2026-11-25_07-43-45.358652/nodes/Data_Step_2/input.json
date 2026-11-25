@@ -1,0 +1,9 @@
+{
+  "task": "Find required filings",
+  "context": {
+    "ticker": "WDAY",
+    "peers": [],
+    "filed": null
+  },
+  "expected_output": "Step 2 data and status"
+}

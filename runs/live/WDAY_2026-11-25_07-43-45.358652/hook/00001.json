@@ -1,0 +1,49 @@
+{
+  "part": "inputs",
+  "requested_outputs": [
+    "inputs/persona-why-cheap.md",
+    "inputs/spinoff-rules.md",
+    "inputs/spinoff_factors.json",
+    "inputs/roles/financial_analyst.md",
+    "inputs/roles/investment_advisor.md",
+    "inputs/roles/research_analyst.md",
+    "inputs/roles/strategy_manager.md",
+    "inputs/roles/verifier.md"
+  ],
+  "outputs": [
+    {
+      "path": "inputs/persona-why-cheap.md",
+      "sha256": "889f8b70918b3a52b4ab8242d15f9c50cbc23288be25596b3916e5248f3c4e92"
+    },
+    {
+      "path": "inputs/spinoff-rules.md",
+      "sha256": "e39c5c0af8766b77ee75391c9ccd107879ec12388d6f396b4ad4b8d7120d4070"
+    },
+    {
+      "path": "inputs/spinoff_factors.json",
+      "sha256": "06af5a4108f88a882b37248846d86fac5e10542075667a5513291447effbf321"
+    },
+    {
+      "path": "inputs/roles/financial_analyst.md",
+      "sha256": "f4559f36ac6c812240660165c370fdfca05cd24db404babb725817df46a3b32e"
+    },
+    {
+      "path": "inputs/roles/investment_advisor.md",
+      "sha256": "1ae1a1d157f4ee0ea76feb893150ac3c403b990901d7b97076f136128faaa2f3"
+    },
+    {
+      "path": "inputs/roles/research_analyst.md",
+      "sha256": "c9ff00cd584e155ccafd057e05c5c521c1301a30a9c19aadf35a9eed65ac3734"
+    },
+    {
+      "path": "inputs/roles/strategy_manager.md",
+      "sha256": "1c2a75cea66b073b06e001b466b170e0672d787ae563d2e8f48595ee62700f8a"
+    },
+    {
+      "path": "inputs/roles/verifier.md",
+      "sha256": "0bfd1da4a3903f37ce5764f487db839c69ec297aae0ba6e46fd758b5a3fb8b8e"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

@@ -1,0 +1,14 @@
+{
+  "part": "Verifier 1",
+  "requested_outputs": [
+    "nodes/Verifier_1/raw_responses.json"
+  ],
+  "outputs": [
+    {
+      "path": "nodes/Verifier_1/raw_responses.json",
+      "sha256": "91446219162671bc3cb4f2c4626cdcd670825356718829195f1d4611a2811cc4"
+    }
+  ],
+  "status": "PASS",
+  "errors": []
+}

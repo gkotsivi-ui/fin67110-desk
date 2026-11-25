@@ -1,0 +1,655 @@
+[
+  {
+    "output": {
+      "claims": [
+        {
+          "id": "c1",
+          "file": "10-K.txt",
+          "line": 247,
+          "quote": "Workday provides more than 11,500 organizations with cloud solutions",
+          "value": "11,500",
+          "metric": "Organizations served (customers)",
+          "period": "FY2026 10-K (as of January 31, 2026)"
+        },
+        {
+          "id": "c2",
+          "file": "10-K.txt",
+          "line": 248,
+          "quote": "more than 75 million users under contract around the world",
+          "value": "75 million",
+          "metric": "Users under contract",
+          "period": "FY2026 10-K (as of January 31, 2026)"
+        },
+        {
+          "id": "c3",
+          "file": "10-K.txt",
+          "line": 1098,
+          "quote": "our gross revenue retention rate of approximately 97% as of January 31, 2026",
+          "value": "97%",
+          "metric": "Gross revenue retention rate",
+          "period": "As of January 31, 2026"
+        },
+        {
+          "id": "c4",
+          "file": "10-K.txt",
+          "line": 1096,
+          "quote": "Approximately 60% of the increase in subscription services revenues was attributable to expansion within our customers",
+          "value": "60%",
+          "metric": "Share of subscription revenue increase from existing-customer expansion",
+          "period": "FY2026 vs FY2025"
+        },
+        {
+          "id": "c5",
+          "file": "10-K.txt",
+          "line": 1096,
+          "quote": "the remaining 40% was attributable to customers added after the beginning of the comparable prior year period",
+          "value": "40%",
+          "metric": "Share of subscription revenue increase from newly added customers",
+          "period": "FY2026 vs FY2025"
+        },
+        {
+          "id": "c6",
+          "file": "10-K.txt",
+          "line": 1101,
+          "quote": "As of January 31, 2026, our total subscription revenue backlog was $28.1 billion",
+          "value": "$28.1 billion",
+          "metric": "Total subscription revenue backlog",
+          "period": "As of January 31, 2026"
+        },
+        {
+          "id": "c7",
+          "file": "10-K.txt",
+          "line": 1048,
+          "quote": "Subscription services revenues accounted for approximately 92% of our total revenues",
+          "value": "92%",
+          "metric": "Subscription share of total revenues",
+          "period": "FY2026"
+        },
+        {
+          "id": "c8",
+          "file": "10-K.txt",
+          "line": 1096,
+          "quote": "Subscription services revenues were $8.8 billion for fiscal 2026",
+          "value": "$8.8 billion",
+          "metric": "Subscription services revenues",
+          "period": "FY2026"
+        },
+        {
+          "id": "c9",
+          "file": "10-K.txt",
+          "line": 1096,
+          "quote": "an increase of $1.1 billion, or 14%",
+          "value": "14%",
+          "metric": "Subscription services revenue growth",
+          "period": "FY2026 vs FY2025"
+        },
+        {
+          "id": "c10",
+          "file": "10-K.txt",
+          "line": 1221,
+          "quote": "Non-GAAP operating income was $2.8 billion, or 29.6% of revenues, in fiscal 2026",
+          "value": "29.6%",
+          "metric": "Non-GAAP operating margin",
+          "period": "FY2026"
+        },
+        {
+          "id": "c11",
+          "file": "10-K.txt",
+          "line": 1221,
+          "quote": "compared to $2.2 billion, or 25.9% of revenues in fiscal 2025",
+          "value": "25.9%",
+          "metric": "Non-GAAP operating margin",
+          "period": "FY2025"
+        },
+        {
+          "id": "c12",
+          "file": "10-K.txt",
+          "line": 1220,
+          "quote": "GAAP operating income was $721 million, or 7.5% of revenues, in fiscal 2026",
+          "value": "7.5%",
+          "metric": "GAAP operating margin",
+          "period": "FY2026"
+        },
+        {
+          "id": "c13",
+          "file": "10-K.txt",
+          "line": 1033,
+          "quote": "for purchase consideration of $1.1 billion, and in November 2025",
+          "value": "$1.1 billion",
+          "metric": "Purchase consideration for Paradox acquisition",
+          "period": "September 2025 (FY2026)"
+        },
+        {
+          "id": "c14",
+          "file": "10-K.txt",
+          "line": 1039,
+          "quote": "we incurred approximately $303 million in costs related to these restructuring activities",
+          "value": "$303 million",
+          "metric": "Restructuring costs",
+          "period": "FY2026"
+        },
+        {
+          "id": "c15",
+          "file": "10-K.txt",
+          "line": 1153,
+          "quote": "an increase of $55 million, or 2%",
+          "value": "2%",
+          "metric": "Product development expense growth",
+          "period": "FY2026 vs FY2025"
+        },
+        {
+          "id": "c16",
+          "file": "10-K.txt",
+          "line": 1156,
+          "quote": "an increase of $184 million, or 8%",
+          "value": "8%",
+          "metric": "Sales and marketing expense growth",
+          "period": "FY2026 vs FY2025"
+        },
+        {
+          "id": "c17",
+          "file": "10-K.txt",
+          "line": 1147,
+          "quote": "an increase of $264 million, or 21%",
+          "value": "21%",
+          "metric": "Costs of subscription services growth",
+          "period": "FY2026 vs FY2025"
+        },
+        {
+          "id": "c18",
+          "file": "10-K.txt",
+          "line": 1397,
+          "quote": "We expect capital expenditures will be approximately $270 million in fiscal 2027",
+          "value": "$270 million",
+          "metric": "Expected capital expenditures",
+          "period": "FY2027 (expected)"
+        },
+        {
+          "id": "c19",
+          "file": "10-K.txt",
+          "line": 1036,
+          "quote": "repurchased approximately 12.8 million shares of our Class A common stock for $2.9 billion",
+          "value": "$2.9 billion",
+          "metric": "Share repurchases",
+          "period": "FY2026"
+        },
+        {
+          "id": "c20",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 14,
+          "quote": "Subscription revenues were $2.532 billion, an increase of 12.8% from the same period last year",
+          "value": "12.8%",
+          "metric": "Subscription revenue growth year-over-year",
+          "period": "Q3 FY2027 (quarter ended October 31, 2026)"
+        },
+        {
+          "id": "c21",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 24,
+          "quote": "12-month subscription revenue backlog was $9.216 billion, up 12.3% from the same period last year",
+          "value": "12.3%",
+          "metric": "12-month subscription revenue backlog growth",
+          "period": "As of October 31, 2026 vs prior-year period"
+        },
+        {
+          "id": "c22",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 24,
+          "quote": "Total subscription revenue backlog was $27.548 billion, increasing 6.1% year-over-year",
+          "value": "6.1%",
+          "metric": "Total subscription revenue backlog growth",
+          "period": "As of October 31, 2026 vs prior-year period"
+        },
+        {
+          "id": "c23",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 24,
+          "quote": "Total subscription revenue backlog was $27.548 billion",
+          "value": "$27.548 billion",
+          "metric": "Total subscription revenue backlog",
+          "period": "As of October 31, 2026"
+        },
+        {
+          "id": "c24",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 47,
+          "quote": "More than 2,200 core customers have purchased at least one AI product",
+          "value": "2,200",
+          "metric": "Core customers that have purchased at least one AI product",
+          "period": "Q3 FY2027"
+        },
+        {
+          "id": "c25",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 47,
+          "quote": "up nearly 25% from last quarter",
+          "value": "25%",
+          "metric": "Sequential growth in AI-purchasing core customers",
+          "period": "Q3 FY2027 vs Q2 FY2027"
+        },
+        {
+          "id": "c26",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 36,
+          "quote": "our AI products drove nearly $150 million in new ACV",
+          "value": "$150 million",
+          "metric": "New ACV from AI products",
+          "period": "Q3 FY2027"
+        },
+        {
+          "id": "c27",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 18,
+          "quote": "Non-GAAP operating income for the third quarter was $850 million, or 31.4% of revenues",
+          "value": "31.4%",
+          "metric": "Non-GAAP operating margin",
+          "period": "Q3 FY2027"
+        },
+        {
+          "id": "c28",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 18,
+          "quote": "compared to a non-GAAP operating income of $692 million, or 28.5% of revenues",
+          "value": "28.5%",
+          "metric": "Non-GAAP operating margin",
+          "period": "Q3 FY2026"
+        },
+        {
+          "id": "c29",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 103,
+          "quote": "Subscription revenues of $9.958 billion, representing growth of 13%",
+          "value": "$9.958 billion",
+          "metric": "Subscription revenue guidance",
+          "period": "FY2027 full year (guidance)"
+        },
+        {
+          "id": "c30",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 103,
+          "quote": "Subscription revenues of $9.958 billion, representing growth of 13%",
+          "value": "13%",
+          "metric": "Guided subscription revenue growth",
+          "period": "FY2027 full year (guidance)"
+        },
+        {
+          "id": "c31",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 97,
+          "quote": "Subscription revenues of $2.600 billion, representing growth of 10%",
+          "value": "10%",
+          "metric": "Guided subscription revenue growth",
+          "period": "Q4 FY2027 (guidance)"
+        },
+        {
+          "id": "c32",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 71,
+          "quote": "Workday completed the issuance and sale of $2.5 billion aggregate principal amount of senior notes",
+          "value": "$2.5 billion",
+          "metric": "Senior notes issued",
+          "period": "Q3 FY2027"
+        },
+        {
+          "id": "c33",
+          "file": "10-K.txt",
+          "line": 248,
+          "quote": "to more than 65% of the Fortune",
+          "value": "65%",
+          "metric": "Share of Fortune 500 that are customers",
+          "period": "FY2026 10-K"
+        },
+        {
+          "id": "c34",
+          "fact": "revenue",
+          "which": "value"
+        },
+        {
+          "id": "c35",
+          "fact": "revenue",
+          "which": "prior_value"
+        },
+        {
+          "id": "c36",
+          "file": "10-K.txt",
+          "line": 1101,
+          "quote": "with $8.8 billion expected to be recognized in revenues over the next 12 months. As of January 31, 2025",
+          "value": "$8.8 billion",
+          "metric": "12-month subscription revenue backlog",
+          "period": "As of January 31, 2026"
+        }
+      ],
+      "draft": "## Overview\n\nThis review tests Workday's growth claims using only the FY2026 10-K Business and MD&A sections and the Q3 FY2027 earnings release. Workday describes itself as an enterprise AI platform for HCM, financial management, spend management and planning. It serves more than {c1} organizations with more than {c2} users under contract, including more than {c33} of the Fortune 500. Revenue is mostly recurring: subscription services made up approximately {c7} of total revenues in FY2026. Total revenues were {c34} in FY2026, up from {c35} in FY2025. Subscription services revenues reached {c8}, up {c9}. Expansion within existing customers accounted for approximately {c4} of the subscription revenue increase, and newly added customers accounted for the remaining {c5}. Neither the extracted 10-K sections nor the earnings release give a customer-concentration figure, so revenue concentration is not established by the supplied evidence.\n\n**Demand durability: supported.** The 10-K reports a gross revenue retention rate of approximately {c3} as of January 31, 2026. Total subscription revenue backlog was {c6}, with {c36} expected to be recognized over the next 12 months. In Q3 FY2027, subscription revenues grew {c20} year-over-year and 12-month subscription revenue backlog grew {c21}. The MD&A also flags risks to this view: lengthening sales cycles in net new opportunities and reduced growth in headcount-level commitments when existing customers renew.\n\n## Market Positioning and Growth Outlook\n\n**Competitive position: mixed.** Workday names Oracle and SAP as its primary competitors and says it competes favorably on factors such as customer satisfaction, breadth of functionality and AI capability. The supplied materials contain no segment results, so a segment-level advantage is not established by the supplied evidence. Operating measures partly support the claim. Non-GAAP operating margin was {c10} in FY2026, compared with {c11} in FY2025. In Q3 FY2027 it was {c27}, compared with {c28} a year earlier. However, GAAP operating margin was only {c12} in FY2026, and the company booked approximately {c14} in restructuring costs. Gartner Leader designations are third-party opinions, not operating measures, so I give them no weight in this score.\n\nAI adoption is an early sign of advantage. More than {c24} core customers have purchased at least one AI product, up nearly {c25} from the prior quarter. Management also says AI products drove nearly {c26} in new ACV in the quarter. That figure comes from a CEO quote rather than the financial statements, so I treat it as a management claim.\n\n**Growth execution: mixed.** Investment rose unevenly in FY2026. Costs of subscription services grew {c17}, driven by third-party hosted infrastructure, while product development grew only {c15} and sales and marketing grew {c16}. Workday paid {c13} for Paradox and made several other AI acquisitions, and it expects capital expenditures of approximately {c18} in FY2027. At the same time, it spent {c19} on share repurchases in FY2026 and issued {c32} of senior notes in Q3 FY2027. Management raised FY2027 subscription revenue guidance to {c29}, implying growth of {c30}. However, Q4 FY2027 guidance implies subscription growth of only {c31}, which points to slowing growth.\n\n## Future Developments and Strategic Recommendations\n\nThe catalysts to watch are new AI products and pricing: Workday Build, Workday Data Cloud, Flex Credits pricing and the partnerships with Anthropic and Accenture. The 10-K itself warns that Workday has limited experience pricing Flex Credits contracts and that AI monetization remains uncertain. Investors should track whether AI purchasing (currently more than {c24} core customers) converts into subscription growth above the Q4 FY2027 guide of {c31}.\n\nThe backlog is also worth watching. Total subscription revenue backlog was {c23} in Q3 FY2027, compared with {c6} at fiscal year-end. Workday describes Q4 as its seasonally heaviest quarter for signings and renewals, so the year-end figure will show whether total backlog growth picks up again.\n\n**What would change my view.** My strongest conclusion is that demand is durable. It would be challenged if the next 10-K reports gross revenue retention below the current {c3}. A lower figure would mean the recurring base itself is shrinking, not just slowing. It would also undercut the MD&A's claim that existing customers drive approximately {c4} of the subscription revenue increase.\n\nInsight: In Q3 FY2027, 12-month subscription revenue backlog grew {c21} while total subscription revenue backlog grew only {c22}, so contracted revenue beyond the next year is growing more slowly than near-term revenue, a duration issue the release's headline revenue figures do not show."
+    },
+    "errors": [
+      "draft line 3: number '500.' is typed directly; use a {cN} claim.",
+      "draft line 5: number '12' is typed directly; use a {cN} claim.",
+      "draft line 5: number '12' is typed directly; use a {cN} claim.",
+      "draft line 23: number '12' is typed directly; use a {cN} claim."
+    ]
+  },
+  {
+    "output": {
+      "claims": [
+        {
+          "id": "c1",
+          "file": "10-K.txt",
+          "line": 247,
+          "quote": "Workday provides more than 11,500 organizations with cloud solutions",
+          "value": "11,500",
+          "metric": "Organizations served (customers)",
+          "period": "FY2026 10-K (as of January 31, 2026)"
+        },
+        {
+          "id": "c2",
+          "file": "10-K.txt",
+          "line": 248,
+          "quote": "more than 75 million users under contract around the world",
+          "value": "75 million",
+          "metric": "Users under contract",
+          "period": "FY2026 10-K (as of January 31, 2026)"
+        },
+        {
+          "id": "c3",
+          "file": "10-K.txt",
+          "line": 1098,
+          "quote": "our gross revenue retention rate of approximately 97% as of January 31, 2026",
+          "value": "97%",
+          "metric": "Gross revenue retention rate",
+          "period": "As of January 31, 2026"
+        },
+        {
+          "id": "c4",
+          "file": "10-K.txt",
+          "line": 1096,
+          "quote": "Approximately 60% of the increase in subscription services revenues was attributable to expansion within our customers",
+          "value": "60%",
+          "metric": "Share of subscription revenue increase from existing-customer expansion",
+          "period": "FY2026 vs FY2025"
+        },
+        {
+          "id": "c5",
+          "file": "10-K.txt",
+          "line": 1096,
+          "quote": "the remaining 40% was attributable to customers added after the beginning of the comparable prior year period",
+          "value": "40%",
+          "metric": "Share of subscription revenue increase from newly added customers",
+          "period": "FY2026 vs FY2025"
+        },
+        {
+          "id": "c6",
+          "file": "10-K.txt",
+          "line": 1101,
+          "quote": "As of January 31, 2026, our total subscription revenue backlog was $28.1 billion",
+          "value": "$28.1 billion",
+          "metric": "Total subscription revenue backlog",
+          "period": "As of January 31, 2026"
+        },
+        {
+          "id": "c7",
+          "file": "10-K.txt",
+          "line": 1048,
+          "quote": "Subscription services revenues accounted for approximately 92% of our total revenues",
+          "value": "92%",
+          "metric": "Subscription share of total revenues",
+          "period": "FY2026"
+        },
+        {
+          "id": "c8",
+          "file": "10-K.txt",
+          "line": 1096,
+          "quote": "Subscription services revenues were $8.8 billion for fiscal 2026",
+          "value": "$8.8 billion",
+          "metric": "Subscription services revenues",
+          "period": "FY2026"
+        },
+        {
+          "id": "c9",
+          "file": "10-K.txt",
+          "line": 1096,
+          "quote": "an increase of $1.1 billion, or 14%",
+          "value": "14%",
+          "metric": "Subscription services revenue growth",
+          "period": "FY2026 vs FY2025"
+        },
+        {
+          "id": "c10",
+          "file": "10-K.txt",
+          "line": 1221,
+          "quote": "Non-GAAP operating income was $2.8 billion, or 29.6% of revenues, in fiscal 2026",
+          "value": "29.6%",
+          "metric": "Non-GAAP operating margin",
+          "period": "FY2026"
+        },
+        {
+          "id": "c11",
+          "file": "10-K.txt",
+          "line": 1221,
+          "quote": "compared to $2.2 billion, or 25.9% of revenues in fiscal 2025",
+          "value": "25.9%",
+          "metric": "Non-GAAP operating margin",
+          "period": "FY2025"
+        },
+        {
+          "id": "c12",
+          "file": "10-K.txt",
+          "line": 1220,
+          "quote": "GAAP operating income was $721 million, or 7.5% of revenues, in fiscal 2026",
+          "value": "7.5%",
+          "metric": "GAAP operating margin",
+          "period": "FY2026"
+        },
+        {
+          "id": "c13",
+          "file": "10-K.txt",
+          "line": 1033,
+          "quote": "for purchase consideration of $1.1 billion, and in November 2025",
+          "value": "$1.1 billion",
+          "metric": "Purchase consideration for Paradox acquisition",
+          "period": "September 2025 (FY2026)"
+        },
+        {
+          "id": "c14",
+          "file": "10-K.txt",
+          "line": 1039,
+          "quote": "we incurred approximately $303 million in costs related to these restructuring activities",
+          "value": "$303 million",
+          "metric": "Restructuring costs",
+          "period": "FY2026"
+        },
+        {
+          "id": "c15",
+          "file": "10-K.txt",
+          "line": 1153,
+          "quote": "an increase of $55 million, or 2%",
+          "value": "2%",
+          "metric": "Product development expense growth",
+          "period": "FY2026 vs FY2025"
+        },
+        {
+          "id": "c16",
+          "file": "10-K.txt",
+          "line": 1156,
+          "quote": "an increase of $184 million, or 8%",
+          "value": "8%",
+          "metric": "Sales and marketing expense growth",
+          "period": "FY2026 vs FY2025"
+        },
+        {
+          "id": "c17",
+          "file": "10-K.txt",
+          "line": 1147,
+          "quote": "an increase of $264 million, or 21%",
+          "value": "21%",
+          "metric": "Costs of subscription services growth",
+          "period": "FY2026 vs FY2025"
+        },
+        {
+          "id": "c18",
+          "file": "10-K.txt",
+          "line": 1397,
+          "quote": "We expect capital expenditures will be approximately $270 million in fiscal 2027",
+          "value": "$270 million",
+          "metric": "Expected capital expenditures",
+          "period": "FY2027 (expected)"
+        },
+        {
+          "id": "c19",
+          "file": "10-K.txt",
+          "line": 1036,
+          "quote": "repurchased approximately 12.8 million shares of our Class A common stock for $2.9 billion",
+          "value": "$2.9 billion",
+          "metric": "Share repurchases",
+          "period": "FY2026"
+        },
+        {
+          "id": "c20",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 14,
+          "quote": "Subscription revenues were $2.532 billion, an increase of 12.8% from the same period last year",
+          "value": "12.8%",
+          "metric": "Subscription revenue growth year-over-year",
+          "period": "Q3 FY2027 (quarter ended October 31, 2026)"
+        },
+        {
+          "id": "c21",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 24,
+          "quote": "12-month subscription revenue backlog was $9.216 billion, up 12.3% from the same period last year",
+          "value": "12.3%",
+          "metric": "12-month subscription revenue backlog growth",
+          "period": "As of October 31, 2026 vs prior-year period"
+        },
+        {
+          "id": "c22",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 24,
+          "quote": "Total subscription revenue backlog was $27.548 billion, increasing 6.1% year-over-year",
+          "value": "6.1%",
+          "metric": "Total subscription revenue backlog growth",
+          "period": "As of October 31, 2026 vs prior-year period"
+        },
+        {
+          "id": "c23",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 24,
+          "quote": "Total subscription revenue backlog was $27.548 billion",
+          "value": "$27.548 billion",
+          "metric": "Total subscription revenue backlog",
+          "period": "As of October 31, 2026"
+        },
+        {
+          "id": "c24",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 47,
+          "quote": "More than 2,200 core customers have purchased at least one AI product",
+          "value": "2,200",
+          "metric": "Core customers that have purchased at least one AI product",
+          "period": "Q3 FY2027"
+        },
+        {
+          "id": "c25",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 47,
+          "quote": "up nearly 25% from last quarter",
+          "value": "25%",
+          "metric": "Sequential growth in AI-purchasing core customers",
+          "period": "Q3 FY2027 vs Q2 FY2027"
+        },
+        {
+          "id": "c26",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 36,
+          "quote": "our AI products drove nearly $150 million in new ACV",
+          "value": "$150 million",
+          "metric": "New ACV from AI products",
+          "period": "Q3 FY2027"
+        },
+        {
+          "id": "c27",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 18,
+          "quote": "Non-GAAP operating income for the third quarter was $850 million, or 31.4% of revenues",
+          "value": "31.4%",
+          "metric": "Non-GAAP operating margin",
+          "period": "Q3 FY2027"
+        },
+        {
+          "id": "c28",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 18,
+          "quote": "compared to a non-GAAP operating income of $692 million, or 28.5% of revenues",
+          "value": "28.5%",
+          "metric": "Non-GAAP operating margin",
+          "period": "Q3 FY2026"
+        },
+        {
+          "id": "c29",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 103,
+          "quote": "Subscription revenues of $9.958 billion, representing growth of 13%",
+          "value": "$9.958 billion",
+          "metric": "Subscription revenue guidance",
+          "period": "FY2027 full year (guidance)"
+        },
+        {
+          "id": "c30",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 103,
+          "quote": "Subscription revenues of $9.958 billion, representing growth of 13%",
+          "value": "13%",
+          "metric": "Guided subscription revenue growth",
+          "period": "FY2027 full year (guidance)"
+        },
+        {
+          "id": "c31",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 97,
+          "quote": "Subscription revenues of $2.600 billion, representing growth of 10%",
+          "value": "10%",
+          "metric": "Guided subscription revenue growth",
+          "period": "Q4 FY2027 (guidance)"
+        },
+        {
+          "id": "c32",
+          "file": "earnings_release_Ex99-1.txt",
+          "line": 71,
+          "quote": "Workday completed the issuance and sale of $2.5 billion aggregate principal amount of senior notes",
+          "value": "$2.5 billion",
+          "metric": "Senior notes issued",
+          "period": "Q3 FY2027"
+        },
+        {
+          "id": "c33",
+          "file": "10-K.txt",
+          "line": 248,
+          "quote": "to more than 65% of the Fortune",
+          "value": "65%",
+          "metric": "Share of Fortune 500 that are customers",
+          "period": "FY2026 10-K"
+        },
+        {
+          "id": "c34",
+          "fact": "revenue",
+          "which": "value"
+        },
+        {
+          "id": "c35",
+          "fact": "revenue",
+          "which": "prior_value"
+        },
+        {
+          "id": "c36",
+          "file": "10-K.txt",
+          "line": 1101,
+          "quote": "with $8.8 billion expected to be recognized in revenues over the next 12 months. As of January 31, 2025",
+          "value": "$8.8 billion",
+          "metric": "12-month subscription revenue backlog",
+          "period": "As of January 31, 2026"
+        }
+      ],
+      "draft": "## Overview\n\nThis review tests Workday's growth claims using only the FY2026 10-K Business and MD&A sections and the Q3 FY2027 earnings release. Workday describes itself as an enterprise AI platform for HCM, financial management, spend management and planning. It serves more than {c1} organizations with more than {c2} users under contract, including more than {c33} of the companies on the Fortune list of the largest U.S. companies. Revenue is mostly recurring: subscription services made up approximately {c7} of total revenues in FY2026. Total revenues were {c34} in FY2026, up from {c35} in FY2025. Subscription services revenues reached {c8}, up {c9}. Expansion within existing customers accounted for approximately {c4} of the subscription revenue increase, and newly added customers accounted for the remaining {c5}. Neither the extracted 10-K sections nor the earnings release give a customer-concentration figure, so revenue concentration is not established by the supplied evidence.\n\n**Demand durability: supported.** The 10-K reports a gross revenue retention rate of approximately {c3} as of January 31, 2026. Total subscription revenue backlog was {c6}, with {c36} expected to be recognized over the following year. In Q3 FY2027, subscription revenues grew {c20} year-over-year, and the portion of subscription revenue backlog due within the next year grew {c21}. The MD&A also flags risks to this view: lengthening sales cycles in net new opportunities and reduced growth in headcount-level commitments when existing customers renew.\n\n## Market Positioning and Growth Outlook\n\n**Competitive position: mixed.** Workday names Oracle and SAP as its primary competitors and says it competes favorably on factors such as customer satisfaction, breadth of functionality and AI capability. The supplied materials contain no segment results, so a segment-level advantage is not established by the supplied evidence. Operating measures partly support the claim. Non-GAAP operating margin was {c10} in FY2026, compared with {c11} in FY2025. In Q3 FY2027 it was {c27}, compared with {c28} a year earlier. However, GAAP operating margin was only {c12} in FY2026, and the company booked approximately {c14} in restructuring costs. Gartner Leader designations are third-party opinions, not operating measures, so I give them no weight in this assessment.\n\nAI adoption is an early sign of advantage. More than {c24} core customers have purchased at least one AI product, up nearly {c25} from the prior quarter. Management also says AI products drove nearly {c26} in new ACV in the quarter. That figure comes from a CEO quote rather than the financial statements, so I treat it as a management claim.\n\n**Growth execution: mixed.** Investment rose unevenly in FY2026. Costs of subscription services grew {c17}, driven by third-party hosted infrastructure, while product development grew only {c15} and sales and marketing grew {c16}. Workday paid {c13} for Paradox and made several other AI acquisitions, and it expects capital expenditures of approximately {c18} in FY2027. At the same time, it spent {c19} on share repurchases in FY2026 and issued {c32} of senior notes in Q3 FY2027. Management raised FY2027 subscription revenue guidance to {c29}, implying growth of {c30}. However, Q4 FY2027 guidance implies subscription growth of only {c31}, which points to slowing growth.\n\n## Future Developments and Strategic Recommendations\n\nThe catalysts to watch are new AI products and pricing: Workday Build, Workday Data Cloud, Flex Credits pricing and the partnerships with Anthropic and Accenture. The 10-K itself warns that Workday has limited experience pricing Flex Credits contracts and that AI monetization remains uncertain. Investors should track whether AI purchasing (currently more than {c24} core customers) turns into subscription growth above the Q4 FY2027 guide of {c31}.\n\nThe backlog is also worth watching. Total subscription revenue backlog was {c23} in Q3 FY2027, compared with {c6} at fiscal year-end. Workday describes Q4 as its seasonally heaviest quarter for signings and renewals, so the year-end figure will show whether total backlog growth picks up again.\n\n**What would change my view.** My strongest conclusion is that demand is durable. It would be challenged if the next 10-K reports gross revenue retention below the current {c3}. A lower figure would mean the recurring base itself is shrinking, not just slowing. It would also undercut the MD&A's claim that existing customers drive approximately {c4} of the subscription revenue increase.\n\nInsight: In Q3 FY2027, subscription revenue backlog due within the next year grew {c21} while total subscription revenue backlog grew only {c22}, so contracted revenue beyond the next year is growing more slowly than near-term revenue, a duration issue the release's headline revenue figures do not show."
+    },
+    "errors": []
+  }
+]

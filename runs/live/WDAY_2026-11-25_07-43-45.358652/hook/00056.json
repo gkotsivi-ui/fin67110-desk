@@ -1,0 +1,66 @@
+{
+  "part": "worksheet",
+  "requested_outputs": [
+    "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model input.json",
+    "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model output.json",
+    "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model raw response.json",
+    "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652.json",
+    "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652.md",
+    "view.json",
+    "timings/hook_worksheet_model_input__1795611254508277200.json",
+    "timings/reader_daily_closes_and_volumes_1795611278798198800.json",
+    "timings/reader_last_close_before_1795611253799687000.json",
+    "sources/prices/d8cc181b7a33e3d58b0b4c25d975bddccbefc62fee5a8f1ddc17cb0a144913b8.json"
+  ],
+  "outputs": [
+    {
+      "path": "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model input.json",
+      "sha256": "c0f21e71e386d8e8e27351c8619d3ce33cf958c1020e27669263f1081bbaaabc"
+    },
+    {
+      "path": "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model output.json",
+      "sha256": "5f4d921a31ebedb8431a42683e6e3a138951c47e832faba5004e2130b6def869"
+    },
+    {
+      "path": "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652, model raw response.json",
+      "sha256": "93790c2a42c83f59e575d3523b114ae60486823d96e5dce7d3dbe634cc609776"
+    },
+    {
+      "path": "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652.json",
+      "sha256": "47f01ab89839d444d4c6d45920e110e1f6e175f678ccd35f8778660dd76d5e8a"
+    },
+    {
+      "path": "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652.md",
+      "sha256": "b72ba24ab438970df54b046af48acb36b0a8e9c01344edef51d27c00e602dfc1"
+    },
+    {
+      "path": "view.json",
+      "sha256": "af883af72e9f11a2a70539ffd70a30e47a9f69c5142133bf896a2e3eedc60785"
+    },
+    {
+      "path": "timings/hook_worksheet_model_input__1795611254508277200.json",
+      "sha256": "a09794f35413761cabe12ccef713341c0c7e14d6d55f922941e455b692de3051"
+    },
+    {
+      "path": "timings/reader_daily_closes_and_volumes_1795611278798198800.json",
+      "sha256": "6e535d9945d30efa25f8eee03aa1033690b1f229ecf07c867c1ae54fb44b1332"
+    },
+    {
+      "path": "timings/reader_last_close_before_1795611253799687000.json",
+      "sha256": "55da311989ae3416ea4fe60a6c35b5dd0aec3dd944827df6f46e1d3428312585"
+    },
+    {
+      "path": "sources/prices/d8cc181b7a33e3d58b0b4c25d975bddccbefc62fee5a8f1ddc17cb0a144913b8.json",
+      "sha256": "f02dc164ade2d43b9bce21cba5360fbbb8cd56827de3206a30098aca6df1489f"
+    }
+  ],
+  "status": "FAIL",
+  "errors": [
+    [
+      "Spinoff worksheet, WDAY, 2026-11-25, 07-43-45.358652.md",
+      39,
+      "Spelled-out number needs an explicit sourced numeric claim: zero",
+      "Next filing: If the next quarterly report's cover page states an actual shares-outstanding count, and its condensed consolidated balance sheet states cash and total debt explicitly, the worksheet can compute the low case. If the price then sits at or below the low case, the price-against-value criterion would move off zero. Separately, any insider report showing open-market purchases would give the insider criterion something to score, though without a distribution it would not restore a spinoff thesis."
+    ]
+  ]
+}
