@@ -26,8 +26,8 @@ desk nor its tests need `-X utf8`. The desk's programs still start themselves in
 Windows (`utf8_mode.py`), which covers what they print. The test harness is portable (`tests/portable.py`):
 symlink checks run only where the system permits a symlink, the ordinary secret and excluded-file checks
 always run, and the seeded CrewAI tests allow loopback sockets, which Windows' event loop needs, while
-blocking every external connection. On Windows 11 and Python 3.13 on 2026-11-23, `check_all.py` ran
-950 tests with no failure; the four that create a symlink were skipped. The macOS run has not been
+blocking every external connection. On Windows 11 and Python 3.13 on 2026-11-25, `check_all.py` ran
+959 tests with no failure; the four that create a symlink were skipped. The macOS run has not been
 redone since 2026-11-21.
 
 Configure only this repo's `.env`. It needs `SEC_USER_AGENT`, `API_KEY`, and an explicit `MODEL`.

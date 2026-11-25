@@ -839,6 +839,36 @@ critical and six high. The table is in [code-audit-2026-11.md](code-audit-2026-1
   one part sent back. One run each is not enough to choose a model.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-25: the error review misread the group desk's live run
+
+- **What happened.** The Workday live run (Week 6) is the first run of the group desk (`desk.py --live`) in
+  `runs/live`. Before its error report was written, the review's code checks were run on it without saving
+  anything. They reported ten confirmed type errors: each role's `claim_attempts.json` and `raw_responses.json`.
+  They also reported the Verifier and the hook as "not checked", although the run had saved 260 Verifier checks
+  and 60 hook records, and its stop and resume were in those files. Published, the report would have stated ten
+  errors that are not errors and left out what happened in the run.
+- **Cause.** `desk_error_review.py` was written for the base desk's run folder (`verification.json`, one
+  `hook.json`). The group desk saves those two role files as lists, its Verifier's checks in
+  `nodes/Verifier/output.json`, one record for each hook check in `hook/`, and its published report as
+  `final_report.md`, which the review did not read.
+- **What changed.** The review accepts the two list files, reads `final_report.md`, reads the group desk's
+  Verifier checks (a "wrong" or "unsupported" mark stays unconfirmed, as before), reads the hook records (a
+  refusal is a confirmed finding, one for each distinct refusal), and reports a part that failed in a run that a
+  resume finished. Runs of the base desk are read as before.
+- **Also fixed, found in the first draft of Workday's review.** Both reports printed "Run Time: Run time: ...",
+  and put the footer's first line straight under the last sentence or bullet, so Markdown joined the footer to it;
+  the Cisco review shows both. The findings file, which is public, held the full paths of its history folder and
+  its outputs, which name a member's home folder: `check_public.py` refused that draft before anything was
+  committed. The file now holds those paths relative to the repository, as the Cisco and NVIDIA files do.
+- **How it was caught, and how we checked.** By reading the findings of that dry run against the run's own files
+  before publishing, then the draft review as it renders. Nine new tests on made-up runs; eight fail on the code
+  before the change. The first version of the change cited the claim's line instead of the Verifier's reason: it
+  matched only the first 80 characters, and this run's reasons begin with the claim. A test now reproduces that. On the Workday run, the changed review
+  gives the worksheet's failed attempt and the resume (confirmed), the hook's refusal of "zero" (confirmed), and
+  the Verifier's two "wrong" marks (unconfirmed). The synthetic evaluation is unchanged: no misses and no false
+  alarms. `python check_all.py`: 959 tests, no failure, four skipped.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.

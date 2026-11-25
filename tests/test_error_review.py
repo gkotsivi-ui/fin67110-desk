@@ -200,6 +200,94 @@ class ReviewTests(unittest.TestCase):
         r = Review(self.run, self.history)
         self.assertEqual(r.metadata(1, practice=True)['ticker'], 'EXM')
 
+    # The group desk (desk.py) saves its run differently from the base desk. The review of the Workday live run on
+    # 2026-11-25 called ten list files type errors and read none of its Verifier marks, hook records or final report.
+    def test_group_desk_list_files_are_not_type_errors(self):
+        put(self.run, "nodes/Research_Analyst_1/claim_attempts.json", [])
+        put(self.run, "nodes/Research_Analyst_1/raw_responses.json", [{"text": "reply"}])
+        put(self.run, "nodes/Research_Analyst_1/output.json", [])
+        r = Review(self.run, self.history)
+        typed = [f["description"] for f in r.findings if f["rule"] == "json-type"]
+        self.assertEqual(typed, ["nodes/Research_Analyst_1/output.json has the wrong top-level JSON type."])
+
+    def test_group_desk_final_report_is_read(self):
+        put(self.run, "final_report.md", "Filings read: synthetic\nInsight: Insight: a doubled label\n")
+        r = Review(self.run, self.history)
+        self.assertEqual(r.texts["run/final_report.md"][1], "Insight: Insight: a doubled label")
+
+    def test_a_part_that_failed_before_a_resume_is_confirmed(self):
+        put(self.run, "verified_report.md", "# Synthetic verified report\n")
+        put(self.run, "desk_run.json", {"status": "complete", "parts": [
+            {"name": "team", "status": "PASS"}, {"name": "worksheet", "status": "FAIL"},
+            {"name": "worksheet", "status": "PASS"}], "resumed": [{"time": "T1", "from_part": "worksheet"}]})
+        r = Review(self.run, self.history)
+        r.deterministic()
+        f = next(f for f in r.findings if f["rule"] == "resumed-failure")
+        self.assertEqual((f["status"], f["stage"]), ("confirmed", "worksheet"))
+        self.assertIn("resumed at T1", f["observed"])
+        self.assertIn('"status": "FAIL"', f["evidence"][0]["quote"])
+        self.assertEqual(r.metadata(1)["outcome"], "completed")
+        self.assertFalse(any(f["rule"] == "joined-failure" for f in r.findings))
+
+    def test_a_completed_run_with_no_failed_part_has_no_failure_finding(self):
+        put(self.run, "desk_run.json", {"status": "complete", "parts": [{"name": "team", "status": "PASS"}]})
+        r = Review(self.run, self.history)
+        r.deterministic()
+        self.assertFalse(any(f["rule"] in {"resumed-failure", "joined-failure"} for f in r.findings))
+
+    def test_group_desk_hook_refusal_is_one_confirmed_finding(self):
+        error = ["worksheet.md", "39", "Spelled-out number needs an explicit sourced numeric claim: zero", "Next filing: zero"]
+        put(self.run, "hook/00001.json", {"part": "team", "status": "PASS", "errors": []})
+        put(self.run, "hook/00002.json", {"part": "worksheet", "status": "FAIL", "errors": [error]})
+        put(self.run, "hook/00003.json", {"part": "worksheet failed outputs", "status": "FAIL", "errors": [error]})
+        r = Review(self.run, self.history)
+        r.deterministic()
+        refusals = [f for f in r.findings if f["rule"] == "hook-refusal"]
+        self.assertEqual(len(refusals), 1)
+        self.assertEqual(refusals[0]["status"], "confirmed")
+        self.assertEqual([e["path"] for e in refusals[0]["evidence"]], ["run/hook/00002.json", "run/hook/00003.json"])
+        self.assertTrue(all("Spelled-out number" in e["quote"] for e in refusals[0]["evidence"]))
+        hook = next(c for c in r.checks if c["stage"] == "Hook")
+        self.assertEqual((hook["result"], hook["detail"]), ("checked", "3 saved hook records read; 2 record a refusal."))
+
+    def test_group_desk_verifier_marks_are_unconfirmed_flags(self):
+        # The reason begins with the claim, and the claim is also marked correct elsewhere: the evidence must be the
+        # reason's own line, not the first line that shares its opening words.
+        claim = "2,000 [XBRL tag LongTermDebtNoncurrent, period end 2026-01-31, filing 0000000001-26-000001]"
+        put(self.run, "nodes/Verifier/output.json", {
+            "code_checks": [{"claim": claim, "status": "correct", "reason": "matches", "correction": claim}],
+            "model_checks": {"checks": [{"claim": claim, "status": "wrong",
+                                         "reason": claim + " is dated a year before the quarter it sits beside.",
+                                         "correction": "Date the figure."}]}})
+        r = Review(self.run, self.history)
+        r.deterministic()
+        flags = [f for f in r.findings if f["rule"] == "verifier-flag"]
+        self.assertEqual(len(flags), 1)
+        self.assertEqual((flags[0]["status"], flags[0]["expected"]), ("unconfirmed", "Date the figure."))
+        self.assertIn("dated a year before", flags[0]["evidence"][0]["quote"])
+        verifier = next(c for c in r.checks if c["stage"] == "Verifier and numerical evidence")
+        self.assertIn("2 saved Verifier checks read (correct 1, wrong 1)", verifier["detail"])
+
+    # Until 2026-11-25 both reports printed "Run Time: Run time: ..." and put the footer's first line directly under
+    # the last sentence or bullet, so Markdown joined the footer to it.
+    def test_the_saved_findings_name_no_full_path(self):
+        # The findings file is public: until 2026-11-25 it held the full paths of its history folder and outputs.
+        result = review_run(self.run, self.history, 1, True, self.root)
+        loaded = json.loads(Path(result["outputs"]["findings"]).read_text(encoding="utf-8"))
+        for value in [loaded["history_folder"], *loaded["outputs"].values()]:
+            self.assertFalse(Path(value).is_absolute(), value)
+            self.assertNotIn(str(Path.home()), value)
+        self.assertTrue(Path(result["outputs"]["human"]).is_file())
+
+    def test_the_run_time_is_printed_once(self):
+        self.assertEqual(Review(self.run, self.history).metadata(1)["run_time"], "synthetic")
+
+    def test_the_footer_starts_its_own_paragraph_in_both_reports(self):
+        result = review_run(self.run, self.history, 1, True, self.root)
+        for kind in ("human", "ai"):
+            text = Path(result["outputs"][kind]).read_text(encoding="utf-8")
+            self.assertIn("\n\nThis is a learning exercise, not financial advice.\n\n", text)
+
     def test_history_is_a_lead_not_current_proof(self):
         put(self.history, "previous.md", "### Error 1\nType of error: wrong guidance table\n")
         r = Review(self.run, self.history)

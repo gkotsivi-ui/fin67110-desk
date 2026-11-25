@@ -1,0 +1,42 @@
+{
+  "review_scope": [
+    "Claude Code (claude-opus-5-5) compared the eleven core claims in run/final_report.md with the saved filings. Claims 1 to 6 and 8 match the 10-K's statements: total revenues 9,552 and 8,446 (10-K.txt lines 1855-1857), operating income 721 (1890-1891), net income 693 (1908-1910), diluted EPS 2.59 (1922-1924), total stockholders' equity 7,805 and 9,034 (1824-1826), cash from operations 2,939 (2344-2345) and capital expenditures 162 (2367-2369). Claims 9 to 11 match the release: total revenues 2,705 and 2,432 (earnings_release_Ex99-1.txt lines 265-267) and diluted EPS 0.96 (346-348). Code recomputed the growth, margin, return and free cash flow from these lines, and each agrees with the report.",
+    "Claim 7, debt to equity, is left out with its reason. The 10-K's balance sheet has one debt line, 'Debt, noncurrent' 2,987 (10-K.txt lines 1746-1747), and its XBRL facts hold no current debt line and no LongTermDebt total, which the desk's rule needs before it states a zero current portion. This is an omission with an accurate reason, not an error.",
+    "The Verifier's two 'wrong' marks were read against the saved texts. The $2.987 billion is the 10-K's noncurrent debt at January 31, 2026 (the balance sheet's dates are at 10-K.txt lines 1669-1671), and the release reports $2.5 billion of senior notes issued since then (earnings_release_Ex99-1.txt line 71). The saved filings support both marks, and both sentences were left out of the published report.",
+    "The resume was the team's decision after the stop. The failed worksheet attempt is kept unchanged in earlier_attempt/; its files are outside this review's evidence list, and the hook record quotes the refused line.",
+    "The view is 'not computed' because the 10-K's cover gives no exact share count (known limit 7 in the README). That is the worksheet's rule working, not an error."
+  ],
+  "findings": [
+    {
+      "type": "Formatting error",
+      "stage": "Worksheet judgment, as printed in the final report",
+      "description": "The worksheet section of the published report prints its label twice: 'Insight: Insight:'.",
+      "observed": "Insight: Insight: the annual report's consolidated statements of cash flows show depreciation and amortization ...",
+      "expected": "One label, 'Insight:', followed by the sentence.",
+      "cause": "the worksheet's model began its insight with 'Insight:', and the worksheet code adds the label again (skills/spinoff-worksheet/scripts/worksheet.py, line 538)",
+      "effect": "Wording only. No number, mark or view changes.",
+      "uncertainty": "The worksheet's saved model output, which shows the label at the start of the model's own text, is not in this review's evidence list. The code location was read in the repository, not in the run folder.",
+      "evidence": [
+        {"path": "run/final_report.md", "line": 401, "quote": "Insight: Insight: the annual report's consolidated statements of cash flows show depreciation and amortization"}
+      ],
+      "prior_pattern": "none"
+    },
+    {
+      "type": "A check rule that read a score as an amount (suspected false refusal)",
+      "stage": "Hook: the worksheet's number check",
+      "description": "The hook refused the word 'zero' in the worksheet's 'Next filing' line, which said that the price-against-value criterion 'would move off zero'. There 'zero' is that criterion's score, which the worksheet's own table states as 0, computed in code. The hook treats a number word as a financial amount when a financial word stands in the 50 characters before it in the same sentence, and 'price-against-value' contains 'price'.",
+      "observed": "Spelled-out number needs an explicit sourced numeric claim: zero",
+      "expected": "A criterion score that code computed and the worksheet prints is not refused as an unsourced amount, or the worksheet's prose does not spell out numbers.",
+      "cause": "hooks/worksheet_numbers.py, financial_word_numbers(): its FINANCIAL_CONTEXT words include 'price', which also matches inside 'price-against-value'",
+      "effect": "The run stopped after the team's report was finished and checked. It was finished with desk.py --resume; the second worksheet text says 'move off absent' and passed.",
+      "uncertainty": "Whether a score word should pass the hook is a design decision for the team. The record alone does not show whether the worksheet's wording or the hook's rule was at fault.",
+      "evidence": [
+        {"path": "run/hook/00056.json", "line": 62, "quote": "Spelled-out number needs an explicit sourced numeric claim: zero"},
+        {"path": "run/hook/00056.json", "line": 63, "quote": "Next filing: If the next quarterly report's cover page states an actual shares-outstanding count"},
+        {"path": "run/final_report.md", "line": 397, "quote": "Criterion 3 — Price against value: 0 (computed in code)"},
+        {"path": "run/final_report.md", "line": 394, "quote": "the price against value criterion would move off absent"}
+      ],
+      "prior_pattern": "none"
+    }
+  ]
+}
