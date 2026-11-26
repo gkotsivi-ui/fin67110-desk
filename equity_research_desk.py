@@ -83,7 +83,9 @@ DATE_CELL = re.compile(r"([A-Z][a-z]+)\.?\s+(\d{1,2}),?\s+(20\d{2})")
 YEAR_CELL = re.compile(r"(20\d{2})")
 MONTHS = {name: number for number, name in enumerate(("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), 1)}
 # One amount in a table cell: 22,756  $2.98  (0.12)  (0.12  -0.12. A dash alone is an empty amount.
-AMOUNT_CELL = re.compile(r"\$?\s*(\()?\s*\$?\s*([-−–])?\s*\$?\s*(\d[\d,]*(?:\.\d+)?)\s*\)?")
+# The amount may be printed without its zero: ".48", "(.23". Until 2026-11-25 such a cell was not an amount, the
+# per-share rows held none, and the release's three claims were lost.
+AMOUNT_CELL = re.compile(r"\$?\s*(\()?\s*\$?\s*([-−–])?\s*\$?\s*(\d[\d,]*(?:\.\d+)?|\.\d+)\s*\)?")
 DASH_CELL = re.compile(r"[-–—−]+")
 REVENUE_TIERS = (r"total\s+(?:net\s+)?revenues?|revenues?,?\s+total", r"(?:net\s+)?revenues?(?:,\s+net)?", r"total\s+net\s+sales|net\s+sales")
 # A row or a per-share heading with one of these words is another measure, never GAAP diluted EPS.
@@ -96,8 +98,12 @@ SPAN = re.compile(r"\b(?:(?:[A-Za-z-]+|\d+)\s+(?:Months|Weeks)|Quarter|(?:Fiscal
 SPAN_WORDS = {"three": 3, "six": 6, "nine": 9, "twelve": 12, "thirteen": 13, "fourteen": 14, "sixteen": 16, "seventeen": 17}
 QUARTER_TOKEN = re.compile(r"(?:Q([1-4])\s*['’]?\s*(\d{2})|([1-4])\s*Q\s*['’]?\s*(\d{2}))", re.I)
 # "Diluted earnings per share", and the same label with the word at its end: "Net income per share - diluted".
-EPS_ROW = re.compile(r"diluted\s+(?:net\s+)?(?:earnings|income|loss)(?:\s+\((?:loss|income)\))?\s+per\s+(?:common\s+)?share"
-                     r"|(?:net\s+)?(?:earnings|income|loss)(?:\s+\((?:loss|income)\))?\s+per\s+(?:common\s+)?share\s*(?:[-–—:,]\s*|\()diluted\b\)?", re.I)
+# A company with a loss prints one row for both, because they are equal: "Net loss per share, basic and diluted",
+# also with "attributable to ... common stockholders" before the comma or the dash. That row is GAAP diluted EPS
+# too. Until 2026-11-25 it was not read, and with it the quarter's revenue was lost (three of the 22 companies swept).
+EPS_ROW = re.compile(r"(?:basic\s+and\s+)?diluted\s+(?:net\s+)?(?:earnings|income|loss)(?:\s+\((?:loss|income)\))?\s+per\s+(?:common\s+)?share"
+                     r"|(?:net\s+)?(?:earnings|income|loss)(?:\s+\((?:loss|income)\))?\s+per\s+(?:common\s+)?share"
+                     r"(?:\s+attributable\s+to\s+.{1,100}?)?\s*(?:[-–—:,]\s*|\()(?:basic\s+and\s+)?diluted\b\)?", re.I)
 PER_SHARE_HEADING = re.compile(r"(?:earnings|income).*per\s+(?:common\s+)?share|per\s+share", re.I)
 # A heading that counts shares. "Shares used in computing net income per share:" says "per share" and heads the
 # rows "Basic" and "Diluted" of a share count: until 2026-11-22 the desk published that count as diluted EPS.
@@ -181,15 +187,17 @@ def latest_and_year_ago(periods: list[tuple[int, Any]]) -> tuple[int, int | None
     return years.index(max(years)), years.index(max(years) - 1) if years.count(max(years) - 1) == 1 else None
 
 
-def quarter_group(header: str) -> tuple[int, int, str] | None:
+def quarter_group(header: str) -> tuple[int, int, list[str]] | None:
     """Which group of period columns is the quarter, how many groups there are, and the header's words for it.
 
     A header names its groups in order: "Three Months Ended" then "Nine Months Ended", or "12 Weeks Ended" then
     "36 Weeks Ended". The quarter is the group of at most 17 weeks; with two, the shorter and then the first.
-    """
-    spans = [found.group(0) for found in SPAN.finditer(header)]
-    spans = [span for k, span in enumerate(spans) if k == 0 or span.lower() != spans[k - 1].lower()]  # one cell for each column repeats the words
 
+    In a fiscal year of 53 weeks the last quarter has a week more than a year before, and each of its columns has
+    words of its own: "17 Weeks Ended" beside "16 Weeks Ended", then "53 Weeks Ended" beside "52 Weeks Ended".
+    Spans one week apart are one group. Until 2026-11-25 they were two, the shorter was chosen, and last year's
+    quarter was published as the latest. The words are returned for each column of the group, in order.
+    """
     def weeks(span: str) -> float:
         first, unit = span.split()[0].lower(), span.lower()
         if first == "quarter":
@@ -199,11 +207,20 @@ def quarter_group(header: str) -> tuple[int, int, str] | None:
             return 99
         return number * 13 / 3 if "month" in unit else number
 
-    lengths = [weeks(span) for span in spans]
+    groups: list[list[str]] = []
+    for span in (found.group(0) for found in SPAN.finditer(header)):
+        last = groups[-1][-1] if groups else None
+        if last is not None and span.lower() == last.lower():
+            continue                         # one cell for each column repeats the words
+        if last is not None and "week" in span.lower() and "week" in last.lower() and abs(weeks(span) - weeks(last)) <= 1:
+            groups[-1].append(span)          # the same period in a 52-week and in a 53-week year
+        else:
+            groups.append([span])
+    lengths = [min(weeks(span) for span in group) for group in groups]
     if not lengths or min(lengths) > 17:
         return None
     chosen = lengths.index(min(lengths))
-    return chosen, len(spans), " ".join(spans[chosen].lower().split())
+    return chosen, len(groups), [" ".join(span.lower().split()) for span in groups[chosen]]
 
 
 def read_quarter_table(rows: list[list[str]]) -> dict[str, Any] | None:
@@ -220,7 +237,7 @@ def read_quarter_table(rows: list[list[str]]) -> dict[str, Any] | None:
     head = next((i for i, text in enumerate(texts) if quarter_group(text)), None)
     if head is None:
         return None
-    group, groups, span = quarter_group(texts[head])
+    group, groups, words = quarter_group(texts[head])
     period_row = next((i for i in range(head, min(head + 4, len(rows))) if sum(cell_period(c) is not None for c in rows[i]) >= 2), None)
     if period_row is None:
         return None
@@ -236,6 +253,15 @@ def read_quarter_table(rows: list[list[str]]) -> dict[str, Any] | None:
     columns = latest_and_year_ago([cell_period(c) for c in labels[group * size:(group + 1) * size]])
     if columns is None:
         return None
+    # The latest quarter ends on the table's latest date. When the columns chosen do not hold it, the groups are
+    # not of equal size (three quarters beside one column for the year) and the desk does not guess.
+    periods = [cell_period(c) for c in labels]
+    chosen = periods[group * size + columns[0]]
+    if (all(day for _, day in periods) and chosen[1] != max(day for _, day in periods)) or (
+            not any(day for _, day in periods) and chosen[0] != max(year for year, _ in periods)):
+        return None
+    # One span for each column ("17 weeks ended", "16 weeks ended"): the latest column's own words name the quarter.
+    span = words[columns[0]] if len(words) == size else words[0]
     latest, prior = group * size + columns[0], None if columns[1] is None else group * size + columns[1]
     # Lowe's prints each period's amount and then its percentage of sales; only a header that says so pairs them.
     # A column of change is not a share of sales: "% Change" beside "% Change in Constant Currency" made two "%"

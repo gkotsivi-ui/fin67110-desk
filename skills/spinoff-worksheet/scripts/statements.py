@@ -1,7 +1,19 @@
 """Conservative automatic parsing of annual statement rows in saved filing text."""
+import json
 import re
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
+
+
+def exact(number):
+    """A number as the worksheet prints it in a source or an equation: with every digit it has.
+
+    Six significant digits when they state the number in full ("6.654e+09", as before 2026-11-25), all its digits
+    when they do not ("1285647000"). The hook adds up the numbers an equation prints. Rounded to six digits, the
+    amounts of a company that reports in thousands gave another sum than the printed one, and the worksheet part
+    stopped after the agent team had finished; a resume met the same numbers."""
+    short=f'{number:g}'
+    return short if float(short)==number else f'{number:.15g}'
 
 HEADER=re.compile(r'^(?:(?:PRO FORMA|UNAUDITED|CONDENSED)\s+)*(?:CONSOLIDATED|COMBINED)(?:\s+AND\s+(?:CONSOLIDATED|COMBINED))?\s+STATEMENTS?\s+OF\s+(INCOME|OPERATIONS|EARNINGS|CASH FLOWS)\s*$',re.I)
 DATE=r'(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}'
@@ -97,17 +109,48 @@ def parse(path,run):
             if len(values)!=len(dates):continue
             for day,val in zip(dates,values):
                 reported=val*scale;value=abs(reported) if key=='capital_spending' else reported
-                source=f'[{path.relative_to(run)}:L{h+i+2}] section {lines[h]}; year ended {day}; units {scale:g}; {block[i]} = {reported:g}'
-                if key=='capital_spending' and reported<0:source+=f'; spending = -({reported:g}) = {value:g}'
+                source=f'[{path.relative_to(run)}:L{h+i+2}] section {lines[h]}; year ended {day}; units {scale:g}; {block[i]} = {exact(reported)}'
+                if key=='capital_spending' and reported<0:source+=f'; spending = -({exact(reported)}) = {exact(value)}'
                 found.append((key,{'value':value,'unit':unit,'period':'Fiscal year ended '+day,'period_end':day,'kind':basis,'source':source,'reason':None}))
     return found
 
+def saved_company_facts(run):
+    """The company's XBRL facts, from SEC's company-facts answer as the run saved it. None when the folder holds none."""
+    try:
+        saved=json.loads((Path(run)/'sources.json').read_text(encoding='utf-8'))['responses']
+        path=next(item['path'] for url,item in saved.items() if '/api/xbrl/companyfacts/' in url)
+        return json.loads((Path(run)/path).read_bytes())['facts']
+    except (OSError,ValueError,KeyError,TypeError,StopIteration):return None
+
+
+def in_the_facts(facts,key,item):
+    """Whether the company's XBRL facts hold this amount for a fiscal year that ends on the row's date.
+
+    The reader finds a row by its label and reads the unit and the years from the lines above it; the hook reads the
+    same lines the same way, so it cannot see a unit or a year that both misread. The company's own XBRL facts can:
+    earnings must equal its net income (NetIncomeLoss or ProfitLoss) of that year, sign and all; depreciation and
+    capital spending must equal some annual fact of that year, whatever its tag (companies tag these rows in several
+    ways). A row in a custom tag, which SEC's answer leaves out, is not confirmed and is left out."""
+    for tag,entry in facts.get('us-gaap',{}).items():
+        if key=='after_tax_earnings' and tag not in ('NetIncomeLoss','ProfitLoss'):continue
+        for row in entry.get('units',{}).get('USD',[]):
+            try:
+                if row['end']!=item['period_end'] or not 350<=(date.fromisoformat(row['end'])-date.fromisoformat(row['start'])).days<=380:continue
+            except (KeyError,ValueError,TypeError):continue
+            if row.get('val')==item['value'] or (key!='after_tax_earnings' and abs(row.get('val',0))==abs(item['value'])):return True
+    return False
+
+
 def collect(run,years,include_amortization):
     run=Path(run);observations={};missing=[];pro_forma_income_present=False
+    facts=saved_company_facts(run);unconfirmed=False
     for path in [*run.glob('10-K*.txt'),*run.glob('Form10/*.txt')]:
         try:
             if path.parent.name=='Form10' and re.search(r'pro forma[^.\n]{0,100}(?:statements?|income|earnings)',path.read_text(encoding='utf-8'),re.I):pro_forma_income_present=True
-            for key,item in parse(path,run):observations.setdefault((key,item['period_end']),[]).append(item)
+            for key,item in parse(path,run):
+                # Since 2026-11-25: a 10-K's row is used only when the company's saved XBRL facts hold it (in_the_facts).
+                if facts is not None and path.parent.name!='Form10' and item['kind']=='historical' and not in_the_facts(facts,key,item):unconfirmed=True;continue
+                observations.setdefault((key,item['period_end']),[]).append(item)
         except (ValueError,OSError):continue
     selected={}
     for key,items in observations.items():
@@ -123,11 +166,14 @@ def collect(run,years,include_amortization):
         if any(x is None for x in triplet) or any(x['unit']!='USD' for x in triplet):continue
         a,b,c=[x['value'] for x in triplet]
         rows.append({'value':a+b-c,'unit':'USD','period':'Fiscal year ended '+day,'kind':triplet[0]['kind'] if len({x['kind'] for x in triplet})==1 else 'mixed basis, explicitly disclosed by input',
-                     'inputs':triplet,'source':f'computed: {a:g} + {b:g} - {c:g} = {a+b-c:g}; '+'; '.join(x['kind']+': '+x['source'] for x in triplet)})
+                     'inputs':triplet,'source':f'computed: {exact(a)} + {exact(b)} - {exact(c)} = {exact(a+b-c)}; '+'; '.join(x['kind']+': '+x['source'] for x in triplet)})
     # The reason is printed in the worksheet, where the hook refuses any digit it cannot trace to a source
     # (2026-11-20: "3 comparable fiscal years" stopped a run). The count is written as a word.
     count={1:'one',2:'two',3:'three',4:'four',5:'five',6:'six',7:'seven',8:'eight',9:'nine',10:'ten'}.get(years,'the required number of')
-    if len(rows)!=years:return {},{'value':None,'kind':'not known','reason':f'{count} comparable fiscal years of earnings, depreciation/amortization and spending were not established','source':'not known','annual_inputs':rows}
+    if len(rows)!=years:
+        reason=f'{count} comparable fiscal years of earnings, depreciation/amortization and spending were not established'
+        if unconfirmed:reason+='; a statement row was read that the company XBRL facts do not hold for its year, and it was left out'
+        return {},{'value':None,'kind':'not known','reason':reason,'source':'not known','annual_inputs':rows}
     gaps=[(datetime.fromisoformat(days[i])-datetime.fromisoformat(days[i+1])).days for i in range(len(days)-1)]
     if any(not 350<=gap<=380 for gap in gaps):return {},{'value':None,'kind':'not known','reason':'Fiscal years are not consecutive','source':'not known','annual_inputs':rows}
     latest={key:selected[(key,days[0])] for key in ['after_tax_earnings',dep,'capital_spending']}
@@ -198,7 +244,26 @@ def shares_outstanding(run,asof):
     if not observations:return {'value':None,'source':'not known','kind':'not known','reason':'An eligible actual shares-outstanding count was not established'}
     latest=max(x['as_of'] for x in observations);latest=[x for x in observations if x['as_of']==latest]
     if len({x['value'] for x in latest})!=1:return {'value':None,'source':'not known','kind':'not known','reason':'Conflicting shares-outstanding counts'}
+    if replaced_by_a_later_cover(saved_company_facts(run),latest[-1]):
+        return {'value':None,'source':'not known','kind':'not known','reason':'A cover-page share count was read, but the company XBRL cover facts hold a later and different count, so the count read is out of date'}
     return latest[-1]
+
+
+def replaced_by_a_later_cover(facts,count):
+    """Whether the company's XBRL cover facts hold, for the count's own day or a later one, another count.
+
+    Every 10-K and 10-Q cover's count is in the facts with its date (dei:EntityCommonStockSharesOutstanding). When
+    the reader cannot read the newest cover, it falls back to an older filing's: on 2026-11-25, for one company of
+    25, that was a count from before a four-for-one split. On the count's own day any other number is a conflict.
+    On a later day only a number more than five percent away is: shares move slowly, and a count one quarter old is
+    still the company's. With no facts, or only older ones, the count stands as read."""
+    try:rows=facts['dei']['EntityCommonStockSharesOutstanding']['units']['shares']
+    except (KeyError,TypeError):return False
+    rows=[row for row in rows if isinstance(row,dict) and isinstance(row.get('val'),(int,float)) and str(row.get('end',''))>=count['as_of']]
+    if not rows:return False
+    newest=max(str(row['end']) for row in rows);values=[row['val'] for row in rows if str(row['end'])==newest]
+    if count['value'] in values:return False
+    return newest==count['as_of'] or all(abs(value-count['value'])>0.05*abs(value) for value in values)
 
 def net_cash(run):
     """Only explicit total debt, never an assumed zero or long-term-only proxy."""
@@ -221,5 +286,5 @@ def net_cash(run):
             if not ('$' in '\n'.join(block) or 'USD' in intro):continue
             cash,debt=found['cash'][0]*scale,found['debt'][0]*scale
             return {'value':cash-debt,'unit':'USD','kind':'historical','period':'Balance sheet '+dates[0][0],
-                    'source':f"computed: {cash:g} - {debt:g}; [{path.relative_to(run)}:L{h+found['cash'][1]+2}] Cash and cash equivalents; [{path.relative_to(run)}:L{h+found['debt'][1]+2}] Total debt; {dates[0][0]}",'reason':None}
+                    'source':f"computed: {exact(cash)} - {exact(debt)}; [{path.relative_to(run)}:L{h+found['cash'][1]+2}] Cash and cash equivalents; [{path.relative_to(run)}:L{h+found['debt'][1]+2}] Total debt; {dates[0][0]}",'reason':None}
     return {'value':None,'kind':'not known','source':'not known','reason':'Matching cash and explicit total-debt balance-sheet lines were not established'}

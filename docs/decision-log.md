@@ -892,6 +892,88 @@ critical and six high. The table is in [code-audit-2026-11.md](code-audit-2026-1
   tests, no failure, four skipped.
 - **What we will not delegate again.** (the team writes this)
 
+## 2026-11-25: a debug session on real filings and saved replies
+
+- **What was run.** No new model call. (1) A practice run on Lowe's on 2026-11-22, after the audit was merged,
+  passed all six parts in about nine minutes; reviewers then read its saved files. (2) On 2026-11-25 the
+  seven data steps ran, with no model, on the current filings of 22 companies the desk had never met (CRM, SNOW,
+  CRWD, OKTA, MRVL, DG, KR, ULTA, LULU, DOCU, ZS, MDB, FIVE, CPB, HRL, SNPS, VEEV, AVGO, COST, ADBE, AZO, P), then
+  step 6 again on each company's release of a year before and on three older releases: 54 real releases in all,
+  kept outside the repository. (3) Every saved model reply of twelve practice and live runs (103 replies) went
+  through the ledger again. (4) Independent reviewers read the Workday live record and two Dell practice runs, and
+  tried to break the code changed since the audit. A second reviewer tried to refute each finding.
+- **No stated annual claim was wrong** on the 22 companies: each equals the 10-K's own XBRL fact and the 10-K's
+  text. Every quarter claim that was stated on a current release ties to the company's XBRL facts.
+- **Wrong, and fixed: last year's quarter published as the latest.** In a fiscal year of 53 weeks the fourth
+  quarter has a week more than a year before, and each column has its own header: "17 Weeks Ended" beside "16
+  Weeks Ended". `quarter_group` took the two for two groups of columns and chose the shorter. On three real
+  releases (Costco, 2023-09-26; Ulta, 2024-03-14; Five Below, 2024-03-20) step 6 stated last year's revenue and
+  EPS as the latest quarter's. This rule came with the audit of 2026-11-22, written by Claude Code, and no test
+  had such a header. Spans one week apart are now one group, and the words printed are the latest column's. A
+  second guard: the quarter's column must hold the table's latest date, or the table is not read (three quarters
+  side by side with one column for the year were cut in two equal parts; found on a made-up table).
+- **Lost, and now read: the quarter's three claims.** They were not stated for 11 of the 22 companies, and are
+  now for 8. Two causes are fixed. A company with a loss prints one row for both figures, "Net loss per share, basic and
+  diluted", which was not an EPS row (Snowflake, Zscaler, MongoDB a year ago). A per-share amount printed with no
+  zero, ".48" or "(.23)", was not an amount (Campbell's). On the 54 releases, 34 were read before and 38 now;
+  three more changed from wrong to right, and the other 47 read the same. The four new readings tie to XBRL, or
+  to the year less nine months for a fourth quarter.
+- **A stop after the paid roles: amounts of seven digits.** The worksheet printed its equations with six
+  significant digits ("1.28565e+09 + ..."). The hook adds up what is printed and got another sum for a company
+  that reports in thousands. The worksheet part then failed after the agent team had finished, and a resume met
+  the same numbers. Every digit is printed now (`exact`). Found on made-up statements; the companies the desk had
+  run on report in millions.
+- **A wrong amount that the hook passed.** The worksheet's statement reader takes the unit and the years from
+  the lines above a row, and the hook reads the same lines the same way. A unit line the reader does not know
+  ("($ millions)") was read as dollars; the years of one real 10-K (Hormel) were dated a day or three wrong; a
+  noncontrolling interest's row could be read as the company's earnings. A row is now used only when the
+  company's own XBRL facts, which the run has saved, hold it for that year (`in_the_facts`). And a cover-page share
+  count is not used when a later cover fact differs from it by more than five percent: for CrowdStrike the reader
+  had fallen back to a count from before a four-for-one split. On 25 real 10-Ks the six companies that had an
+  owner cash flow keep the same one, and the eleven share counts that matched the newest cover still do.
+- **Honest text refused as a number.** Seventeen of the 103 saved replies held a number refused as typed that was a period or a name:
+  "November 2026", "Q3 2026", "2026 and 2025", "(2025 Term Loan)", "364-day revolver", "the Fortune 500", "the
+  next 12 months", "Note 17", the release's file name, a heading "**1. Thesis**", and "{c1} minus {c2}" read as a
+  sign. One is left ("'10k_mda'", an old key name). Nineteen replies had been refused for their form; ten of them, a
+  sentence before a valid JSON object, are now read. Anything after the object is still
+  refused: it may be a second answer. In the four newest runs the authors and the Verifier made 30 replies and 13 were
+  refused; the changed code accepts 11 of the 13 as they are, among them the Research Analyst's, the Financial
+  Analyst's and the Verifier's in the Workday live run. The other two hold text after the object. In the Dell run on Opus, 515 of
+  739 role seconds went to refused replies, none of which held a wrong number.
+- **The framework asked to upload the run.** CrewAI offered, twice in every run, to share "this execution trace":
+  every prompt and reply, with the members' personas and the LSEG price. The desk gives each run a new framework
+  folder, so each run looked like a machine's first. One "y" would have sent it. `model_calls.py` now sets
+  CrewAI's own switches for tracing, usage reports and the version check to off, whatever the environment says.
+- **Also changed.** The Verifier is shown the heading of a table (title, unit, period columns) when a figure is
+  cited from inside it; it had named the period without seeing it, rightly, in the Lowe's and Dell runs. A replay
+  of a folder without the licensed rows says so. A refusal for text after a closed JSON fence no longer says the
+  fence is "unmatched", and the repair message asks for the object "with nothing before or after it".
+- **What AI got wrong in this session, and how it was caught.** (1) Claude Code named a helper of a new test
+  class `run`, which replaced the test runner's own method: the class's tests "passed" without running. Caught
+  because tests that had to fail first did not. (2) It concluded that `desk.py` does not guard the console's
+  encoding; it does (`utf8_mode.ensure`), as a reviewer's reproduction showed, and no change was made. (3) Two
+  patches written through a shell lost their backslashes; each was refused by its own check before it changed a
+  file. (4) The new XBRL rule stopped two whole-desk tests: their made-up 10-K printed three years that their
+  made-up facts did not hold. The made-up facts were completed. (5) A first test of the share-count rule assumed a
+  header of two different quarters is not read; the reader reads it, as before, and the test was corrected.
+- **How we checked.** Every change has a test on made-up data that failed first. Copies of the Lowe's, Dell and
+  Workday runs replay with the changed code, and each final report is byte for byte as saved. `python
+  check_all.py`: 991 tests, no failure, four skipped (Windows 11, 2026-11-25); 961 before.
+- **Not done, each seen on real data.** Quarter headers the reader does not know: "Second Quarter" beside
+  "Year-to-Date" with no "Ended" (Kroger, Lululemon, Pure Storage); a third column for the quarter before
+  (Broadcom, Marvell); a statement split over two tables at a page break (Synopsys); a label in the second cell
+  (AutoZone); one percent sign for two columns (Dollar General). The newest Item 2.02 8-K is not always an
+  earnings release (Marvell's was a merger release, Veeva's an investor-day slide): the desk then states no
+  quarter claim, but its first line still calls the exhibit the earnings release. Debt to equity is not stated
+  when the 10-K tags only the noncurrent line and a 10-Q holds the pair (Workday). A release table's unit printed
+  under its period row is "USD as shown" (Dell). The worksheet has no repair call: any refused judgment stops the
+  run after the team, and `--resume` finishes it. Its number-word rule still passes an amount in words after the
+  noun ("revenues were five billion"). Return on equity is printed for negative equity (-55.11% for Lowe's): true
+  to the definition and easy to misread. The error review calls two list files of the group desk type errors.
+  Kroger's debt to equity (2.678) comes from its debt note's lines, which leave out finance leases; its balance
+  sheet's lines include them (2.964). None of these was changed.
+- **What we will not delegate again.** (the team writes this)
+
 This is a learning exercise, not financial advice.
 
 AI assistance: Claude Code and OpenAI Codex. I verified the sources myself; the judgments are mine.

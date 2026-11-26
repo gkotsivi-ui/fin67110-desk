@@ -13,6 +13,7 @@ import io
 import json
 from pathlib import Path
 import re
+import shutil
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -60,6 +61,13 @@ def two_years(now, before, unit="USD", duration=True):
     return {"units": {unit: rows}}
 
 
+def third_year(item, value):
+    """The same fact for the year before last: a 10-K's income and cash flow statements print three years, and the
+    worksheet uses a statement row only when the company's XBRL facts hold it for that year (2026-11-25)."""
+    item["units"]["USD"].append(fact(value, "2024-09-01", "2023-09-04"))
+    return item
+
+
 YEARS = ["Years ended", "August 30, 2026", "August 31, 2025", "September 1, 2024"]
 ANNUAL = page(
     "The number of shares outstanding of the registrant’s common stock as of September 29, 2026, was", "10,000,000", ".",
@@ -74,10 +82,11 @@ RELEASE = page("Made Up Stores reports third quarter results", "Condensed Consol
                table=[["", "Three Months Ended"], ["", "November 1, 2026", "November 2, 2025"],
                       ["Total revenue", "300", "250"], ["Diluted earnings per share", "2.50", "2.00"]])
 FACTS = {"facts": {"us-gaap": {
-    "Revenues": two_years(1000e6, 800e6), "OperatingIncomeLoss": two_years(150e6, 100e6), "NetIncomeLoss": two_years(100e6, 90e6),
+    "Revenues": two_years(1000e6, 800e6), "OperatingIncomeLoss": two_years(150e6, 100e6), "NetIncomeLoss": third_year(two_years(100e6, 90e6), 80e6),
     "EarningsPerShareDiluted": two_years(10.0, 9.0, "USD/shares"), "StockholdersEquity": two_years(500e6, 400e6, duration=False),
     "LongTermDebtNoncurrent": two_years(200e6, 180e6, duration=False), "LongTermDebtCurrent": two_years(50e6, 20e6, duration=False),
-    "NetCashProvidedByUsedInOperatingActivities": two_years(120e6, 110e6), "PaymentsToAcquirePropertyPlantAndEquipment": two_years(30e6, 25e6)}}}
+    "NetCashProvidedByUsedInOperatingActivities": two_years(120e6, 110e6), "PaymentsToAcquirePropertyPlantAndEquipment": third_year(two_years(30e6, 25e6), 20e6),
+    "DepreciationDepletionAndAmortization": third_year(two_years(20e6, 25e6), 30e6)}}}
 FILINGS = [("8-K", EIGHT_K, "2026-11-16", "", "eightk.htm", "2.02,9.01"), ("10-K", TEN_K, "2026-10-10", END, "tenk.htm", ""),
            ("10-Q", TEN_Q, "2026-06-20", "2026-05-10", "tenq.htm", "")]
 KEYS = ("form", "accessionNumber", "filingDate", "reportDate", "primaryDocument", "items")
@@ -223,6 +232,10 @@ class WholeDesk(unittest.TestCase):
         self.assertNotIn("Liquidity day |", text)
         self.assertTrue(list((runner.run / "sources/licensed").glob("*liquidity rows.json")))
 
+        # The framework recorded no trace of the run to offer for upload (model_calls.framework_sends_nothing):
+        # when it does, it notes a first execution in this file.
+        self.assertFalse((runner.run / "framework/.crewai_user.json").exists())
+
         # The course's three lines end it.
         closing = [line for line in lines if line.strip()][-3:]
         self.assertEqual((closing[0], closing[2]), (FOOTER_FIRST, FOOTER_LAST))
@@ -233,6 +246,16 @@ class WholeDesk(unittest.TestCase):
         self.assertEqual(check_public.problems(runner.run, public, check_public.env_secrets(root / "no-such-file")), [])
         self.assertNotIn(SETTINGS["API_KEY"], "".join((runner.run / name).read_text(encoding="utf-8", errors="replace") for name in public))
         self.assertIn("Final report: ", printed.getvalue())
+
+        # A clone of a live run has no licensed rows. Its replay stands on the check the run made with them,
+        # and since 2026-11-25 it says so; with the rows in the folder it says nothing of the kind.
+        self.assertNotIn("are not in this folder", printed.getvalue())
+        clone = root / "clone"
+        shutil.copytree(runner.run, clone)
+        shutil.rmtree(clone / "sources/licensed")
+        with redirect_stdout(io.StringIO()) as said:
+            desk.replay(clone)
+        self.assertIn("licensed data and are not in this folder", said.getvalue())
         self.assertNotIn("trying once more", printed.getvalue())  # no call was made twice
         self.assertNotIn("left out", printed.getvalue())           # and no claim or line was dropped after repairs
 

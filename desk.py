@@ -279,6 +279,12 @@ def replay(path,hook_factory=Hook):
             except Exception as error:
                 print(f'Error: Replay part {name} failed: {error}',flush=True);raise
             finally:print(f'Part replay {name}: {time.perf_counter()-began:.3f} seconds',flush=True)
+        if not any((run/'sources/licensed').glob('*')):
+            # A clone: the rows are licensed and never committed. The hook then lets the worksheet's price and
+            # liquidity lines stand only on a saved record of this same worksheet passing with the rows.
+            print('Note: the daily closes and volumes of this run are licensed data and are not in this folder. '
+                  'The worksheet lines that rest on them were not computed again: they stand on the check '
+                  'the run made when it had the rows (a saved hook record).',flush=True)
         print('Final report: '+str(final),flush=True)
         return final
 

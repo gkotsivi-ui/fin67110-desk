@@ -12,8 +12,32 @@ names and status numbers.
 """
 from __future__ import annotations
 
+import os
 import threading
-from typing import Any, Callable
+from typing import Any, Callable, MutableMapping
+
+# What the agent framework (CrewAI) would send to its own servers, switched off for every run. The names and the
+# values are CrewAI's, read in its code (version 1.15.34: crewai/execution.py, crewai_core/telemetry.py,
+# crewai/events/utils/console_formatter.py). tests/test_model_calls.py fails if an upgrade renames one.
+FRAMEWORK_SETTINGS = {
+    "CREWAI_TRACING_ENABLED": "false",        # no record of the run's prompts and replies, and no question about uploading one
+    "CREWAI_DISABLE_TELEMETRY": "true",       # no usage report
+    "CREWAI_DISABLE_VERSION_CHECK": "true",   # no request for the newest version's number
+}
+
+
+def framework_sends_nothing(environment: MutableMapping[str, str] = os.environ) -> None:
+    """Set the framework's three switches to "send nothing", whatever they were.
+
+    Until 2026-11-25 the desk set none. CrewAI records a run it takes for a machine's first, and at its end asks
+    "Share this execution trace with CrewAI? [y/N] (20s timeout)". The desk gives each run a new framework folder,
+    so every run was a first one, and the question came twice in each. A "y" would have uploaded the roles'
+    prompts and replies, which hold the members' personas, the filings' text and the LSEG price. The values are
+    forced, not defaults: a member's own CREWAI_TRACING_ENABLED=true must not send a desk run anywhere."""
+    environment.update(FRAMEWORK_SETTINGS)
+
+
+framework_sends_nothing()   # on import: the agent team and the worksheet both load this file before a model call
 
 CONNECTION_ERRORS = {"APIConnectionError", "APITimeoutError", "ConnectError", "ConnectTimeout", "ReadError", "ReadTimeout",
                      "WriteError", "WriteTimeout", "PoolTimeout", "Timeout", "RemoteProtocolError", "ProtocolError",

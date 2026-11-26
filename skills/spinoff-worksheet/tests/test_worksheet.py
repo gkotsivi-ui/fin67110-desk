@@ -1,4 +1,4 @@
-import hashlib,importlib.util,json,sys,tempfile,unittest
+import hashlib,importlib.util,json,re,sys,tempfile,unittest
 from pathlib import Path
 from unittest.mock import Mock,patch
 from datetime import datetime
@@ -242,6 +242,74 @@ class AdditionalContracts(unittest.TestCase):
         _,ocf=s.collect(run,3,True)
         self.assertEqual([r['value'] for r in ocf['annual_inputs']],[878e6,583e6,1431e6])
         self.assertAlmostEqual(ocf['value'],2892e6/3)
+    def test_amounts_of_seven_digits_are_printed_with_all_of_them(self):
+        # A company that reports in thousands prints 1,285,647 for $1.3 billion: seven digits. Until 2026-11-25 the
+        # worksheet printed its equations with six ("-1.28565e+09 + 1.18296e+09 - ..."). The hook adds up what is
+        # printed, got another sum, and stopped the worksheet part after the agent team had been paid for; a resume
+        # met the same numbers and could not pass. Found on made-up statements: the companies the desk had run on
+        # report in millions. Every amount here is made up.
+        s=self.statements_module();run=Path(tempfile.mkdtemp())
+        head=['Year Ended January 31,','2026','2025','2024']
+        lines=['CONSOLIDATED STATEMENTS OF OPERATIONS','(in thousands, except per share data)',*head,
+               'Net income','$','1,285,647','$','836,097','$','796,705',
+               'CONSOLIDATED STATEMENTS OF CASH FLOWS','(in thousands)',*head,'Cash flows from operating activities:','Net income','$','1,285,647','$','836,097','$','796,705',
+               'Depreciation and amortization','1,182,963','1,119,903','1,063,115','Capital expenditures','(1,046,227)','(1,035,079)','(1,025,168)']
+        (run/'10-K.txt').write_text('\n'.join(lines),encoding='utf-8')
+        _,ocf=s.collect(run,3,True)
+        first=ocf['annual_inputs'][0]
+        self.assertEqual(first['value'],1285647e3+1182963e3-1046227e3)
+        self.assertIn('computed: 1285647000 + 1182963000 - 1046227000 = 1422383000;',first['source'])
+        self.assertIn('Net income = 1285647000',first['source']);self.assertIn('spending = -(-1046227000) = 1046227000',first['source'])
+        # Every equation the worksheet prints must hold on its own printed numbers, as the hook checks it.
+        sys.path.insert(0,str(P.parents[3]/'hooks'))
+        from worksheet_format import EQUATION,arithmetic,rounded_equal
+        found=list(EQUATION.finditer(ocf['source']))
+        self.assertGreaterEqual(len(found),4)
+        for m in found:self.assertTrue(rounded_equal(m['result'],arithmetic(m['expr'])),m[0])
+        # A number that six digits state in full is printed as it always was.
+        self.assertEqual((s.exact(6654e6),s.exact(-2213e6),s.exact(1285647e3),s.exact(0.1)),('6.654e+09','-2.213e+09','1285647000','0.1'))
+    def facts_run(self,unit,head,facts,income='Net income'):
+        """A made-up run folder: a 10-K's two statements, and SEC's company-facts answer as a run saves it."""
+        run=Path(tempfile.mkdtemp())
+        lines=['CONSOLIDATED STATEMENTS OF OPERATIONS',unit,*head,income,'$','300','$','200','$','100',
+               'CONSOLIDATED STATEMENTS OF CASH FLOWS',unit,*head,'Cash flows from operating activities:',income,'$','300','$','200','$','100',
+               'Depreciation and amortization','30','20','10','Capital expenditures','(3)','(2)','(1)']
+        (run/'10-K.txt').write_text('\n'.join(lines),encoding='utf-8')
+        if facts is not None:
+            years=[('2025-01-01','2025-12-31'),('2024-01-01','2024-12-31'),('2023-01-01','2023-12-31')]
+            rows=lambda values:{'units':{'USD':[{'start':a,'end':b,'val':v} for (a,b),v in zip(years,values)]}}
+            (run/'sources/http').mkdir(parents=True);(run/'sources/http/facts.bin').write_text(json.dumps({'facts':{'us-gaap':{k:rows(v) for k,v in facts.items()}}}),encoding='utf-8')
+            (run/'sources.json').write_text(json.dumps({'responses':{'https://data.sec.gov/api/xbrl/companyfacts/CIK0000000001.json':{'path':'sources/http/facts.bin'}}}),encoding='utf-8')
+        return run
+    def test_a_statement_row_is_used_only_when_the_companys_xbrl_facts_hold_it(self):
+        # On 2026-11-25 made-up statements showed the reader giving a wrong amount that the hook then passed, because
+        # the hook reads the same text the same way: a unit line it does not know ("($ millions)") read as dollars,
+        # so the low value was near zero; the years of a title read onto the wrong columns; a noncontrolling
+        # interest's row read as the company's earnings. On the real 10-Ks of the day (Lowe's, Walmart, Dell,
+        # Workday) every row read equals an XBRL fact of its year. That comparison is now made in every run: a row
+        # that the company's own facts do not hold for that year is left out, and the reason says so.
+        s=self.statements_module();head=['Year Ended December 31,','2025','2024','2023']
+        right={'NetIncomeLoss':[300e6,200e6,100e6],'DepreciationDepletionAndAmortization':[30e6,20e6,10e6],'PaymentsToAcquirePropertyPlantAndEquipment':[3e6,2e6,1e6]}
+        _,ocf=s.collect(self.facts_run('(in millions)',head,right),3,True)
+        self.assertEqual([r['value'] for r in ocf['annual_inputs']],[327e6,218e6,109e6])
+        # A unit the reader does not know: 300 dollars is not the company's 300 million.
+        _,ocf=s.collect(self.facts_run('($ millions)',head,right),3,True)
+        self.assertIsNone(ocf['value']);self.assertEqual(ocf['annual_inputs'],[])
+        self.assertIn('XBRL facts do not hold',ocf['reason']);self.assertFalse(re.search(r'\d',ocf['reason']))
+        # The right amounts under the wrong years.
+        _,ocf=s.collect(self.facts_run('(in millions)',['Year Ended December 31,','2024','2023','2022'],right),3,True)
+        self.assertIsNone(ocf['value'])
+        # Another company's worth of earnings: the facts' net income is not this row.
+        other={**right,'NetIncomeLoss':[900e6,800e6,700e6],'NetIncomeLossAttributableToNoncontrollingInterest':[300e6,200e6,100e6]}
+        _,ocf=s.collect(self.facts_run('(in millions)',head,other),3,True)
+        self.assertIsNone(ocf['value'])
+        # A loss is not a profit of the same size.
+        loss={**right,'NetIncomeLoss':[-300e6,-200e6,-100e6]}
+        _,ocf=s.collect(self.facts_run('(in millions)',head,loss),3,True)
+        self.assertIsNone(ocf['value'])
+        # A folder with no saved facts (a made-up folder, a registration statement) is read as before.
+        _,ocf=s.collect(self.facts_run('(in millions)',head,None),3,True)
+        self.assertEqual([r['value'] for r in ocf['annual_inputs']],[327e6,218e6,109e6])
     def test_dell_nvidia_and_dollar_tree_rows_and_dells_total_share_count(self):
         # Dell's spending row and its cover's total across three classes; NVIDIA's abbreviated dates and spending row;
         # Dollar Tree's "Net income (loss)". The rows the reader uses carry the 10-Ks' own amounts, which match their XBRL
@@ -287,6 +355,29 @@ class AdditionalContracts(unittest.TestCase):
         adi=['CONSOLIDATED STATEMENTS OF CASH FLOWS','Years ended November 1, 2025, November 2, 2024 and October 28, 2023','(thousands)','2025','2024','2023',
              'Depreciation and amortization','$','800,000','$','700,000','$','600,000']
         self.assertEqual([v['value'] for _,v in self.parsed(s,adi)],[800e6,700e6,600e6])
+    def test_a_share_count_that_a_later_cover_has_replaced_is_not_used(self):
+        # On 2026-11-25 the reader was run on 25 real filings. For one company it could not read the newest 10-Q's
+        # cover (two classes are named near it) and took the 10-K's count from before a four-for-one split:
+        # value per share would have been four times too high. The company's XBRL cover facts hold every cover's
+        # count with its date. A count read is used only if no later cover fact differs from it by more than
+        # five percent (shares move slowly: two other companies were a quarter behind, by under one percent).
+        s=self.statements_module()
+        def count(facts):
+            run=Path(tempfile.mkdtemp())
+            (run/'10-K.txt').write_text('As of March 1, 2026, there were\n100,000,000\nshares of the registrant’s common stock outstanding.',encoding='utf-8')
+            if facts is not None:
+                rows=[{'end':day,'val':value} for day,value in facts]
+                (run/'sources/http').mkdir(parents=True)
+                (run/'sources/http/facts.bin').write_text(json.dumps({'facts':{'dei':{'EntityCommonStockSharesOutstanding':{'units':{'shares':rows}}}}}),encoding='utf-8')
+                (run/'sources.json').write_text(json.dumps({'responses':{'https://data.sec.gov/api/xbrl/companyfacts/CIK0000000001.json':{'path':'sources/http/facts.bin'}}}),encoding='utf-8')
+            return s.shares_outstanding(run,'2026-11-25')
+        split=count([('2026-03-01',100000000),('2026-11-19',400000000)])
+        self.assertIsNone(split['value']);self.assertIn('later',split['reason']);self.assertFalse(re.search(r'\d',split['reason']))
+        self.assertIsNone(count([('2026-03-01',123456789)])['value'])                                      # the same day, another count
+        self.assertEqual(count([('2026-03-01',100000000),('2026-08-25',100600000)])['value'],100000000.0)  # a quarter behind, under one percent
+        self.assertEqual(count([('2026-03-01',100000000)])['value'],100000000.0)
+        self.assertEqual(count([('2018-11-30',220000000)])['value'],100000000.0)                           # an old fact says nothing of today
+        self.assertEqual(count([])['value'],100000000.0);self.assertEqual(count(None)['value'],100000000.0)
     def test_more_cover_page_share_counts_and_the_ones_not_taken(self):
         s=self.statements_module()
         def count(text):

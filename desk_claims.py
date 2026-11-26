@@ -71,16 +71,19 @@ TYPED_AFTER = re.compile(r"\{c\d+\}\s*-?(?:thousand|million|billion|trillion|bn|
 # stands alone ("revenue doubled") is a statement about two figures, and whether it is true is the Verifier's.
 ROMAN_AMOUNT = re.compile(r"\b[IVXLCDM]{2,}\s*(?:%|(?:thousand|million|billion|trillion|bn|mn|percent|per\s+cent|pct|percentage\s+points?|basis\s+points?|bps)\b)")
 SECTION = re.compile(r"^Item\s+\d+[A-C]?\s*[—\-–.]", re.I)
-QUARTER = re.compile(r"\b(?:Q[1-4]|FY\d{2,4}|H[12])\b")
+# "Q3", "H1", "FY2026", and a quarter or a half with its year: "Q3 2026".
+QUARTER = re.compile(r"\b(?:(?:Q[1-4]|H[12])(?:\s+(?:19|20)\d{2}\b)?|FY\d{2,4})\b")
 # Allowed bare digits: list labels "(1)" or "1." at line start, Item numbers, ordinals in dates.
 LIST_LABEL = re.compile(r"(?:^|\n)\s*(?:\(\d{1,2}\)|\d{1,2}[.)])\s|\(\d{1,2}\)")
 ITEM_REF = re.compile(r"\bItem\s+\d+[A-C]?\b", re.I)
-LABEL_REF=re.compile(r'\b(?:section|criterion|table|figure|chapter)\s+\d+\b|\bclaim\s+c\d+\b',re.I)
+# A number that names a part of a text or of the accounting rules: "Note 17", "ASC 606", "Level 2", "Tier 1".
+LABEL_REF=re.compile(r'\b(?:section|criterion|table|figure|chapter|note|asc|asu|topic|level|tier)\s+\d+\b|\bclaim\s+c\d+\b',re.I)
 ISO_DATE=re.compile(r'(?<![\w$])\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?)?\b')
 MONTHS=(r'(?:January|February|March|April|May|June|July|August|September|October|November|December|'
         r'Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sept?|Oct|Nov|Dec)\.?')
-# "August 30", "Aug. 30, 2026", "August 30th" -- the year is optional; a day is 1-31 only.
-TEXT_DATE=re.compile(r'\b'+MONTHS+r'\s+(?:[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?\b(?:,?\s+(?:19|20)\d{2}\b)?')
+# "August 30", "Aug. 30, 2026", "August 30th", "October 31 of 2026" -- the year is optional; a day is 1-31 only.
+# A month with its year and no day is a date too: "November 2026".
+TEXT_DATE=re.compile(r'\b'+MONTHS+r'\s+(?:(?:[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?\b(?:,?\s+(?:of\s+)?(?:19|20)\d{2}\b)?|(?:19|20)\d{2}\b)')
 # Source line identifiers in prose: L1030, L83-L85, L83–85, 10-K.txt:L1030, "line 83", "lines 83-85".
 LINE_REF=re.compile(r'(?:\b[\w./-]+\.(?:txt|json|md):)?(?<![\w$])L\d+(?:\s*[-–—]\s*L?\d+)?\b'
                     r'|\blines?\s+\d+(?:\s*(?:[-–—]|to|and)\s*\d+)?\b',re.I)
@@ -93,8 +96,19 @@ IDENTIFIER_END=r'(?![\w%$€£]|\.\d|\s*(?:'+UNIT_WORDS+r')\b)'
 LINE_REF=re.compile('(?:'+LINE_REF.pattern+')'+IDENTIFIER_END,re.I)
 TEXT_DATE=re.compile('(?:'+TEXT_DATE.pattern+')'+IDENTIFIER_END)
 # "fy 2025": the Verifier quotes facts.json's fy field (2026-11-19), a fiscal-year label like "fiscal 2025".
-YEAR = re.compile(r'\b(?:fiscal(?:\s+year)?|fy|year|in|for|during|the|from|since|through|versus|vs\.?|with)\s+(?:19|20)\d{2}\b(?!\s*(?:'+UNIT_WORDS+r')\b)|(?<![\w$.,])(?:19|20)\d{2}(?=\s+(?:net\s+(?:sales|income)|gross\s+margin|fiscal\s+year|revenue|results)\b)',re.I)
+# A unit after the year makes it a count ("in 2026 shares"), except "share of": a part of something.
+YEAR = re.compile(r'\b(?:fiscal(?:\s+year)?|fy|year|in|for|during|the|from|since|through|versus|vs\.?|with)\s+(?:19|20)\d{2}\b(?!\s*(?!share\s+of\b)(?:'+UNIT_WORDS+r')\b)|(?<![\w$.,])(?:19|20)\d{2}(?=\s+(?:net\s+(?:sales|income)|gross\s+margin|fiscal\s+year|revenue|results)\b)',re.I)
 PERIOD_SEQUENCE=re.compile(r'\b(?:the|years?|fiscal\s+years?|periods?)\s+(?:19|20)\d{2}(?:\s*(?:,|and)\s*(?:19|20)\d{2})+\s+(?:sequence|years?|periods?)\b',re.I)
+# "the third quarter of 2025", "the nine months of 2025", "the first half of 2026".
+PERIOD_OF=re.compile(r'\b(?:quarters?|half|months|weeks)\s+of\s+(?:fiscal\s+(?:year\s+)?)?(?:19|20)\d{2}\b'+IDENTIFIER_END,re.I)
+# A second year after a first: "2026 and 2025", "2026, 2025 and 2024", "2025 to 2026". Only the later years are
+# taken here; the first is a year when the other rules say so.
+YEAR_LIST=re.compile(r'(?<![\w$.,])((?:19|20)\d{2})((?:\s*,\s*(?:19|20)\d{2})*\s*,?\s*(?:and|or|to|through|versus|vs\.?)\s+(?:19|20)\d{2}'+IDENTIFIER_END+')',re.I)
+# A term with a hyphen ("364-day", "12-month") and a list after "the" ("the Fortune 500"): names, when a filing prints them.
+TERM=re.compile(r'(?<![\w$.,-])\d{1,4}-(?:day|week|month|year)\b')
+# A span of time as the filing words it: "the next 12 months", "the trailing 12 months".
+SPAN=re.compile(r'\b(?:next|trailing|last|past|prior|preceding|following)\s+\d{1,3}\s+(?:days|weeks|months|years)\b',re.I)
+LISTED=re.compile(r'(?<=\b[Tt]he\s)[A-Z][A-Za-z&]+\s+\d{2,4}\b'+IDENTIFIER_END)
 YEAR_END=re.compile(r'\b(?:end|beginning)\s+of\s+(?:(?:fiscal\s+)?year\s+)?(?:19|20)\d{2}\b'+IDENTIFIER_END,re.I)
 YEAR_METRIC=re.compile(r'(?<![\w$.,])(?:19|20)\d{2}(?=\s+(?:(?:long|short)[- ]term\s+debt|operating\s+income|cash\s+flow|capital\s+spending|membership\s+fees?)\b)',re.I)
 CLOCK_VALUE=r'(?:[01]?\d|2[0-3]):[0-5]\d(?::[0-5]\d)?'
@@ -156,6 +170,55 @@ def a_reference(found, kind):
     return True
 
 
+def a_difference(line: str, typed) -> bool:
+    """Whether a typed "minus {c2}" stands straight after another claim: "{c1} minus {c2}".
+
+    One claim minus another is a subtraction said in words. Neither number changes, and the sentence states no
+    result. Until 2026-11-25 the rule read the word as a sign typed on the second claim (the Financial Analyst of
+    the Lowe's practice run, 2026-11-22). A minus after anything else ("the change was minus {c2}") is a sign."""
+    return typed.group(0).lower().startswith("minus") and bool(re.search(r"\{c\d+\}\s+$", line[:typed.start()]))
+
+
+# A year with the capitalised words after it: "2025 Term Loan", "2029 Notes", "2019 Equity Plan".
+YEAR_NAME = re.compile(r"(?<![\w$.,])(?:19|20)\d{2}(?:\s+[A-Z][A-Za-z]+)+")
+
+
+def without_a_filings_name(phrase: str, texts: dict[str, str]) -> str:
+    """The phrase with its year taken out, when a saved filing prints that year with the word after it.
+
+    Filings name loans, notes and plans by year. "the 2025 Term Loan" always passed, because a year after "the"
+    does; "(2025 Term Loan)" and "its 2029 Notes" were refused as typed numbers (the Verifier of the Lowe's
+    practice run, 2026-11-22). The name must be the filing's own: the year and at least the next word, word for
+    word, in a saved filing text. A unit is never a name: "2025 Stores" is a count, whatever the filing prints."""
+    words = phrase.split()
+    if re.fullmatch(UNIT_WORDS + r"|pct|bn|mn", words[1], re.I):
+        return phrase
+    for count in range(len(words), 1, -1):
+        if printed_in_a_filing(" ".join(words[:count]), texts):
+            return " ".join(["", *words[1:]])
+    return phrase
+
+
+def printed_in_a_filing(phrase: str, texts: dict[str, str]) -> bool:
+    """Whether a saved filing text prints the phrase word for word, as whole words."""
+    printed = re.compile(r"(?<![\w$.,-])" + r"\s+".join(re.escape(word) for word in phrase.split()) + r"(?![\w-])")
+    return any(printed.search(text) for name, text in texts.items() if name.endswith(".txt"))
+
+
+def a_filings_name(found, texts: dict[str, str]) -> str:
+    """A blank for a term, a list or a span of time that a saved filing prints ("364-day", "the Fortune 500",
+    "next 12 months"), or the text as it was.
+
+    Both were refused as typed numbers in real runs (Lowe's 2026-11-19 and 2026-11-20, Workday 2026-11-25). The
+    filing must print the same words: "a 180-day facility" stays a number when the filing has a 364-day one. A
+    list needs "the" before it, so that a table row ("Locations 612") is not read as a name, and its word is
+    never a unit or a month."""
+    phrase = found.group(0)
+    if re.fullmatch(UNIT_WORDS + r"|pct|bn|mn|" + MONTHS, phrase.split()[0], re.I):
+        return phrase
+    return " " if printed_in_a_filing(phrase, texts) else phrase
+
+
 def printed_scale(typed: str, claims: list, texts: dict[str, str]) -> bool:
     """Whether "{c1} billion" types the scale the filing itself prints right after the cited number.
 
@@ -214,11 +277,22 @@ class ResponseFormatError(ValueError):
 
 
 def parse_response(text: str, role: str) -> dict[str, Any]:
-    """Exactly one JSON object, optionally in a ```json fence. Anything else is a repairable error."""
+    """Exactly one JSON object, optionally in a ```json fence. Anything else is a repairable error.
+
+    Words before the object are dropped: "Here is the corrected JSON:" cannot be a second answer. Until
+    2026-11-25 they were refused, and so were four of the thirteen role calls of one practice run. Words that
+    hold a brace are not a plain preamble and are still refused, as is anything after the object. The whole
+    reply stays in raw_responses.json."""
     cleaned=(text or '').strip()
+    starts=[at for at in (cleaned.find('{'),cleaned.find('```')) if at>=0]
+    if starts:cleaned=cleaned[min(starts):]      # the object or its fence, whichever comes first
     if cleaned.startswith('```') or cleaned.endswith('```'):
         fence=re.fullmatch(r'```(?:json)?\s*\n?(.*?)\s*```',cleaned,re.I|re.S)
-        if not fence:raise ResponseFormatError(f'{role} reply has an unmatched JSON fence. Return exactly one JSON object.',text)
+        if not fence:
+            closed=cleaned.count('```')>=2
+            where='text after its JSON fence' if cleaned.startswith('```') else 'text with a brace before its JSON fence'
+            raise ResponseFormatError(f'{role} reply has '+(where if closed else 'a JSON fence that is not closed')
+                                      +'. Return exactly one JSON object with nothing before or after it.',text)
         cleaned=fence[1].strip()
     start = cleaned.find("{")
     if start < 0:
@@ -270,8 +344,10 @@ class Result:
 
     def repair_message(self) -> str:
         """Text to send back to the model for a targeted retry."""
+        # "with nothing before or after it": two of three repaired replies of one run opened with an explanation
+        # and were refused for it (Dell, 2026-11-23).
         return ("Your output failed these checks. Fix only the listed items and return the "
-                "full JSON again:\n- " + "\n- ".join(self.errors))
+                "full JSON again, with nothing before or after it:\n- " + "\n- ".join(self.errors))
 
 
 def section_scale(lines: list[str], index: int) -> tuple[str | None, str]:
@@ -512,12 +588,13 @@ def check(output: dict[str, Any], texts: dict[str, str], facts: dict[str, Any] |
     for cid in sorted(ids - used):
         result.errors.append(f"{cid} is never used in the draft; remove it or place it.")
 
+    saved_names = re.compile('|'.join(re.escape(name) for name in sorted(texts, key=len, reverse=True))) if texts else None
     for n, line in enumerate(draft.splitlines(), 1):
         # A scale, a sign or a multiplier typed next to a placeholder changes the number the claim checked:
         # "{c1} billion" for a cell that holds 9,200, "-{c1}" for a gain, "twice {c1}". Until 2026-11-22 these
         # passed. The claim's own value holds its scale and sign, copied from the cited line, or code renders them.
         for match in (*TYPED_BEFORE.finditer(line), *TYPED_AFTER.finditer(line)):
-            if printed_scale(match.group(0), claims, texts):
+            if printed_scale(match.group(0), claims, texts) or a_difference(line, match):
                 continue
             result.errors.append(f"draft line {n}: {match.group(0)!r} types a scale, a sign or a multiplier next to a claim. "
                                  "The claim's value must hold it, copied from the cited line (\"$4.1 billion\", \"-0.4 points\"); do not type it.")
@@ -536,7 +613,12 @@ def check(output: dict[str, Any], texts: dict[str, str], facts: dict[str, Any] |
         for start,end in reversed(enumeration_spans(prose)):
             prose=prose[:start]+' '*(end-start)+prose[end:]
         if identifiers:prose=identifiers.sub(' ',prose)
-        for allowed in (ISO_DATE,TEXT_DATE,ACCESSION_REF,PERIOD_SEQUENCE,YEAR_END,YEAR_METRIC,YEAR,CLOCK_REF, QUARTER, ITEM_REF, FORM_REF,LABEL_REF):
+        if saved_names:prose=saved_names.sub(' ',prose)   # "earnings_release_Ex99-1.txt" is a file's name, not two numbers
+        prose = YEAR_NAME.sub(lambda found: without_a_filings_name(found.group(0), texts), prose)
+        for name in (TERM, LISTED, SPAN):
+            prose = name.sub(lambda found: a_filings_name(found, texts), prose)
+        prose = YEAR_LIST.sub(lambda found: found.group(1) + re.sub(r'\d{4}', ' ', found.group(2)), prose)
+        for allowed in (ISO_DATE,TEXT_DATE,ACCESSION_REF,PERIOD_SEQUENCE,PERIOD_OF,YEAR_END,YEAR_METRIC,YEAR,CLOCK_REF, QUARTER, ITEM_REF, FORM_REF,LABEL_REF):
             prose = allowed.sub(lambda found, kind=allowed: " " if a_reference(found, kind) else found.group(0), prose)
         for start,end in reversed(heading_spans(prose)):
             prose=prose[:start]+' '*(end-start)+prose[end:]

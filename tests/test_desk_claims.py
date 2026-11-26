@@ -246,9 +246,12 @@ class MalformedReplies(unittest.TestCase):
         self.assertEqual(parse_response("```json\n" + text + "\n```", "Manager"), self.GOOD)
 
     def test_extra_data_after_the_object_is_a_repairable_error_not_a_guess(self):
+        # Until 2026-11-25 words before the object ("Here is my answer: {...}") were refused here too. They cannot be
+        # a second answer, and refusing them cost four paid calls in one run: tests/test_ledger_gaps.py,
+        # WordsAroundAReply. Words with a brace in them, and anything after the object, are refused as before.
         for text in (json.dumps(self.GOOD) + "\nI checked every section.",
                      json.dumps(self.GOOD) + json.dumps({"failures": []}),
-                     "Here is my answer: " + json.dumps(self.GOOD),
+                     "Here is my answer, as {draft}: " + json.dumps(self.GOOD),
                      '{"claims": [', "[]"):
             with self.assertRaises(ResponseFormatError) as caught:
                 parse_response(text, "Strategy Manager")
