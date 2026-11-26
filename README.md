@@ -229,14 +229,14 @@ Checked on 2026-11-19 to 2026-11-21, on Windows 11.
 | Part | State |
 |---|---|
 | The one command, `desk.py`: the pick, the agent team with its Verifier, the worksheet, the final report, and the hook after each part | whole practice runs passed all six parts on Lowe's (LOW, 2026-11-22, about 9 minutes) and on Dell (DELL, 2026-11-23 on `main` at `bb7fc74`, about 14 minutes); each stop the earlier runs found is fixed and has a test, as the decision log records |
-| The 11 core claims | printed by code under the Overview from the saved facts; the quarter's three from the release's table. All eleven stated in the Dell run's report (2026-11-23) |
-| The worksheet's values | reads three years of owner cash flow and the cover page's share count from the filings. On 2026-11-23 the reader established both for 6 of 16 companies tried (Lowe's, Walmart, Best Buy, Dell, Dollar Tree, Agilent), each input matching the company's XBRL facts; the others' views say "not computed", with the reason (known limit 7) |
+| The 11 core claims | printed by code under the Overview from the saved facts; the quarter's three from the release's table. All eleven stated in the Dell run's report (2026-11-23). On 2026-11-25 the data steps ran, with no model, on 22 more companies: no stated claim was wrong, and the quarter's three were stated for 14 of them after that day's fixes (11 before); the layouts not read are listed in the decision log |
+| The worksheet's values | reads three years of owner cash flow and the cover page's share count from the filings. On 2026-11-23 the reader established both for 6 of 16 companies tried (Lowe's, Walmart, Best Buy, Dell, Dollar Tree, Agilent), each input matching the company's XBRL facts; the others' views say "not computed", with the reason (known limit 7). Since 2026-11-25 that match is a rule of every run: a statement row is used only when the company's saved XBRL facts hold it for its year, and a share count is not used when a later cover has replaced it |
 | The page: run the desk and read the report without a terminal | starts a run. On 2026-11-21 two runs from the page on Lowe's passed the inputs, the pick, the seven data steps and every hook check, then stopped at the first model call: the provider refused it because the model account was out of credit. A whole run from the page is still to be checked |
 | The closes reader, for one price | reads LSEG Workspace, or a file of closes named by `LSEG_CLOSES_FILE`. With neither there is no price: the report has no P/E and the worksheet's view is "not computed". The worksheet's daily closes and volumes stay in `sources/licensed/` of the run folder, which is never committed; the report prints the liquidity result only |
 | The live record | three reports inside their 24-hour windows: Week 4 (Cisco) and Week 5 (NVIDIA), written by the legacy desk below, and Week 6 (Workday, 2026-11-25), the first written by `desk.py --live`. Its worksheet stopped on a hook refusal and was finished with `desk.py --resume`; the run folder keeps the failed attempt |
 | The hit-rate table | runs; the Cisco and NVIDIA reports predate the worksheet, and Workday's view is "not computed" (its 10-K cover gives no exact share count), so it scores none yet |
 | The intelligent error review | built; reads the run folders of both desks (since 2026-11-25 the group desk's final report, Verifier checks and hook records too); a review of each live report is saved beside it |
-| Tests | `check_all.py`: 961 tests in four folders, no failure, four symlink tests skipped (Windows 11, 2026-11-25). The macOS run is to be redone |
+| Tests | `check_all.py`: 991 tests in four folders, no failure, four symlink tests skipped (Windows 11, 2026-11-25). The macOS run is to be redone |
 
 Known limits are listed under [What can go wrong](#what-can-go-wrong). Read them before you trust a number.
 
@@ -463,7 +463,7 @@ It runs the four test folders (`tests`, `hooks/tests`, `skills/spinoff-worksheet
 the offline live record, and `check_public.py`. Each prints one line; the last line gives the count. To run one
 folder alone: `.venv-desk\Scripts\python -m unittest discover -s hooks/tests`.
 
-On Windows 11 on 2026-11-25 it ran 961 tests with no failure. Four tests that create a symlink were
+On Windows 11 on 2026-11-25 it ran 991 tests with no failure. Four tests that create a symlink were
 skipped: Windows lets an account create one only with administrator rights or Developer Mode. Python needs no
 `-X utf8` for them any more: every file is read and written as UTF-8 by name.
 

@@ -252,6 +252,29 @@ class AllRoleContracts(unittest.TestCase):
         self.assertIn('10-K.txt:L12: line 12',excerpt);self.assertIn('10-K.txt:L28: line 28',excerpt)
         self.assertNotIn('10-K.txt:L11:',excerpt);self.assertNotIn('10-K.txt:L29:',excerpt)
 
+    def test_a_figure_cited_in_a_table_is_shown_with_the_tables_heading(self):
+        # In the Lowe's practice run of 2026-11-22 the Verifier wrote that figures were "for the three months ended
+        # October 30, 2026" and marked them correct. The release's column heads stood 10 to 130 lines above the
+        # cited cells, in no line the Verifier was given. Its reading was right, but it had not been shown.
+        from equity_research_agent_team import Runtime
+        name='earnings_release_Ex99-1.txt'
+        earnings=['Statements of Earnings','In millions','Three Months Ended','Nine Months Ended','October 30, 2026','October 31, 2025']+[f'cell {i}' for i in range(7,61)]
+        sentence=['A long sentence of the release that names no period and runs on well past sixty characters in all.']*40
+        balance=['Balance Sheets','In millions','October 30, 2026','January 30, 2026']+[f'asset {i}' for i in range(105,161)]
+        texts={name:'\n'.join(earnings+sentence+balance)}
+        excerpt=Runtime.cited_filing_excerpts(f'Sales were 22,756 [{name}:L50].',texts)[name]
+        for line in ('L1: Statements of Earnings','L2: In millions','L3: Three Months Ended','L4: Nine Months Ended','L5: October 30, 2026','L6: October 31, 2025'):
+            self.assertIn(f'{name}:{line}',excerpt)
+        self.assertIn(':L42: cell 42',excerpt);self.assertIn(':L58: cell 58',excerpt)   # eight lines each side, as before
+        self.assertNotIn(':L20:',excerpt)                                               # and nothing between the two
+        # A figure of the next table gets that table's heading, not the earnings statement's periods above it.
+        excerpt=Runtime.cited_filing_excerpts(f'Cash was 1,000 [{name}:L150].',texts)[name]
+        self.assertIn(f'{name}:L101: Balance Sheets',excerpt);self.assertIn(f'{name}:L104: January 30, 2026',excerpt)
+        self.assertNotIn('Three Months Ended',excerpt)
+        # A sentence is not a cell of a table: its citation brings no heading.
+        excerpt=Runtime.cited_filing_excerpts(f'It said so [{name}:L80].',texts)[name]
+        self.assertNotIn('Three Months Ended',excerpt);self.assertNotIn(':L1:',excerpt)
+
     def test_tampered_author_file_and_ledger_fail_downstream(self):
         _,out,_=self.manager()
         p=self.run/'nodes/Research_Analyst_1/draft.md';p.write_text(p.read_text(encoding='utf-8').replace('$100','$999'),encoding='utf-8')

@@ -274,7 +274,12 @@ class JoinedDeskTests(unittest.TestCase):
                 filing=('The number of shares outstanding of the registrant’s common stock as of September 29, 2026, was\n10,000,000\n.\n'
                          'CONSOLIDATED STATEMENTS OF INCOME\n(amounts in millions)\n'+dates+'NET INCOME\n$\n100\n90\n80\n'
                          'CONSOLIDATED STATEMENTS OF CASH FLOWS\n(amounts in millions)\n'+dates+'Net income\n$\n100\n90\n80\nDepreciation and amortization\n20\n25\n30\nAdditions to property and equipment\n(30)\n(25)\n(20)\n')
-                company={'facts':{'us-gaap':{'NetIncomeLoss':{'units':{'USD':[{'val':100000000,'end':'2026-08-30','accn':ACC}]}}}}}
+                # The worksheet uses a statement row only when the company's XBRL facts hold it for that year
+                # (2026-11-25), so the made-up facts hold the three years the made-up 10-K prints.
+                years=[('2025-09-01','2026-08-30'),('2024-09-02','2025-08-31'),('2023-09-04','2024-09-01')]
+                three=lambda *millions:{'units':{'USD':[{'val':m*1000000,'start':a,'end':b,'accn':ACC} for (a,b),m in zip(years,millions)]}}
+                company={'facts':{'us-gaap':{'NetIncomeLoss':three(100,90,80),'DepreciationDepletionAndAmortization':three(20,25,30),
+                                             'PaymentsToAcquirePropertyPlantAndEquipment':three(30,25,20)}}}
                 def get(url,**kwargs):
                     response=__import__('requests').Response();response.status_code=200
                     response._content=(json.dumps(company) if 'companyfacts' in url else filing).encode();return response

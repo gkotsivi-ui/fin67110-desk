@@ -83,7 +83,7 @@ def measurement(run,spec):
             gap=(date.fromisoformat(spec['period_end'])-date.fromisoformat(prior_spec['period_end'])).days
             if spec['file']==prior_spec['file'] or not spec.get('fiscal_start') or spec['fiscal_start']!=prior_spec.get('fiscal_start') or not 65<=gap<=110 or ob['unit']!=prior.get('unit') or kind!=prior['kind']:
                 return unknown('Cumulative inputs have incompatible fiscal starts, units, classifications, quarters or filings')
-            ob.update(value=ob['value']-prior['value'],period=spec['quarter_period'],source=f"computed: {ob['value']:g} - {prior['value']:g}; {ob['source']}; {prior['source']}")
+            ob.update(value=ob['value']-prior['value'],period=spec['quarter_period'],source=f"computed: {exact(ob['value'])} - {exact(prior['value'])}; {ob['source']}; {prior['source']}")
         return ob
     except (KeyError,OSError,ValueError,TypeError,re.error):return unknown('Selected filing fact could not be established')
 
@@ -234,13 +234,13 @@ def owner_cash_flow(facts):
         return unknown('Owner cash flow inputs do not share a period, statement basis and USD unit')
     a,b,c=[ob['value'] for ob in items]
     return {'value':a+b-c,'unit':'USD','kind':items[0]['kind'],'period':items[0]['period'],
-            'source':f'computed: {a:g} + {b:g} - {c:g} = {a+b-c:g}; '+'; '.join(ob['source'] for ob in items),'reason':None}
+            'source':f'computed: {exact(a)} + {exact(b)} - {exact(c)} = {exact(a+b-c)}; '+'; '.join(ob['source'] for ob in items),'reason':None}
 
 def value_range(config,facts,ocf):
     if ocf['value'] is not None and ocf['value']<0 and config.get('negative_cash_flow_method')=='net_cash':
         net=facts.get('net_cash',{});shares=facts.get('shares_outstanding',{})
         if net.get('value') is not None and shares.get('value',0) and shares['value']>0:
-            low={'value':net['value']/shares['value'],'unit':'USD/share','formula':f"{net['value']:g} / {shares['value']:g}",'rates':{},'sources':[net['source'],shares['source']],'reason':None,'method':'negative owner cash flow; no operating value; net cash only'}
+            low={'value':net['value']/shares['value'],'unit':'USD/share','formula':f"{exact(net['value'])} / {exact(shares['value'])}",'rates':{},'sources':[net['source'],shares['source']],'reason':None,'method':'negative owner cash flow; no operating value; net cash only'}
         else:low={**unknown('Negative owner cash flow; cited net cash and actual share count are required'),'rates':{},'formula':'net_cash / shares_outstanding'}
         return {'low':low,'mid':{**unknown('Worksheet specifies no mid operating value for negative owner cash flow'),'rates':{},'formula':None}}
     variables={k:ob['value'] for k,ob in facts.items() if isinstance(ob.get('value'),(int,float))}
@@ -344,6 +344,8 @@ def judgment_object(text):
 # A call that failed on the way: the rule is the agent team's, in model_calls.py at the top of the repository
 # (2026-11-22: the two copies of the rule disagreed, and neither tried a rate limit again).
 calls=load_module('worksheet_model_calls',ROOT/'model_calls.py')
+# Every digit of an amount in a printed equation: the rule is the statement reader's (statements.py, exact).
+exact=load_module('worksheet_statement_numbers',Path(__file__).with_name('statements.py')).exact
 RETRY_WAIT_SECONDS=calls.RETRY_WAIT_SECONDS;RATE_LIMIT_WAIT_SECONDS=calls.RATE_LIMIT_WAIT_SECONDS
 dropped_connection=calls.dropped_connection
 

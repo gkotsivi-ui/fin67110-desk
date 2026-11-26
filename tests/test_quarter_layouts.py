@@ -287,5 +287,73 @@ class LossesAndColumnsTheReviewAskedAbout(unittest.TestCase):
         self.assertIsNone(read_quarter_token_table(rows))
 
 
+class LayoutsFromASweepOfNewCompanies(unittest.TestCase):
+    """On 2026-11-25 the data steps were run, with no model, on the current filings of 22 companies the desk had
+    not met. No stated claim was wrong, but the three quarter claims were lost for eleven of them. Two of the causes
+    are read here. The others are left out on purpose and listed in the decision log: a wrong reading of them
+    would be worse than none. Every company, table and amount here is made up."""
+
+    def test_a_loss_per_share_basic_and_diluted_on_one_row(self):
+        # A company with a loss prints one row for both, because they are equal: it is GAAP diluted EPS too.
+        for label in ("Net loss per share, basic and diluted", "Net loss per share attributable to Made Up Corp. common stockholders—basic and diluted",
+                      "Basic and diluted net loss per share", "Net income (loss) per share - basic and diluted"):
+            with self.subTest(label=label):
+                rows = THREE + [REVENUE, ["Net loss", "$", "(24", ")", "$", "(14", ")"], [label, "$", "(0.17", ")", "$", "(0.07", ")"],
+                                ["Weighted-average shares used in computing net loss per share, basic and diluted", "150", "", "148", ""]]
+                self.assertEqual(figures(CONTACT + TITLE + t(rows)), (1000.0, 900.0, -0.17))
+
+    def test_another_measure_on_such_a_row_is_still_not_gaap(self):
+        for label in ("Non-GAAP net loss per share, basic and diluted", "Adjusted net loss per share, basic and diluted",
+                      "Weighted-average shares used in computing net loss per share, basic and diluted"):
+            with self.subTest(label=label):
+                rows = THREE + [REVENUE, [label, "$", "(0.17", ")", "$", "(0.07", ")"]]
+                self.assertEqual(figures(CONTACT + TITLE + t(rows)), NOTHING)
+
+    def test_a_fourth_quarter_of_a_fifty_three_week_year(self):
+        # The quarter has one week more than a year before, so each column has a header of its own: "17 Weeks
+        # Ended" beside "16 Weeks Ended". Until 2026-11-25 the desk took the two for two groups of columns and
+        # chose the shorter: it published LAST YEAR'S quarter as the latest, with its revenue and its EPS. Seen on
+        # three real releases of 2023 and 2024, read again on 2026-11-25 through this step. The next such years
+        # come around 2028, and a release of the year after one has the same header the other way round.
+        dates = ["", "September 3, 2030", "August 28, 2029", "September 3, 2030", "August 28, 2029"]
+        body = [["Net sales", "$", "800", "$", "700", "$", "2,500", "$", "2,300"], ["Net income per common share:"],
+                ["Basic", "$", "4.87", "$", "4.21", "$", "14.18", "$", "13.17"], ["Diluted", "$", "4.86", "$", "4.20", "$", "14.16", "$", "13.14"]]
+        for head in (["", "17 Weeks Ended", "16 Weeks Ended", "53 Weeks Ended", "52 Weeks Ended"],
+                     ["", "Fourteen Weeks Ended", "Thirteen Weeks Ended", "Fifty-Three Weeks Ended", "Fifty-Two Weeks Ended"]):
+            with self.subTest(head=head[1]):
+                q = quarter(CONTACT + TITLE + t([head, dates] + body))
+                self.assertEqual((q["total_revenue"], q["prior_year_total_revenue"], q["diluted_eps"]), (800.0, 700.0, 4.86))
+        # The year after: the longer quarter is now the one a year before, and it comes second.
+        after = [["", "16 Weeks Ended", "17 Weeks Ended", "52 Weeks Ended", "53 Weeks Ended"],
+                 ["", "September 1, 2031", "September 3, 2030", "September 1, 2031", "September 3, 2030"]] + body
+        self.assertEqual(figures(CONTACT + TITLE + t(after)), (800.0, 700.0, 4.86))
+        # The words printed for the quarter are those of the latest column, not of the one a year before.
+        found = read_quarter_table([["", "17 Weeks Ended", "16 Weeks Ended"], ["", "September 3, 2030", "August 28, 2029"],
+                                    ["Net sales", "800", "700"], ["Diluted earnings per share", "4.86", "4.20"]])
+        self.assertEqual((found["revenue"], found["span"], found["latest"]), ("800", "17 weeks ended", "September 3, 2030"))
+        # Two columns a week apart in length that do not end a year apart: the later is the quarter, and it has no
+        # year-ago figure. The other column is never called last year's.
+        found = read_quarter_table([["", "13 Weeks Ended", "14 Weeks Ended"], ["", "October 31, 2030", "August 1, 2030"],
+                                    ["Net sales", "800", "700"], ["Diluted earnings per share", "4.86", "4.20"]])
+        self.assertEqual((found["revenue"], found["prior_revenue"], found["eps"], found["span"]), ("800", None, "4.86", "13 weeks ended"))
+
+    def test_groups_of_unequal_size_are_not_split_in_equal_parts(self):
+        # Three quarters side by side, oldest first, and one column for the year: four period columns under two
+        # headers. Until 2026-11-25 the desk cut them in two equal parts and published the quarter before last as
+        # the latest (found on a made-up table, 2026-11-25). The latest quarter ends on the table's latest date:
+        # when the columns chosen do not hold it, the table is not read.
+        rows = [["", "Three Months Ended", "Year Ended"], ["", "June 30, 2030", "September 30, 2030", "December 31, 2030", "December 31, 2030"],
+                ["Total revenue", "700", "750", "800", "3,000"], ["Diluted earnings per share", "0.70", "0.75", "0.80", "3.00"]]
+        self.assertIsNone(read_quarter_table(rows))
+        years = [["", "Three Months Ended", "Year Ended"], ["", "2028", "2029", "2030", "2030"]] + rows[2:]
+        self.assertIsNone(read_quarter_table(years))
+
+    def test_a_per_share_amount_printed_without_its_zero(self):
+        rows = THREE + [REVENUE, ["Earnings per share:"], ["Basic", "$", ".49", "", "$", "(.22", ")"], ["Diluted", "$", ".48", "", "$", "(.23", ")"]]
+        self.assertEqual(figures(CONTACT + TITLE + t(rows)), (1000.0, 900.0, 0.48))
+        self.assertEqual(row_amounts(["Diluted", "$", "(.23", ")", "$", ".48", ""]), ["-.23", ".48"])
+        self.assertEqual(row_amounts(["A row", ".", "1,000", "..", "2.5."]), ["1,000"])     # a dot alone is not an amount
+
+
 if __name__ == "__main__":
     unittest.main()

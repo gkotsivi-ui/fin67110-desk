@@ -198,6 +198,39 @@ class TheWorksheetsCall(unittest.TestCase):
         self.assertEqual(made[0]["timeout"], 0.1)                # the request's own limit is handed to the client too
 
 
+class TheFrameworkSendsNothingOut(unittest.TestCase):
+    """CrewAI can record a run (every prompt and reply, each role's persona, each file a role reads) and upload the
+    record to its own service. It asks at the end of a run it takes for a machine's first, and the desk gives each
+    run a new framework folder, so it asked in every run: the Lowe's practice run of 2026-11-22 shows the box
+    twice, "Share this execution trace with CrewAI? [y/N] (20s timeout)". One key press would have sent the
+    roles' prompts, with the LSEG price and the members' personas, to a third party; no answer cost 20 seconds
+    each time. The desk now says no for every run, and switches off the framework's usage report and its check
+    for a newer version, which are two more requests that a run does not need."""
+
+    def test_the_settings_say_no_whatever_the_environment_said_before(self):
+        environment = {"CREWAI_TRACING_ENABLED": "true", "CREWAI_DISABLE_TELEMETRY": "false", "MODEL": "kept"}
+        model_calls.framework_sends_nothing(environment)
+        self.assertEqual(environment, {"CREWAI_TRACING_ENABLED": "false", "CREWAI_DISABLE_TELEMETRY": "true",
+                                       "CREWAI_DISABLE_VERSION_CHECK": "true", "MODEL": "kept"})
+
+    def test_a_program_that_loads_the_rule_has_them_set(self):
+        # The agent team imports model_calls and the worksheet loads it, each before its first model call.
+        import os
+        for name, value in model_calls.FRAMEWORK_SETTINGS.items():
+            self.assertEqual(os.environ.get(name), value, name)
+
+    def test_the_installed_framework_reads_them_as_no(self):
+        # The names are CrewAI's own. If an upgrade renames one, this fails and its code must be read again.
+        from crewai import execution
+        from crewai_core.telemetry import Telemetry
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertFalse(execution._tracing_disabled(None))
+            self.assertFalse(Telemetry._is_telemetry_disabled())
+            model_calls.framework_sends_nothing()
+            self.assertTrue(execution._tracing_disabled(None))
+            self.assertTrue(Telemetry._is_telemetry_disabled())
+
+
 class AReplyWithWindowsLineEnds(unittest.TestCase):
     def test_a_drafts_line_ends_are_made_one_kind_before_anything_is_saved(self):
         from desk_claims import parse_response

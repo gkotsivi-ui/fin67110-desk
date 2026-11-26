@@ -133,7 +133,7 @@ def enumeration_spans(line):
 
 def heading_spans(line):
     """Heading counters are IDs; a magnitude/unit immediately after is not."""
-    patterns=[r'^\s*(?:(?:#{1,6}|==)\s*)?\d+[.)]\s+',
+    patterns=[r'^\s*(?:(?:#{1,6}|==|\*\*|__)\s*)?\d+[.)]\s+',   # also a heading in bold: "**1. Thesis**"
               r'^\s*(?:#{1,6}|==)\s*\d+\s+']
     spans=[]
     units=r'(?:USD|EUR|GBP|dollars?|euros?|pounds?|thousands?|millions?|billions?|trillions?|percent|basis|bps|shares?|units?|members?|warehouses?)\b'

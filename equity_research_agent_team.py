@@ -556,6 +556,27 @@ class Runtime:
         return checks
 
     @staticmethod
+    def table_heading_lines(lines: list[str], index: int, reach: int = 250) -> range:
+        """The lines that head the table a cited cell stands in: its title, its unit and its period columns.
+
+        Until 2026-11-25 the Verifier saw eight lines each side of a citation. A cell deep in a table then came
+        without the table's column heads, and the Verifier named the cell's period from memory of the report.
+        A cell is a short line (a table's cells stand on lines of their own in the saved text); a sentence gets
+        nothing. The search goes up to the nearest line that names a period ("Three Months Ended") or a
+        statement ("Balance Sheets"), and stops there: the periods of the table above are never shown for it."""
+        if index >= len(lines) or len(lines[index].strip()) > 60:
+            return range(0)
+        for above in range(index - 1, max(-1, index - reach), -1):
+            line = lines[above]
+            if len(line.strip()) > 120:
+                continue
+            if re.search(r"\b(?:months?|weeks?|quarters?|years?|periods?)\s+ended\b", line, re.I):
+                return range(max(0, above - 3), min(len(lines), above + 9))
+            if re.search(r"\b(?:statements?\s+of|balance\s+sheets?)\b", line, re.I):
+                return range(above, min(len(lines), above + 9))
+        return range(0)
+
+    @staticmethod
     def cited_filing_excerpts(report: str, texts: dict[str, str], radius: int = 8) -> dict[str, str]:
         # Eight lines each side: a filing's text puts table cells and parts of a sentence on lines of their
         # own, and a label can stand several lines from the cited figure (seven lines, on 2026-11-19).
@@ -572,6 +593,7 @@ class Runtime:
             selected: set[int] = set()
             for index in indices:
                 selected.update(range(max(0, index - radius), min(len(lines), index + radius + 1)))
+                selected.update(Runtime.table_heading_lines(lines, index))
             excerpts[filename] = "\n".join(f"{filename}:L{i + 1}: {lines[i]}" for i in sorted(selected))
         return excerpts
 
